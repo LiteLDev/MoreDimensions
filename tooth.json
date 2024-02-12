@@ -1,0 +1,26 @@
+{
+    "format_version": 2,
+    "tooth": "change_this",
+    "version": "0.0.0",
+    "info": {
+        "name": "change_this",
+        "description": "change_this",
+        "author": "change_this",
+        "tags": [
+            "levilamina",
+            "plugin"
+        ]
+    },
+    "asset_url": "change_this",
+    "prerequisites": {
+        "github.com/LiteLDev/LeviLamina": "*"
+    },
+    "files": {
+        "place": [
+            {
+                "src": "rename-this/*",
+                "dest": "plugins/rename-this/"
+            }
+        ]
+    }
+}
