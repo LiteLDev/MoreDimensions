@@ -69,7 +69,7 @@ jobs:
           path: artifact
 
       - run: |
-          cp CHANGELOG.md COPYING README.md artifact/
+          cp CHANGELOG.md COPYING COPYING.LESSER README.md artifact/
 
       - run: |
           zip -r ../more-dimensions-windows-x64.zip *

@@ -22,4 +22,4 @@ PRs accepted.
 
 ## License
 
-GPL-3.0-or-later © LiteLDev
+LGPL-3.0-or-later © LiteLDev
