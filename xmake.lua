@@ -2,7 +2,7 @@ add_rules("mode.debug", "mode.release")
 
 add_repositories("liteldev-repo https://github.com/LiteLDev/xmake-repo.git")
 
-add_requires("levilamina 0.8.0")
+add_requires("levilamina 0.8.3")
 
 if not has_config("vs_runtime") then
     set_runtimes("MD")
@@ -20,7 +20,7 @@ target("more-dimensions") -- Change this to your plugin name.
         "UNICODE" -- To enable Unicode support in Windows API.
     )
     add_files(
-        "src/**.cpp"
+        "src/more_dimensions/**.cpp"
     )
     add_includedirs(
         "src"
@@ -33,6 +33,7 @@ target("more-dimensions") -- Change this to your plugin name.
     )
     set_exceptions("none") -- To avoid conflicts with /EHa.
     set_kind("shared")
+    set_symbols("debug")
     set_languages("cxx20")
 
     after_build(function (target)

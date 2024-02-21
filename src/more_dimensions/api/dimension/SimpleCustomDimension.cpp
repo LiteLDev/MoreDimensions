@@ -3,7 +3,7 @@
 
 #include "ll/api/Logger.h"
 #include "ll/api/service/Bedrock.h"
-
+#include "magic_enum.hpp"
 #include "mc/deps/core/mce/Color.h"
 #include "mc/world/level/BlockSource.h"
 #include "mc/world/level/DimensionConversionData.h"
@@ -11,18 +11,16 @@
 #include "mc/world/level/LevelSeed64.h"
 #include "mc/world/level/biome/VanillaBiomeNames.h"
 #include "mc/world/level/biome/registry/BiomeRegistry.h"
+#include "mc/world/level/chunk/ChunkGeneratorStructureState.h"
 #include "mc/world/level/chunk/VanillaLevelChunkUpgrade.h"
-#include "mc/world/level/dimension/NetherDimension.h"
-#include "mc/world/level/dimension/OverworldDimension.h"
 #include "mc/world/level/dimension/VanillaDimensions.h"
-#include "mc/world/level/dimension/end/TheEndDimension.h"
 #include "mc/world/level/levelgen/VoidGenerator.h"
 #include "mc/world/level/levelgen/flat/FlatWorldGenerator.h"
+#include "mc/world/level/levelgen/structure/EndCityFeature.h"
+#include "mc/world/level/levelgen/structure/StructureSetRegistry.h"
 #include "mc/world/level/levelgen/v1/NetherGenerator.h"
 #include "mc/world/level/levelgen/v1/OverworldGeneratorMultinoise.h"
 #include "mc/world/level/levelgen/v1/TheEndGenerator.h"
-
-#include "magic_enum.hpp"
 
 namespace ll::dimension {
 
@@ -60,48 +58,86 @@ CompoundTag SimpleCustomDimension::generateNewData(uint seed, GeneratorType gene
     return result;
 }
 
-void SimpleCustomDimension::init() {
+void SimpleCustomDimension::init(br::worldgen::StructureSetRegistry const& structureSetRegistry) {
     loggerMoreDim.debug(__FUNCTION__);
     setSkylight(false);
-    Dimension::init();
+    Dimension::init(structureSetRegistry);
 }
 
-std::unique_ptr<WorldGenerator> SimpleCustomDimension::createGenerator() {
+std::unique_ptr<WorldGenerator>
+SimpleCustomDimension::createGenerator(br::worldgen::StructureSetRegistry const& structureSetRegistry) {
     loggerMoreDim.debug(__FUNCTION__);
     auto& level     = getLevel();
     auto& levelData = level.getLevelData();
     auto  biome     = level.getBiomeRegistry().lookupByName(levelData.getBiomeOverride());
 
+    std::unique_ptr<WorldGenerator> worldGenerator;
+
     switch (generatorType) {
-    case GeneratorType::Overworld:
-        return std::make_unique<OverworldGeneratorMultinoise>(
-            *this,
-            LevelSeed64::fromUnsigned32(seed),
-            biome,
-            makeStructureFeatures(false, levelData.getBaseGameVersion(), levelData.getExperiments())
-        );
-    case GeneratorType::Nether:
-        return std::make_unique<NetherGenerator>(
-            *this,
+    case GeneratorType::Overworld: {
+        worldGenerator =
+            std::make_unique<OverworldGeneratorMultinoise>(*this, LevelSeed64::fromUnsigned32(seed), biome);
+        worldGenerator->getStructureFeatureRegistry().mChunkGeneratorStructureState =
+            br::worldgen::ChunkGeneratorStructureState::createNormal(
+                seed,
+                worldGenerator->getBiomeSource(),
+                structureSetRegistry
+            );
+        unity_5c986e6b9d6571cc96912b0bfa0329e2::addStructureFeatures(
+            worldGenerator->getStructureFeatureRegistry(),
             seed,
-            biome,
-            makeStructureFeatures(false, levelData.getBaseGameVersion(), levelData.getExperiments())
+            false,
+            levelData.getBaseGameVersion(),
+            levelData.getExperiments()
         );
-    case GeneratorType::TheEnd:
-        return std::make_unique<TheEndGenerator>(
-            *this,
+        break;
+    }
+    case GeneratorType::Nether: {
+        worldGenerator = std::make_unique<NetherGenerator>(*this, seed, biome);
+        worldGenerator->getStructureFeatureRegistry().mChunkGeneratorStructureState =
+            br::worldgen::ChunkGeneratorStructureState::createNormal(
+                seed,
+                worldGenerator->getBiomeSource(),
+                structureSetRegistry
+            );
+        unity_3da1d4c9fa90b4b1becbca96840255a5::addStructureFeatures(
+            worldGenerator->getStructureFeatureRegistry(),
             seed,
-            biome,
-            makeStructureFeatures(false, levelData.getBaseGameVersion(), levelData.getExperiments())
+            levelData.getBaseGameVersion(),
+            levelData.getExperiments()
         );
-    case GeneratorType::Flat:
-        return std::make_unique<FlatWorldGenerator>(*this, seed, levelData.getFlatWorldGeneratorOptions());
+        break;
+    }
+    case GeneratorType::TheEnd: {
+        worldGenerator = std::make_unique<TheEndGenerator>(*this, seed, biome);
+        worldGenerator->getStructureFeatureRegistry().mChunkGeneratorStructureState =
+            br::worldgen::ChunkGeneratorStructureState::createNormal(
+                seed,
+                worldGenerator->getBiomeSource(),
+                structureSetRegistry
+            );
+        worldGenerator->getStructureFeatureRegistry().mStructureFeatures.emplace_back(
+            std::make_unique<EndCityFeature>(*this, seed)
+        );
+        break;
+    }
+    case GeneratorType::Flat: {
+        worldGenerator = std::make_unique<FlatWorldGenerator>(*this, seed, levelData.getFlatWorldGeneratorOptions());
+        worldGenerator->getStructureFeatureRegistry().mChunkGeneratorStructureState =
+            br::worldgen::ChunkGeneratorStructureState::createFlat(seed, worldGenerator->getBiomeSource(), {});
+        break;
+    }
     default: {
+        std::cout << "test gen123" << std::endl;
         auto generator    = std::make_unique<VoidGenerator>(*this);
         generator->mBiome = level.getBiomeRegistry().lookupByHash(VanillaBiomeNames::Ocean);
-        return std::move(generator);
+        worldGenerator    = std::move(generator);
+        worldGenerator->getStructureFeatureRegistry().mChunkGeneratorStructureState =
+            br::worldgen::ChunkGeneratorStructureState::createVoid(seed);
     }
     }
+    worldGenerator->init();
+    return std::move(worldGenerator);
 }
 
 void SimpleCustomDimension::upgradeLevelChunk(ChunkSource& cs, LevelChunk& lc, LevelChunk& generatedChunk) {
@@ -166,19 +202,4 @@ mce::Color SimpleCustomDimension::getBrightnessDependentFogColor(mce::Color cons
     return result;
 };
 
-std::unique_ptr<StructureFeatureRegistry> SimpleCustomDimension::makeStructureFeatures(
-    bool                   isLegacy,
-    BaseGameVersion const& baseGameVersion,
-    Experiments const&     experiments
-) {
-    loggerMoreDim.debug(__FUNCTION__);
-    switch (generatorType) {
-    case GeneratorType::Nether:
-        return NetherDimension::makeStructureFeatures(seed, baseGameVersion);
-    case GeneratorType::TheEnd:
-        return TheEndDimension::makeStructureFeatures(*this, seed);
-    default:
-        return OverworldDimension::makeStructureFeatures(seed, isLegacy, baseGameVersion, experiments);
-    }
-};
 } // namespace ll::dimension

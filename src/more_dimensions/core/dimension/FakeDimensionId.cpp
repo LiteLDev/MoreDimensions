@@ -1,10 +1,8 @@
 #include "FakeDimensionId.h"
 
 #include "ll/api/Logger.h"
-#include "ll/api/dimension/CustomDimensionManager.h"
 #include "ll/api/memory/Hook.h"
 #include "ll/api/service/Bedrock.h"
-
 #include "mc/deps/core/utility/BinaryStream.h"
 #include "mc/entity/systems/ServerPlayerMovementComponent.h"
 #include "mc/entity/utilities/ActorDataIDs.h"
@@ -29,6 +27,8 @@
 #include "mc/world/actor/SynchedActorDataEntityWrapper.h"
 #include "mc/world/level/ChangeDimensionRequest.h"
 #include "mc/world/level/Level.h"
+#include "mc/world/level/dimension/VanillaDimensions.h"
+#include "more_dimensions//api/dimension/CustomDimensionManager.h"
 
 // ChangeDimensionPacket.java
 // ClientboundMapItemDataPacket.java
@@ -57,6 +57,7 @@ static void sendEmptyChunk(const NetworkIdentifier& netId, int chunkX, int chunk
 
     levelChunkPacket.mPos.x          = chunkX;
     levelChunkPacket.mPos.z          = chunkZ;
+    levelChunkPacket.mDimensionType  = FakeDimensionId::temporaryDimId;
     levelChunkPacket.mCacheEnabled   = false;
     levelChunkPacket.mSubChunksCount = 0;
 
@@ -109,10 +110,19 @@ LL_TYPE_INSTANCE_HOOK(
     ::SubClientId            subId
 ) {
     auto player = ll::service::getServerNetworkHandler()->_getServerPlayer(netId, subId);
-    if (player && player->getDimensionId().id >= 3 && packet.getId() != MinecraftPacketIds::ChangeDimension
+    if (player && player->getDimensionId() >= 3 && packet.getId() != MinecraftPacketIds::ChangeDimension
         && packet.getId() != MinecraftPacketIds::PlayerAction
         && packet.getId() != MinecraftPacketIds::SpawnParticleEffect) {
-        packet = FakeDimensionId::changePacketDimension(packet);
+        FakeDimensionId::changePacketDimension(packet);
+    }
+    if (player && player->getDimensionId() >= 3 && packet.getId() == MinecraftPacketIds::LevelChunk) {
+        auto& modifPacket = (LevelChunkPacket&)packet;
+        if (modifPacket.mDimensionType >= 3) {
+            modifPacket.mDimensionType = 0;
+        }
+        if (modifPacket.mDimensionType == VanillaDimensions::Undefined) {
+            modifPacket.mDimensionType = 3;
+        }
     }
     return origin(netId, packet, subId);
 };
@@ -129,10 +139,10 @@ LL_TYPE_INSTANCE_HOOK(
     auto player = ll::service::getServerNetworkHandler()->_getServerPlayer(comp->mNetworkId, comp->mClientSubId);
     if (!player) return origin(comp, packet);
     auto uuid = player->getUuid();
-    if (player && player->getDimensionId().id >= 3 && packet.getId() != MinecraftPacketIds::ChangeDimension
+    if (player && player->getDimensionId() >= 3 && packet.getId() != MinecraftPacketIds::ChangeDimension
         && packet.getId() != MinecraftPacketIds::PlayerAction
         && packet.getId() != MinecraftPacketIds::SpawnParticleEffect) {
-        packet = FakeDimensionId::changePacketDimension(packet);
+        FakeDimensionId::changePacketDimension(packet);
     }
 
     // remove send changeDimensionPacket to client when player die
@@ -163,12 +173,12 @@ LL_TYPE_INSTANCE_HOOK(
     std::vector<NetworkIdentifierWithSubId> const& subIds,
     Packet&                                        packet
 ) {
-    if (packet.getId() == MinecraftPacketIds::RemoveVolumeEntityPacket
-        || packet.getId() == MinecraftPacketIds::AddVolumeEntityPacket) {
+    if (packet.getId() == MinecraftPacketIds::RemoveVolumeEntity
+        || packet.getId() == MinecraftPacketIds::AddVolumeEntity) {
         for (auto& subId : subIds) {
             auto player =
                 ll::service::getServerNetworkHandler()->_getServerPlayer(subId.mIdentifier, SubClientId::PrimaryClient);
-            if (player && player->getDimensionId().id >= 3) {
+            if (player && player->getDimensionId() >= 3) {
                 FakeDimensionId::changePacketDimension(packet);
             }
             packet.sendToClient(subId);
@@ -209,8 +219,10 @@ LL_TYPE_STATIC_HOOK(
     int                           unk5,
     uint64                        unk6
 ) {
-    if (levelSettings.mSpawnSettings.dimension.id >= 3) {
-        const_cast<LevelSettings&>(levelSettings).mSpawnSettings.dimension.id = FakeDimensionId::fakeDim;
+    if (levelSettings.getSpawnSettings().dimension >= 3) {
+        SpawnSettings spawnSettings(levelSettings.getSpawnSettings());
+        spawnSettings.dimension = FakeDimensionId::fakeDim;
+        const_cast<LevelSettings&>(levelSettings).setSpawnSettings(spawnSettings);
     }
     return origin(
         itemRegistryRef,
@@ -248,8 +260,8 @@ LL_TYPE_STATIC_HOOK(
     Vec3          pos,
     bool          respawn
 ) {
-    if (dimId.id > 2) {
-        dimId.id = FakeDimensionId::fakeDim;
+    if (dimId > 2) {
+        dimId = FakeDimensionId::fakeDim;
     }
     return origin(dimId, pos, respawn);
 }
@@ -257,7 +269,7 @@ LL_TYPE_STATIC_HOOK(
 // SubChunkPacket and SubChunkRequestPacket
 LL_TYPE_INSTANCE_HOOK(
     SubChunkPacketHandler,
-    HookPriority::Normal,
+    HookPriority::Highest,
     ServerNetworkHandler,
     &ServerNetworkHandler::_buildSubChunkPacketData,
     void,
@@ -304,13 +316,13 @@ LL_TYPE_INSTANCE_HOOK(
     Player,
     "?die@Player@@UEAAXAEBVActorDamageSource@@@Z",
     void,
-    ActorDamageSource const& a1
+    ActorDamageSource const& actorDamageSource
 ) {
-    if (getDimensionId().id >= 3) {
+    if (getDimensionId() >= 3) {
         logger.debug("Remove set true");
         FakeDimensionId::getInstance().setNeedRemove(getUuid(), true);
     }
-    return origin(a1);
+    return origin(actorDamageSource);
 }
 
 namespace receivepackethook {
@@ -347,18 +359,17 @@ LL_TYPE_INSTANCE_HOOK(
 };
 } // namespace receivepackethook
 
-
 LL_TYPE_INSTANCE_HOOK(
     LevelrequestPlayerChangeDimensionHandler,
     HookPriority::Normal,
     Level,
     &Level::requestPlayerChangeDimension,
     void,
-    Player&                                 player,
-    std::unique_ptr<ChangeDimensionRequest> changeRequest
+    Player&                  player,
+    ChangeDimensionRequest&& changeRequest
 ) {
     auto inId = player.getDimensionId();
-    if (changeRequest->mToDimensionId == 1 || changeRequest->mToDimensionId == 2 || inId == 1 || inId == 2
+    if (changeRequest.mToDimensionId == 1 || changeRequest.mToDimensionId == 2 || inId == 1 || inId == 2
         || player.isDead()) {
         return origin(player, std::move(changeRequest));
     }
@@ -370,7 +381,6 @@ LL_TYPE_INSTANCE_HOOK(
     );
     return origin(player, std::move(changeRequest));
 }
-
 
 using HookReg = memory::HookRegistrar<
     sendpackethook::LoopbackPacketSendersendToClientHandler1,
@@ -395,23 +405,21 @@ FakeDimensionId& FakeDimensionId::getInstance() {
     return ins;
 }
 
-Packet& FakeDimensionId::changePacketDimension(Packet& packet) {
+void FakeDimensionId::changePacketDimension(Packet& packet) {
     auto packId = packet.getId();
     switch (packId) {
-    case MinecraftPacketIds::RemoveVolumeEntityPacket: {
-        auto& tempP             = (RemoveVolumeEntityPacket&)packet;
-        tempP.mDimensionType.id = fakeDim;
+    case MinecraftPacketIds::RemoveVolumeEntity: {
+        auto& tempP          = (RemoveVolumeEntityPacket&)packet;
+        tempP.mDimensionType = fakeDim;
         logger.debug("MinecraftPacketIds::RemoveVolumeEntityPacket: dimId change to {}", fakeDim);
-        return tempP;
     }
-    case MinecraftPacketIds::AddVolumeEntityPacket: {
-        auto& tempP             = (AddVolumeEntityPacket&)packet;
-        tempP.mDimensionType.id = fakeDim;
+    case MinecraftPacketIds::AddVolumeEntity: {
+        auto& tempP          = (AddVolumeEntityPacket&)packet;
+        tempP.mDimensionType = fakeDim;
         logger.debug("MinecraftPacketIds::AddVolumeEntityPacket: dimId change to {}", fakeDim);
-        return tempP;
     }
     default:
-        return packet;
+        return;
     }
 }
 
@@ -447,6 +455,5 @@ void FakeDimensionId::onPlayerLeftCustomDimension(mce::UUID uuid, bool isRespawn
         }
     }
 }
-
 
 } // namespace ll::dimension
