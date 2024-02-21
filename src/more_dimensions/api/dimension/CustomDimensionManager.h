@@ -1,11 +1,9 @@
 #pragma once
 
-#include <atomic>
-#include <mutex>
-
 #include "mc/nbt/CompoundTag.h"
 #include "mc/world/AutomaticID.h"
 #include "mc/world/level/levelgen/GeneratorType.h"
+#include "more_dimensions/core/Macros.h"
 
 class Dimension;
 class ILevel;
@@ -32,17 +30,17 @@ public:
     using DimensionFactoryT = std::shared_ptr<Dimension>(DimensionFactoryInfo const&);
 
 protected:
-    LLAPI DimensionType addDimension(
+    DimensionType addDimension(
         std::string const&                  dimName,
         std::function<DimensionFactoryT>    factory,
         std::function<CompoundTag()> const& newData
     );
 
 public:
-    LLNDAPI static CustomDimensionManager& getInstance();
+    MORE_DIMENSIONS_API static CustomDimensionManager& getInstance();
 
     template <std::derived_from<Dimension> D, class... Args>
-    DimensionType addDimension(std::string const& dimName, Args&&... args) {
+    MORE_DIMENSIONS_API DimensionType addDimension(std::string const& dimName, Args&&... args) {
         return addDimension(
             dimName,
             [dimName](ll::dimension::DimensionFactoryInfo const& info) -> std::shared_ptr<Dimension> {

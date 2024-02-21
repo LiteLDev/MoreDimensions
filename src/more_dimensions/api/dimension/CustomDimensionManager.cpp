@@ -2,28 +2,30 @@
 #include "CustomDimensionManager.h"
 
 #include "ll/api/Logger.h"
+#include "ll/api/command/CommandRegistrar.h"
 #include "ll/api/memory/Hook.h"
 #include "ll/api/service/Bedrock.h"
 #include "ll/api/utils/Base64Utils.h"
 #include "ll/api/utils/StringUtils.h"
-#include "ll/core/dimension/CustomDimensionConfig.h"
-#include "ll/core/dimension/FakeDimensionId.h"
-
-#include "ll/api/command/CommandRegistrar.h"
-
+#include "mc/deps/core/common/bedrock/DimensionManager.h"
 #include "mc/math/Vec3.h"
+#include "mc/network/ServerNetworkHandler.h"
+#include "mc/server/common/PropertiesSettings.h"
+#include "mc/world/actor/player/Player.h"
 #include "mc/world/level/Level.h"
 #include "mc/world/level/dimension/Dimension.h"
 #include "mc/world/level/dimension/VanillaDimensionFactory.h"
 #include "mc/world/level/dimension/VanillaDimensions.h"
-#include "mc/world/level/storage/LevelData.h"
+#include "mc/world/level/levelgen/WorldGenerator.h"
+#include "mc/world/level/storage/LevelStorage.h"
+#include "more_dimensions/core/dimension/CustomDimensionConfig.h"
+#include "more_dimensions/core/dimension/FakeDimensionId.h"
 
 class Scheduler;
 
 namespace ll::dimension {
 
 static ll::Logger loggerMoreDimMag("CustomDimensionManager");
-
 
 namespace CustomDimensionHookList {
 LL_TYPE_STATIC_HOOK(
@@ -54,6 +56,9 @@ LL_TYPE_STATIC_HOOK(
     if (!dim || *dim <= 2) {
         return origin(std::move(dim));
     }
+    if (!VanillaDimensions::$DimensionMap().mLeft.contains(*dim)) {
+        return VanillaDimensions::Undefined;
+    }
     return *dim;
 };
 
@@ -66,6 +71,9 @@ LL_TYPE_STATIC_HOOK(
     int dimId
 ) {
     if (dimId <= 2) return origin(dimId);
+    if (!VanillaDimensions::$DimensionMap().mLeft.contains(dimId)) {
+        return VanillaDimensions::Undefined;
+    }
     return {dimId};
 }
 
@@ -93,6 +101,36 @@ LL_TYPE_STATIC_HOOK(
     return VanillaDimensions::$DimensionMap().mLeft.at(dim);
 }
 
+// 当玩家加入服务器时，生成时的维度不存在，并且维度id不是Undefined时，把玩家放到主世界
+LL_TYPE_INSTANCE_HOOK(
+    LevelStorageloadServerPlayerDataHook,
+    HookPriority::Normal,
+    LevelStorage,
+    &LevelStorage::loadServerPlayerData,
+    std::unique_ptr<class CompoundTag>,
+    Player const& client,
+    bool          isXboxLive
+) {
+
+    auto result         = origin(client, isXboxLive);
+    auto spawnDimension = result->at("DimensionId");
+    if (!VanillaDimensions::$DimensionMap().mLeft.contains(AutomaticID<Dimension, int>(spawnDimension))) {
+        result->at("Pos")[1] = FloatTag{0x7fff};
+        std::cout << "Pos: " << result->at("Pos").toSnbt() << std::endl;
+    }
+    return result;
+}
+
+LL_TYPE_INSTANCE_HOOK(
+    PropertiesSettingsisClientSideGenEnabledHook,
+    HookPriority::Normal,
+    PropertiesSettings,
+    &PropertiesSettings::isClientSideGenEnabled,
+    bool
+) {
+    return false;
+}
+
 // registry dimensoin when in ll, must reload Dimension::getWeakRef
 LL_TYPE_INSTANCE_HOOK(DimensionGetWeakRefHook, HookPriority::Normal, Dimension, &Dimension::getWeakRef, WeakRef<Dimension>) {
     if (getDimensionId() > 2 && getDimensionId() != VanillaDimensions::Undefined.id) return weak_from_this();
@@ -105,6 +143,8 @@ using HookReg = memory::HookRegistrar<
     VanillaDimensionsFromSerializedIntHookI,
     VanillaDimensionsToSerializedIntHook,
     VanillaDimensionsToStringHook,
+    LevelStorageloadServerPlayerDataHook,
+    PropertiesSettingsisClientSideGenEnabledHook,
     DimensionGetWeakRefHook>;
 
 } // namespace CustomDimensionHookList
@@ -131,8 +171,7 @@ CustomDimensionManager::CustomDimensionManager() : impl(std::make_unique<Impl>()
                 name,
                 Impl::DimensionInfo{
                     info.dimId,
-                    *CompoundTag::fromBinaryNbt(string_utils::decompress(base64_utils::decode(info.base64Nbt)))
-                }
+                    *CompoundTag::fromBinaryNbt(string_utils::decompress(base64_utils::decode(info.base64Nbt)))}
             );
         }
         impl->mNewDimensionId += static_cast<int>(impl->customDimensionMap.size());
@@ -180,10 +219,10 @@ DimensionType CustomDimensionManager::addDimension(
 
     ll::service::getLevel()->getDimensionFactory().registerFactory(
         dimName,
-        [dimName, info, factory = std::move(factory)](ILevel& ilevel, Scheduler& scheduler)
-            -> OwnerPtr<Dimension> {
+        [dimName, info, factory = std::move(factory)](ILevel& ilevel, Scheduler& scheduler) -> OwnerPtr<Dimension> {
             loggerMoreDimMag.debug("Create dimension, name: {}, id: {}", dimName, info.id.id);
             return factory(DimensionFactoryInfo{ilevel, scheduler, info.nbt, info.id});
+            //            return std::make_shared<NetherDimension>(ilevel, scheduler);
         }
     );
 
@@ -208,8 +247,7 @@ DimensionType CustomDimensionManager::addDimension(
             dimName,
             CustomDimensionConfig::Config::Info{
                 info.id,
-                base64_utils::encode(string_utils::compress(info.nbt.toBinaryNbt()))
-            }
+                base64_utils::encode(string_utils::compress(info.nbt.toBinaryNbt()))}
         );
         CustomDimensionConfig::saveConfigFile();
     }
