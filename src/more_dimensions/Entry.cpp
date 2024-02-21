@@ -1,11 +1,13 @@
 #include "Entry.h"
 
-#include <fmt/format.h>
-#include <functional>
-#include <ll/api/Config.h>
-#include <ll/api/io/FileUtils.h>
-#include <ll/api/plugin/NativePlugin.h>
-#include <ll/api/plugin/PluginManagerRegistry.h>
+#include "fmt/format.h"
+#include "functional"
+#include "ll/api/Config.h"
+#include "ll/api/io/FileUtils.h"
+#include "ll/api/plugin/NativePlugin.h"
+#include "ll/api/plugin/PluginManagerRegistry.h"
+#include "ll/api/service/ServerInfo.h"
+
 #include <memory>
 #include <stdexcept>
 
@@ -67,11 +69,11 @@ auto load(ll::plugin::NativePlugin& self) -> bool {
     auto& logger = self.getLogger();
 
     logger.info("loading...");
-
+    if (ll::getLoaderVersion() < ll::data::Version{0, 8, 3}) {
+        logger.error("The LeviLamina version requires 0.8.3 or higher, now is {}", ll::getLoaderVersion().to_string());
+        return false;
+    }
     selfPluginInstance = std::make_unique<std::reference_wrapper<ll::plugin::NativePlugin>>(self);
-
-    // Your code here.
-
     logger.info("loaded");
 
     return true;
