@@ -113,6 +113,8 @@ LL_TYPE_INSTANCE_HOOK(
 ) {
 
     auto result         = origin(client, isXboxLive);
+    if (!result)
+        return result;
     auto spawnDimension = result->at("DimensionId");
     if (!VanillaDimensions::$DimensionMap().mLeft.contains(AutomaticID<Dimension, int>(spawnDimension))) {
         result->at("Pos")[1] = FloatTag{0x7fff};
