@@ -123,6 +123,9 @@ LL_TYPE_INSTANCE_HOOK(
         if (modifPacket.mDimensionType == VanillaDimensions::Undefined) {
             modifPacket.mDimensionType = 3;
         }
+        if (modifPacket.mClientRequestSubChunkLimit <= 8) {
+            modifPacket.mClientRequestSubChunkLimit = 11;
+        }
     }
     return origin(netId, packet, subId);
 };
