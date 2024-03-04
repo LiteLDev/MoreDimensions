@@ -11,7 +11,7 @@
 #include "mc/world/level/chunk/LevelChunk.h"
 #include "mc/world/level/levelgen/v1/ChunkLocalNoiseCache.h"
 
-CustomGenerator::CustomGenerator(Dimension& dimension, uint seed, Json::Value const& generationOptionsJSON):
+GeneratorTest1::GeneratorTest1(Dimension& dimension, uint seed, Json::Value const& generationOptionsJSON):
 FlatWorldGenerator(dimension, seed, generationOptionsJSON){
     auto height = mPrototype.mHeight;
     for (int i = 0; i < 16; i++) {
@@ -70,7 +70,7 @@ FlatWorldGenerator(dimension, seed, generationOptionsJSON){
     }
 }
 
-void CustomGenerator::loadChunk(LevelChunk& levelchunk, bool forceImmediateReplacementDataLoad) {
+void GeneratorTest1::loadChunk(LevelChunk& levelchunk, bool forceImmediateReplacementDataLoad) {
     auto chunkPos = levelchunk.getPosition();
 
     int n = chunk_n;
