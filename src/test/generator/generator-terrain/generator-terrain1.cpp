@@ -2,7 +2,7 @@
 // Created by User on 2024/2/22.
 //
 
-#include "generator-test1.h"
+#include "generator-terrain1.h"
 
 #include "mc/world/level/block/Block.h"
 #include "mc/world/level/block/registry/BlockTypeRegistry.h"
@@ -11,7 +11,7 @@
 #include "mc/world/level/chunk/LevelChunk.h"
 #include "mc/world/level/levelgen/v1/ChunkLocalNoiseCache.h"
 
-GeneratorTest1::GeneratorTest1(Dimension& dimension, uint seed, Json::Value const& generationOptionsJSON):
+GeneratorTerrain1::GeneratorTerrain1(Dimension& dimension, uint seed, Json::Value const& generationOptionsJSON):
 FlatWorldGenerator(dimension, seed, generationOptionsJSON){
     auto height = mPrototype.mHeight;
     for (int i = 0; i < 16; i++) {
@@ -70,7 +70,7 @@ FlatWorldGenerator(dimension, seed, generationOptionsJSON){
     }
 }
 
-void GeneratorTest1::loadChunk(LevelChunk& levelchunk, bool forceImmediateReplacementDataLoad) {
+void GeneratorTerrain1::loadChunk(LevelChunk& levelchunk, bool forceImmediateReplacementDataLoad) {
     auto chunkPos = levelchunk.getPosition();
 
     int n = chunk_n;
