@@ -1,7 +1,7 @@
 on:
-  release:
-    types:
-      - published
+  push:
+    tags:
+      - "v*.*.*"
   
 jobs:
   build:
@@ -68,10 +68,10 @@ jobs:
           cp CHANGELOG.md COPYING COPYING.LESSER README.md artifact/
 
       - run: |
-          zip -r ../more-dimensions-windows-x64.zip *
+          zip -r ../more-dimensions-windows-x64-${{ github.ref_name }}.zip *
         working-directory: artifact
 
       - uses: softprops/action-gh-release@v1
         with:
           files: |
-            more-dimensions-windows-x64.zip
+            more-dimensions-windows-x64-${{ github.ref_name }}.zip

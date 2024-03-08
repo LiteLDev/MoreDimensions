@@ -189,6 +189,10 @@ CustomDimensionManager& CustomDimensionManager::getInstance() {
     return instance;
 }
 
+DimensionType CustomDimensionManager::getDimensionIdFromName(std::string const& dimName) {
+    return VanillaDimensions::fromString(dimName);
+}
+
 DimensionType CustomDimensionManager::addDimension(
     std::string const&                  dimName,
     std::function<DimensionFactoryT>    factory,

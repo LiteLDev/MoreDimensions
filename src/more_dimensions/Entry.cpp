@@ -7,6 +7,7 @@
 #include "ll/api/plugin/NativePlugin.h"
 #include "ll/api/plugin/PluginManagerRegistry.h"
 #include "ll/api/service/ServerInfo.h"
+#include "more_dimensions/core/Macros.h"
 
 #include <memory>
 #include <stdexcept>
@@ -74,7 +75,8 @@ auto load(ll::plugin::NativePlugin& self) -> bool {
         return false;
     }
     selfPluginInstance = std::make_unique<std::reference_wrapper<ll::plugin::NativePlugin>>(self);
-    logger.info("loaded");
+    logger.info("More dimension is loaded");
+    logger.info("Version: {}, Developer: LiteLDev", VERSION);
 
     return true;
 }

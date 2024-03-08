@@ -39,6 +39,9 @@ protected:
 public:
     MORE_DIMENSIONS_API static CustomDimensionManager& getInstance();
 
+    [[deprecated("please use VanillaDimensions::fromString")]]
+    MORE_DIMENSIONS_API static DimensionType getDimensionIdFromName(std::string const& dimName);
+
     template <std::derived_from<Dimension> D, class... Args>
     MORE_DIMENSIONS_API DimensionType addDimension(std::string const& dimName, Args&&... args) {
         return addDimension(
