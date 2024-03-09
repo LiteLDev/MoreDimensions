@@ -25,6 +25,10 @@ target("more-dimensions") -- Change this to your plugin name.
     add_includedirs(
         "src"
     )
+    add_headerfiles(
+        "src/(more_dimensions/api/**.h)",
+        "src/(more_dimensions/core/Macros.h)"
+    )
     add_packages(
         "levilamina"
     )
