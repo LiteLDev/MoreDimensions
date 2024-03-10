@@ -30,7 +30,7 @@ public:
     using DimensionFactoryT = std::shared_ptr<Dimension>(DimensionFactoryInfo const&);
 
 protected:
-    DimensionType addDimension(
+    MORE_DIMENSIONS_API DimensionType addDimension(
         std::string const&                  dimName,
         std::function<DimensionFactoryT>    factory,
         std::function<CompoundTag()> const& newData
@@ -43,7 +43,7 @@ public:
     MORE_DIMENSIONS_API static DimensionType getDimensionIdFromName(std::string const& dimName);
 
     template <std::derived_from<Dimension> D, class... Args>
-    MORE_DIMENSIONS_API DimensionType addDimension(std::string const& dimName, Args&&... args) {
+    DimensionType addDimension(std::string const& dimName, Args&&... args) {
         return addDimension(
             dimName,
             [dimName](ll::dimension::DimensionFactoryInfo const& info) -> std::shared_ptr<Dimension> {
