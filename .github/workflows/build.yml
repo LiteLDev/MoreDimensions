@@ -1,6 +1,9 @@
 on:
   pull_request:
   push:
+    paths:
+      - '**.cpp'
+      - '**.h'
   workflow_dispatch:
   
 jobs:
