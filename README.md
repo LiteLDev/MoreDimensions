@@ -2,6 +2,8 @@
 
 More than three dimensions on BDS!
 
+**Note: This plugin only provides API. If you only install this plugin, the dimensions will not be created.**
+
 ## Install
 
 Install with [lip](https://github.com/lippkg/lip):
@@ -12,7 +14,7 @@ lip install github.com/LiteLDev/MoreDimensions
 
 ## Usage
 
-_TODO_
+Wiki: [Chinese](https://github.com/LiteLDev/MoreDimensions/wiki)
 
 ## Contributing
 
