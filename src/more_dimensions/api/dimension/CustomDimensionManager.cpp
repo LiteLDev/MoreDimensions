@@ -123,7 +123,8 @@ LL_TYPE_INSTANCE_HOOK(
     return result;
 }
 
-LL_TYPE_INSTANCE_HOOK(
+// 由于这个的调用在维度注册之前，所以使用AUTO
+LL_AUTO_TYPE_INSTANCE_HOOK(
     PropertiesSettingsisClientSideGenEnabledHook,
     HookPriority::Normal,
     PropertiesSettings,
