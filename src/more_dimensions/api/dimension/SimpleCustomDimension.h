@@ -16,8 +16,7 @@ MCAPI void addStructureFeatures(
     StructureFeatureRegistry& registry,
     uint                      seed,
     bool                      isLegacy,
-    BaseGameVersion const&    baseGameVersion,
-    Experiments const&        experiments
+    BaseGameVersion const&    baseGameVersion
 );
 }
 namespace unity_3da1d4c9fa90b4b1becbca96840255a5 {

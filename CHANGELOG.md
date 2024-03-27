@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2024-03-27
+
+### Feature
+
+- Adapted to BDS version `1.20.7x`
+- Support Levilamina `v0.10.x`
+
+### Changed
+
+- Changed namespace `ll::dimension` to `more_dimensions`.
+- Use new plugin template.
+
+### Fixed
+
+- Fix `PropertiesSettings::isClientSideGenEnabled` hook no trigger.
+
 ## [0.1.2] - 2024-03-10
 
 ### Fixed

@@ -2,11 +2,16 @@ add_rules("mode.debug", "mode.release")
 
 add_repositories("liteldev-repo https://github.com/LiteLDev/xmake-repo.git")
 
-add_requires("levilamina 0.9.3")
+add_requires("levilamina")
 
 if not has_config("vs_runtime") then
     set_runtimes("MD")
 end
+
+option("tests")
+    set_default(false)
+    set_showmenu(true)
+    set_description("Enable tests")
 
 target("more-dimensions") -- Change this to your plugin name.
     add_cxflags(
@@ -39,6 +44,10 @@ target("more-dimensions") -- Change this to your plugin name.
     set_kind("shared")
     set_symbols("debug")
     set_languages("cxx20")
+
+    if has_config("tests") then
+        add_files("src/test/TestCustomDimension.cpp")
+    end
 
     after_build(function (target)
         local plugin_packer = import("scripts.after_build")

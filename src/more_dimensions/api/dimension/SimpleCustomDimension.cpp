@@ -87,8 +87,7 @@ SimpleCustomDimension::createGenerator(br::worldgen::StructureSetRegistry const&
             worldGenerator->getStructureFeatureRegistry(),
             seed,
             false,
-            levelData.getBaseGameVersion(),
-            levelData.getExperiments()
+            levelData.getBaseGameVersion()
         );
         break;
     }
