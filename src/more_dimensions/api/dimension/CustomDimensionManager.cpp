@@ -7,16 +7,12 @@
 #include "ll/api/service/Bedrock.h"
 #include "ll/api/utils/Base64Utils.h"
 #include "ll/api/utils/StringUtils.h"
-#include "mc/deps/core/common/bedrock/DimensionManager.h"
 #include "mc/math/Vec3.h"
-#include "mc/network/ServerNetworkHandler.h"
 #include "mc/server/common/PropertiesSettings.h"
 #include "mc/world/actor/player/Player.h"
 #include "mc/world/level/Level.h"
 #include "mc/world/level/dimension/Dimension.h"
-#include "mc/world/level/dimension/VanillaDimensionFactory.h"
 #include "mc/world/level/dimension/VanillaDimensions.h"
-#include "mc/world/level/levelgen/WorldGenerator.h"
 #include "mc/world/level/storage/LevelStorage.h"
 #include "more_dimensions/core/dimension/CustomDimensionConfig.h"
 #include "more_dimensions/core/dimension/FakeDimensionId.h"
@@ -112,13 +108,11 @@ LL_TYPE_INSTANCE_HOOK(
     bool          isXboxLive
 ) {
 
-    auto result         = origin(client, isXboxLive);
-    if (!result)
-        return result;
+    auto result = origin(client, isXboxLive);
+    if (!result) return result;
     auto spawnDimension = result->at("DimensionId");
     if (!VanillaDimensions::$DimensionMap().mLeft.contains(AutomaticID<Dimension, int>(spawnDimension))) {
         result->at("Pos")[1] = FloatTag{0x7fff};
-        std::cout << "Pos: " << result->at("Pos").toSnbt() << std::endl;
     }
     return result;
 }

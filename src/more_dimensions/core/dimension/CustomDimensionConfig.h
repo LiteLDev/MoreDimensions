@@ -1,10 +1,11 @@
 #pragma once
 
+#include "ll/api/base/StdInt.h"
+#include "mc/world/level/levelgen/GeneratorType.h"
+
 #include <string>
 #include <unordered_map>
 
-#include "ll/api/base/StdInt.h"
-#include "mc/world/level/levelgen/GeneratorType.h"
 
 namespace more_dimensions::CustomDimensionConfig {
 struct Config {
