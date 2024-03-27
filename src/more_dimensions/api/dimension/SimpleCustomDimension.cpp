@@ -22,7 +22,7 @@
 #include "mc/world/level/levelgen/v1/OverworldGeneratorMultinoise.h"
 #include "mc/world/level/levelgen/v1/TheEndGenerator.h"
 
-namespace ll::dimension {
+namespace more_dimensions {
 
 static ll::Logger loggerMoreDim("SimpleCustomDim");
 
@@ -202,4 +202,4 @@ mce::Color SimpleCustomDimension::getBrightnessDependentFogColor(mce::Color cons
     return result;
 };
 
-} // namespace ll::dimension
+} // namespace more_dimensions

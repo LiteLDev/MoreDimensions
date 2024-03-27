@@ -14,7 +14,7 @@
 
 class ServerPlayer;
 
-namespace ll::dimension {
+namespace more_dimensions {
 
 class FakeDimensionId {
     struct CustomDimensionIdSetting {
@@ -37,4 +37,4 @@ public:
     void        onPlayerGoCustomDimension(mce::UUID uuid);
     void        onPlayerLeftCustomDimension(mce::UUID uuid, bool isRespawn);
 };
-} // namespace ll::dimension
+} // namespace more_dimensions

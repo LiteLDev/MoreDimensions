@@ -10,7 +10,7 @@ class ILevel;
 class Scheduler;
 using DimensionType = AutomaticID<Dimension, int>;
 
-namespace ll::dimension {
+namespace more_dimensions {
 
 struct DimensionFactoryInfo {
     ILevel&            level;
@@ -46,7 +46,7 @@ public:
     DimensionType addDimension(std::string const& dimName, Args&&... args) {
         return addDimension(
             dimName,
-            [dimName](ll::dimension::DimensionFactoryInfo const& info) -> std::shared_ptr<Dimension> {
+            [dimName](more_dimensions::DimensionFactoryInfo const& info) -> std::shared_ptr<Dimension> {
                 return std::make_shared<D>(dimName, info);
             },
             [&] { return D::generateNewData(std::forward<Args>(args)...); }
@@ -96,4 +96,4 @@ public:
  *
  */
 
-} // namespace ll::dimension
+} // namespace more_dimensions

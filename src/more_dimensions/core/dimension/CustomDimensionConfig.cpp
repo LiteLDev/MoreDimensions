@@ -9,7 +9,8 @@
 #include "mc/world/level/LevelSeed64.h"
 #include "mc/world/level/storage/LevelData.h"
 
-namespace ll::dimension::CustomDimensionConfig {
+
+namespace more_dimensions::CustomDimensionConfig {
 
 static ll::Logger            logger("CustomDimensionConfig");
 static std::filesystem::path dimensionConfigPath{u8"./worlds"};
@@ -19,7 +20,7 @@ void setDimensionConfigPath() {
     if (!ll::service::getLevel()) {
         throw std::runtime_error("Level nullptr");
     }
-    dimensionConfigPath /= string_utils::str2u8str(ll::service::getLevel()->getLevelData().getLevelName());
+    dimensionConfigPath /= ll::string_utils::str2u8str(ll::service::getLevel()->getLevelData().getLevelName());
     dimensionConfigPath /= u8"dimension_config.json";
 }
 
@@ -42,4 +43,4 @@ bool saveConfigFile() {
     }
     return true;
 }
-} // namespace ll::dimension::CustomDimensionConfig
+} // namespace more_dimensions::CustomDimensionConfig

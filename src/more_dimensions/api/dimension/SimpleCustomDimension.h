@@ -29,7 +29,7 @@ MCAPI void addStructureFeatures(
 );
 }
 
-namespace ll::dimension {
+namespace more_dimensions {
 
 class SimpleCustomDimension : public Dimension {
     uint          seed;
@@ -63,4 +63,4 @@ public:
 
     bool hasPrecipitationFog() const override;
 };
-} // namespace ll::dimension
+} // namespace more_dimensions

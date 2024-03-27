@@ -6,7 +6,7 @@
 #include "ll/api/base/StdInt.h"
 #include "mc/world/level/levelgen/GeneratorType.h"
 
-namespace ll::dimension::CustomDimensionConfig {
+namespace more_dimensions::CustomDimensionConfig {
 struct Config {
     struct Info {
         int         dimId{};
@@ -20,4 +20,4 @@ extern Config dimConfig;
 void setDimensionConfigPath();
 bool loadConfigFile();
 bool saveConfigFile();
-}; // namespace ll::dimension::CustomDimensionConfig
+}; // namespace more_dimensions::CustomDimensionConfig

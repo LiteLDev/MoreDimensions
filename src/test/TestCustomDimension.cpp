@@ -7,17 +7,17 @@
 static bool reg = [] {
     using namespace ll::event;
     EventBus::getInstance().emplaceListener<ServerStartedEvent>([](ServerStartedEvent&) {
-        ll::dimension::CustomDimensionManager::getInstance().addDimension<ll::dimension::SimpleCustomDimension>(
+        more_dimensions::CustomDimensionManager::getInstance().addDimension<more_dimensions::SimpleCustomDimension>(
             "testNewDimension"
         );
-        ll::dimension::CustomDimensionManager::getInstance()
-            .addDimension<ll::dimension::SimpleCustomDimension>("testNewFlatDimension", 345, GeneratorType::Flat);
-        ll::dimension::CustomDimensionManager::getInstance()
-            .addDimension<ll::dimension::SimpleCustomDimension>("testNewNetherDimension", 345, GeneratorType::Nether);
-        ll::dimension::CustomDimensionManager::getInstance()
-            .addDimension<ll::dimension::SimpleCustomDimension>("testNewTheEndDimension", 345, GeneratorType::TheEnd);
-        ll::dimension::CustomDimensionManager::getInstance()
-            .addDimension<ll::dimension::SimpleCustomDimension>("testNewVoidDimension", 345, GeneratorType::Void);
+        more_dimensions::CustomDimensionManager::getInstance()
+            .addDimension<more_dimensions::SimpleCustomDimension>("testNewFlatDimension", 345, GeneratorType::Flat);
+        more_dimensions::CustomDimensionManager::getInstance()
+            .addDimension<more_dimensions::SimpleCustomDimension>("testNewNetherDimension", 345, GeneratorType::Nether);
+        more_dimensions::CustomDimensionManager::getInstance()
+            .addDimension<more_dimensions::SimpleCustomDimension>("testNewTheEndDimension", 345, GeneratorType::TheEnd);
+        more_dimensions::CustomDimensionManager::getInstance()
+            .addDimension<more_dimensions::SimpleCustomDimension>("testNewVoidDimension", 345, GeneratorType::Void);
     });
     return true;
 }();

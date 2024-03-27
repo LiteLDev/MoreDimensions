@@ -23,7 +23,7 @@
 
 class Scheduler;
 
-namespace ll::dimension {
+namespace more_dimensions {
 
 static ll::Logger loggerMoreDimMag("CustomDimensionManager");
 
@@ -140,7 +140,7 @@ LL_TYPE_INSTANCE_HOOK(DimensionGetWeakRefHook, HookPriority::Normal, Dimension, 
     return origin();
 };
 
-using HookReg = memory::HookRegistrar<
+using HookReg = ll::memory::HookRegistrar<
     VanillaDimensionsConverHook,
     VanillaDimensionsFromSerializedIntHook,
     VanillaDimensionsFromSerializedIntHookI,
@@ -174,7 +174,8 @@ CustomDimensionManager::CustomDimensionManager() : impl(std::make_unique<Impl>()
                 name,
                 Impl::DimensionInfo{
                     info.dimId,
-                    *CompoundTag::fromBinaryNbt(string_utils::decompress(base64_utils::decode(info.base64Nbt)))}
+                    *CompoundTag::fromBinaryNbt(ll::string_utils::decompress(ll::base64_utils::decode(info.base64Nbt)))
+                }
             );
         }
         impl->mNewDimensionId += static_cast<int>(impl->customDimensionMap.size());
@@ -254,7 +255,8 @@ DimensionType CustomDimensionManager::addDimension(
             dimName,
             CustomDimensionConfig::Config::Info{
                 info.id,
-                base64_utils::encode(string_utils::compress(info.nbt.toBinaryNbt()))}
+                ll::base64_utils::encode(ll::string_utils::compress(info.nbt.toBinaryNbt()))
+            }
         );
         CustomDimensionConfig::saveConfigFile();
     }
@@ -271,4 +273,4 @@ DimensionType CustomDimensionManager::addDimension(
 
     return info.id;
 }
-} // namespace ll::dimension
+} // namespace more_dimensions

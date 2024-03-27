@@ -39,7 +39,7 @@
 // SubChunkPacket.java
 // SubChunkRequestPacket.java
 
-namespace ll::dimension {
+namespace more_dimensions {
 
 static ll::Logger logger("FakeDimensionId");
 
@@ -379,13 +379,13 @@ LL_TYPE_INSTANCE_HOOK(
     fakeChangeDimension(
         player.getNetworkIdentifier(),
         player.getRuntimeID(),
-        ll::dimension::FakeDimensionId::temporaryDimId,
+        more_dimensions::FakeDimensionId::temporaryDimId,
         player.getPosition()
     );
     return origin(player, std::move(changeRequest));
 }
 
-using HookReg = memory::HookRegistrar<
+using HookReg = ll::memory::HookRegistrar<
     sendpackethook::LoopbackPacketSendersendToClientHandler1,
     sendpackethook::LoopbackPacketSendersendToClientHandler2,
     sendpackethook::LoopbackPacketSendersendToClientsHandler,
@@ -459,4 +459,4 @@ void FakeDimensionId::onPlayerLeftCustomDimension(mce::UUID uuid, bool isRespawn
     }
 }
 
-} // namespace ll::dimension
+} // namespace more_dimensions
