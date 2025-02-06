@@ -48,5 +48,6 @@ target("more-dimensions")
     )
     if has_config("tests") then
         add_files("src/test/TestCustomDimension.cpp",
-                  "src/test/generator/flat-gen-village/**.cpp")
+                  "src/test/generator/flat-gen-village/**.cpp",
+                  "src/test/generator/generator-terrain/**.cpp")
     end

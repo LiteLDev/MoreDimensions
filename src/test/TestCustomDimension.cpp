@@ -1,4 +1,5 @@
 #include "test/generator/flat-gen-village/FlatVillageDimension.h"
+#include "test/generator/generator-terrain/NxnBorderTerrainDimension.h"
 
 #include "ll/api/event/EventBus.h"
 #include "ll/api/event/server/ServerStartedEvent.h"
@@ -22,6 +23,8 @@ static bool reg = [] {
             .addDimension<more_dimensions::SimpleCustomDimension>("testNewVoidDimension", 345, GeneratorType::Void);
         more_dimensions::CustomDimensionManager::getInstance()
             .addDimension<flat_village_dimension::FlatVillageDimension>("testFlatVillage");
+        more_dimensions::CustomDimensionManager::getInstance()
+            .addDimension<nxn_border_terrain::NxnBorderTerrainDimension>("testFlatTerrain", 5);
     });
     return true;
 }();
