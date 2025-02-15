@@ -1,4 +1,5 @@
 #include "test/generator/flat-gen-village/FlatVillageDimension.h"
+#include "test/generator/generator-custom-structure/dimension/CustomStructureDimension.h"
 #include "test/generator/generator-terrain/NxnBorderTerrainDimension.h"
 
 #include "ll/api/event/EventBus.h"
@@ -10,21 +11,40 @@
 static bool reg = [] {
     using namespace ll::event;
     EventBus::getInstance().emplaceListener<ServerStartedEvent>([](ServerStartedEvent&) {
+        // simplate dimension test
+        // vanilla overworld type dimension test
         more_dimensions::CustomDimensionManager::getInstance().addDimension<more_dimensions::SimpleCustomDimension>(
             "testNewDimension"
         );
+
+        // vanilla flat type dimension test
         more_dimensions::CustomDimensionManager::getInstance()
             .addDimension<more_dimensions::SimpleCustomDimension>("testNewFlatDimension", 345, GeneratorType::Flat);
+
+        // vanilla nether type dimension test
         more_dimensions::CustomDimensionManager::getInstance()
             .addDimension<more_dimensions::SimpleCustomDimension>("testNewNetherDimension", 345, GeneratorType::Nether);
+
+        // vanilla the end type dimension test
         more_dimensions::CustomDimensionManager::getInstance()
             .addDimension<more_dimensions::SimpleCustomDimension>("testNewTheEndDimension", 345, GeneratorType::TheEnd);
+
+        // vanilla void dimension test
         more_dimensions::CustomDimensionManager::getInstance()
             .addDimension<more_dimensions::SimpleCustomDimension>("testNewVoidDimension", 345, GeneratorType::Void);
+
+        // custom diomension test
+        // flat type generator village dimension test
         more_dimensions::CustomDimensionManager::getInstance()
             .addDimension<flat_village_dimension::FlatVillageDimension>("testFlatVillage");
+
+        // flat type custom terrain dimension test
         more_dimensions::CustomDimensionManager::getInstance()
             .addDimension<nxn_border_terrain::NxnBorderTerrainDimension>("testFlatTerrain", 5);
+
+        // flat type custom structure dimension test
+        more_dimensions::CustomDimensionManager::getInstance()
+            .addDimension<custom_structure_dimension::CustomStructureDimension>("testCustomStructure");
     });
     return true;
 }();
