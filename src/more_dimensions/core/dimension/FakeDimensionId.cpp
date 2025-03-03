@@ -6,14 +6,16 @@
 #include "ll/api/memory/Hook.h"
 #include "ll/api/service/Bedrock.h"
 
-#include "mc/common/ActorRuntimeID.h"
-#include "mc/common/ActorUniqueID.h"
 #include "mc/deps/core/math/Vec3.h"
 #include "mc/deps/core/utility/BinaryStream.h"
 #include "mc/deps/ecs/gamerefs_entity/EntityContext.h"
+#include "mc/entity/components/IPlayerTickPolicy.h"
 #include "mc/entity/components/MovementPackets.h"
 #include "mc/entity/components/ServerPlayerMovementComponent.h"
+#include "mc/legacy/ActorRuntimeID.h"
+#include "mc/legacy/ActorUniqueID.h"
 #include "mc/network//LoopbackPacketSender.h"
+#include "mc/network/MinecraftPacketIds.h"
 #include "mc/network/NetworkBlockPosition.h"
 #include "mc/network/NetworkIdentifierWithSubId.h"
 #include "mc/network/ServerNetworkHandler.h"
@@ -23,6 +25,7 @@
 #include "mc/network/packet/InventoryTransactionPacket.h"
 #include "mc/network/packet/LevelChunkPacket.h"
 #include "mc/network/packet/PlayerActionPacket.h"
+#include "mc/network/packet/PlayerActionType.h"
 #include "mc/network/packet/PlayerAuthInputPacket.h"
 #include "mc/network/packet/RemoveVolumeEntityPacket.h"
 #include "mc/network/packet/SpawnParticleEffectPacket.h"
@@ -31,12 +34,11 @@
 #include "mc/network/packet/SubChunkRequestPacket.h"
 #include "mc/network/packet/UpdateBlockPacket.h"
 #include "mc/server/ServerPlayer.h"
+#include "mc/util/LoadingScreenId.h"
 #include "mc/util/MolangVariableMap.h"
-#include "mc/util/NewType.h"
 #include "mc/util/VarIntDataOutput.h"
 #include "mc/world/actor/ActorDataIDs.h"
 #include "mc/world/actor/SynchedActorDataEntityWrapper.h"
-#include "mc/world/item/registry/ItemRegistryRef.h"
 #include "mc/world/level/ChangeDimensionRequest.h"
 #include "mc/world/level/ChunkPos.h"
 #include "mc/world/level/Level.h"
@@ -44,11 +46,6 @@
 #include "mc/world/level/SpawnSettings.h"
 #include "mc/world/level/dimension/VanillaDimensions.h"
 #include "mc/world/level/levelSettings.h"
-
-
-
-#include <memory>
-#include <optional>
 
 
 // ChangeDimensionPacket.java
@@ -75,7 +72,7 @@ static void sendEmptyChunk(const NetworkIdentifier& netId, int chunkX, int chunk
     for (int i = 1; i <= 8; i++) {
         varIntDataOutput.writeByte(255ui8);
     }
-    varIntDataOutput.mStream.writeBool(false); // write border blocks
+    varIntDataOutput.mStream.writeByte(0, "Byte", 0); // write border blocks
 
     levelChunkPacket.mPos->x         = chunkX;
     levelChunkPacket.mPos->z         = chunkZ;
@@ -108,20 +105,22 @@ static void sendEmptyChunks(const NetworkIdentifier& netId, const Vec3& position
 }
 
 static void fakeChangeDimension(
-    const NetworkIdentifier&     netId,
-    ActorRuntimeID               runtimeId,
-    DimensionType                fakeDimId,
-    const Vec3&                  pos,
-    NewType<std::optional<uint>> screedId
+    const NetworkIdentifier& netId,
+    ActorRuntimeID           runtimeId,
+    DimensionType            fakeDimId,
+    const Vec3&              pos,
+    std::optional<uint>      screedId
 ) {
     // ChangeDimensionPacket changeDimensionPacket{fakeDimId, pos, true, {std::nullopt}};
     ChangeDimensionPacket changeDimensionPacket;
     changeDimensionPacket.mDimensionId     = fakeDimId;
     changeDimensionPacket.mPos             = pos;
     changeDimensionPacket.mRespawn         = true;
-    changeDimensionPacket.mLoadingScreenId = screedId;
+    changeDimensionPacket.mLoadingScreenId = {screedId};
     ll::service::getLevel()->getPacketSender()->sendToClient(netId, changeDimensionPacket, SubClientId::PrimaryClient);
-    PlayerActionPacket playerActionPacket{PlayerActionType::ChangeDimensionAck, runtimeId};
+    PlayerActionPacket playerActionPacket;
+    playerActionPacket.mAction    = PlayerActionType::ChangeDimensionAck;
+    playerActionPacket.mRuntimeId = runtimeId;
     ll::service::getLevel()->getPacketSender()->sendToClient(netId, playerActionPacket, SubClientId::PrimaryClient);
     sendEmptyChunks(netId, pos, 3, true);
 }
@@ -194,6 +193,13 @@ LL_TYPE_INSTANCE_HOOK(
             return;
         }
     }
+    // use fake dimension id when player go to custom dimension
+    if (packet.getId() == MinecraftPacketIds::ChangeDimension) {
+        auto& modifPacket = (ChangeDimensionPacket&)packet;
+        if (modifPacket.mDimensionId->id > 2) {
+            modifPacket.mDimensionId->id = FakeDimensionId::fakeDim;
+        }
+    }
     return origin(comp, packet);
 };
 
@@ -228,7 +234,6 @@ LL_TYPE_INSTANCE_HOOK(
     StartGamePacket,
     &StartGamePacket::$ctor,
     void*,
-    ItemRegistryRef               itemRegistryRef,
     LevelSettings const&          levelSettings,
     ActorUniqueID                 uniqueId,
     ActorRuntimeID                runtimeId,
@@ -256,7 +261,6 @@ LL_TYPE_INSTANCE_HOOK(
         const_cast<LevelSettings&>(levelSettings).setSpawnSettings(spawnSettings);
     }
     return origin(
-        itemRegistryRef,
         levelSettings,
         uniqueId,
         runtimeId,
@@ -281,22 +285,23 @@ LL_TYPE_INSTANCE_HOOK(
 }
 
 // ChangeDimensionPacket
-LL_TYPE_INSTANCE_HOOK(
-    ChangeDimensionPacketHandler,
-    HookPriority::Normal,
-    ChangeDimensionPacket,
-    &ChangeDimensionPacket::$ctor,
-    void*,
-    DimensionType                  dimId,
-    Vec3                           pos,
-    bool                           respawn,
-    NewType<::std::optional<uint>> loadingScreenId
-) {
-    if (dimId > 2) {
-        dimId = FakeDimensionId::fakeDim;
-    }
-    return origin(dimId, pos, respawn, loadingScreenId);
-}
+// inline function use seedtoClient -> line 200
+// LL_TYPE_INSTANCE_HOOK(
+//     ChangeDimensionPacketHandler,
+//     HookPriority::Normal,
+//     ChangeDimensionPacket,
+//     &ChangeDimensionPacket::$ctor,
+//     void*,
+//     DimensionType                  dimId,
+//     Vec3                           pos,
+//     bool                           respawn,
+//     NewType<::std::optional<uint>> loadingScreenId
+// ) {
+//     if (dimId > 2) {
+//         dimId = FakeDimensionId::fakeDim;
+//     }
+//     return origin(dimId, pos, respawn, loadingScreenId);
+// }
 
 // SubChunkPacket and SubChunkRequestPacket
 LL_TYPE_INSTANCE_HOOK(
@@ -384,7 +389,7 @@ LL_TYPE_INSTANCE_HOOK(
         }
         fakeDimensionId.onPlayerLeftCustomDimension(uuid, true);
         // flash player bounding box
-        player->getEntityData().markDirty(fmt::underlying(ActorDataIDs::CollisionBox));
+        // player->getEntityData().markDirty(fmt::underlying(ActorDataIDs::CollisionBox));
     }
     return origin(netId, packet);
 };
@@ -404,10 +409,9 @@ LL_TYPE_INSTANCE_HOOK(
         || player.isDead()) {
         return origin(player, std::move(changeRequest));
     };
-    auto screedId = ll::memory::dAccess<std::unique_ptr<LoadingScreenIdManager>>(&this->mLoadingScreenIdManager, 8)
-                        ->getNextLoadingScreenId();
     // issue #7
-    screedId.mValue.emplace(screedId.mValue.value() + 1);
+    auto screedId = ll::memory::dAccess<uint>(&this->mLoadingScreenIdManager, 8) + 1;
+    // screedId.mValue.emplace(screedId.mValue.value() + 1);
 
     fakeChangeDimension(
         player.getNetworkIdentifier(),
@@ -426,7 +430,6 @@ using HookReg = ll::memory::HookRegistrar<
     sendpackethook::SubChunkPacketHandler,
     sendpackethook::SpawnParticleEffectPacketHandler,
     sendpackethook::StartGamePacketHandler,
-    sendpackethook::ChangeDimensionPacketHandler,
     PlayerdieHandler,
     LevelrequestPlayerChangeDimensionHandler,
     receivepackethook::ServerNetworkHandlerPlayerActionPacketHandler>;

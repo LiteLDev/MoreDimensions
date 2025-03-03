@@ -11,6 +11,7 @@
 #include "mc/common/Brightness.h"
 #include "mc/common/BrightnessPair.h"
 #include "mc/deps/core/math/Color.h"
+#include "mc/deps/core/string/HashedString.h"
 #include "mc/world/level/BlockSource.h"
 #include "mc/world/level/DimensionConversionData.h"
 #include "mc/world/level/Level.h"
@@ -28,7 +29,7 @@
 #include "mc/world/level/levelgen/flat/FlatWorldGenerator.h"
 #include "mc/world/level/levelgen/structure/EndCityFeature.h"
 #include "mc/world/level/levelgen/structure/StructureFeatureRegistry.h"
-#include "mc/world/level/levelgen/structure/registry//StructureSetRegistry.h"
+#include "mc/world/level/levelgen/structure/registry/StructureSetRegistry.h"
 #include "mc/world/level/levelgen/synth/PerlinNoise.h"
 #include "mc/world/level/levelgen/synth/PerlinSimplexNoise.h"
 #include "mc/world/level/levelgen/synth/SimplexNoise.h"
@@ -37,7 +38,10 @@
 #include "mc/world/level/levelgen/v1/TheEndGenerator.h"
 #include "mc/world/level/levelgen/v1/VoidGenerator.h"
 #include "mc/world/level/levelgen/v2/ChunkGeneratorStructureState.h"
+#include "mc/world/level/storage/Experiments.h"
 #include "mc/world/level/storage/LevelData.h"
+
+#include <memory>
 
 
 namespace more_dimensions {
@@ -117,30 +121,30 @@ CompoundTag SimpleCustomDimension::generateNewData(uint seed, GeneratorType gene
 
 void SimpleCustomDimension::init(br::worldgen::StructureSetRegistry const& structureSetRegistry) {
     loggerMoreDim.debug(__FUNCTION__);
-    setSkylight(false);
+    mHasSkylight = false;
     Dimension::init(structureSetRegistry);
 }
 
 std::unique_ptr<WorldGenerator>
 SimpleCustomDimension::createGenerator(br::worldgen::StructureSetRegistry const& structureSetRegistry) {
     loggerMoreDim.debug(__FUNCTION__);
-    auto& level     = getLevel();
+    auto& level     = mLevel;
     auto& levelData = level.getLevelData();
-    auto  biome     = level.getBiomeRegistry().lookupByName(levelData.getBiomeOverride());
+    auto  biome     = level.getBiomeRegistry().lookupByName(levelData.mBiomeOverride);
 
     std::unique_ptr<WorldGenerator> worldGenerator;
 
     switch (generatorType) {
     case GeneratorType::Overworld: {
         worldGenerator = std::make_unique<OverworldGeneratorMultinoise>(*this, LevelSeed64{seed}, biome);
-        worldGenerator->getStructureFeatureRegistry().mGeneratorState =
+        worldGenerator->mStructureFeatureRegistry->mGeneratorState =
             br::worldgen::ChunkGeneratorStructureState::createNormal(
                 seed,
                 worldGenerator->getBiomeSource(),
                 structureSetRegistry
             );
         overworldAddStructureFeatures(
-            worldGenerator->getStructureFeatureRegistry(),
+            *worldGenerator->mStructureFeatureRegistry,
             seed,
             false,
             levelData.getBaseGameVersion()
@@ -149,36 +153,37 @@ SimpleCustomDimension::createGenerator(br::worldgen::StructureSetRegistry const&
     }
     case GeneratorType::Nether: {
         worldGenerator = std::make_unique<NetherGenerator>(*this, seed, biome);
-        worldGenerator->getStructureFeatureRegistry().mGeneratorState =
+        worldGenerator->mStructureFeatureRegistry->mGeneratorState =
             br::worldgen::ChunkGeneratorStructureState::createNormal(
                 seed,
                 worldGenerator->getBiomeSource(),
                 structureSetRegistry
             );
         netherAddStructureFeatures(
-            worldGenerator->getStructureFeatureRegistry(),
+            *worldGenerator->mStructureFeatureRegistry,
             seed,
             levelData.getBaseGameVersion(),
-            levelData.getExperiments()
+            static_cast<Experiments&>(levelData.mExperiments.get())
         );
         break;
     }
     case GeneratorType::TheEnd: {
         worldGenerator = std::make_unique<TheEndGenerator>(*this, seed, biome);
-        worldGenerator->getStructureFeatureRegistry().mGeneratorState =
+        worldGenerator->mStructureFeatureRegistry->mGeneratorState =
             br::worldgen::ChunkGeneratorStructureState::createNormal(
                 seed,
                 worldGenerator->getBiomeSource(),
                 structureSetRegistry
             );
-        worldGenerator->getStructureFeatureRegistry().mStructureFeatures->emplace_back(
-            std::make_unique<EndCityFeature>(*this, seed)
-        );
+        
+        // worldGenerator->mStructureFeatureRegistry->mStructureFeatures->emplace_back(
+        //     std::make_unique<EndCityFeature>(*this, seed)
+        // );
         break;
     }
     case GeneratorType::Flat: {
-        worldGenerator = std::make_unique<FlatWorldGenerator>(*this, seed, levelData.getFlatWorldGeneratorOptions());
-        worldGenerator->getStructureFeatureRegistry().mGeneratorState =
+        worldGenerator = std::make_unique<FlatWorldGenerator>(*this, seed, levelData.mFlatworldGeneratorOptions);
+        worldGenerator->mStructureFeatureRegistry->mGeneratorState =
             br::worldgen::ChunkGeneratorStructureState::createFlat(seed, worldGenerator->getBiomeSource(), {});
         break;
     }
@@ -186,8 +191,8 @@ SimpleCustomDimension::createGenerator(br::worldgen::StructureSetRegistry const&
         auto generator    = std::make_unique<VoidGenerator>(*this);
         generator->mBiome = level.getBiomeRegistry().lookupByHash(VanillaBiomeNames::Ocean());
         worldGenerator    = std::move(generator);
-        worldGenerator->getStructureFeatureRegistry().mGeneratorState =
-            br::worldgen::ChunkGeneratorStructureState::createVoid(seed);
+        worldGenerator->mStructureFeatureRegistry->mGeneratorState->mLevelSeed = seed;
+        worldGenerator->mStructureFeatureRegistry->mGeneratorState->mRingsSeed = seed;
     }
     }
     //    worldGenerator->init();
@@ -196,14 +201,14 @@ SimpleCustomDimension::createGenerator(br::worldgen::StructureSetRegistry const&
 
 void SimpleCustomDimension::upgradeLevelChunk(ChunkSource& cs, LevelChunk& lc, LevelChunk& generatedChunk) {
     loggerMoreDim.debug(__FUNCTION__);
-    auto blockSource = BlockSource(getLevel(), *this, cs, false, true, false);
+    auto blockSource = BlockSource(static_cast<Level&>(mLevel), *this, cs, false, true, false);
     VanillaLevelChunkUpgrade::_upgradeLevelChunkViaMetaData(lc, generatedChunk, blockSource);
     VanillaLevelChunkUpgrade::_upgradeLevelChunkLegacy(lc, blockSource);
 }
 
 void SimpleCustomDimension::fixWallChunk(ChunkSource& cs, LevelChunk& lc) {
     loggerMoreDim.debug(__FUNCTION__);
-    auto blockSource = BlockSource(getLevel(), *this, cs, false, true, false);
+    auto blockSource = BlockSource(static_cast<Level&>(mLevel), *this, cs, false, true, false);
     VanillaLevelChunkUpgrade::fixWallChunk(lc, blockSource);
 }
 
@@ -213,20 +218,14 @@ bool SimpleCustomDimension::levelChunkNeedsUpgrade(LevelChunk const& lc) const {
 }
 void SimpleCustomDimension::_upgradeOldLimboEntity(CompoundTag& tag, ::LimboEntitiesVersion vers) {
     loggerMoreDim.debug(__FUNCTION__);
-    auto isTemplate = getLevel().getLevelData().isFromWorldTemplate();
+    auto isTemplate = mLevel.getLevelData().mIsFromLockedTemplate;
     return VanillaLevelChunkUpgrade::upgradeOldLimboEntity(tag, vers, isTemplate);
 }
 
 Vec3 SimpleCustomDimension::translatePosAcrossDimension(Vec3 const& fromPos, DimensionType fromId) const {
     loggerMoreDim.debug(__FUNCTION__);
     Vec3 topos;
-    VanillaDimensions::convertPointBetweenDimensions(
-        fromPos,
-        topos,
-        fromId,
-        mId,
-        getLevel().getDimensionConversionData()
-    );
+    VanillaDimensions::convertPointBetweenDimensions(fromPos, topos, fromId, mId, mLevel.getDimensionConversionData());
     constexpr auto clampVal = 32000000.0f - 128.0f;
 
     topos.x = std::clamp(topos.x, -clampVal, clampVal);
@@ -237,7 +236,6 @@ Vec3 SimpleCustomDimension::translatePosAcrossDimension(Vec3 const& fromPos, Dim
 
 short SimpleCustomDimension::getCloudHeight() const { return 192; }
 
-bool SimpleCustomDimension::hasPrecipitationFog() const { return true; }
 
 std::unique_ptr<ChunkSource>
 SimpleCustomDimension::_wrapStorageForVersionCompatibility(std::unique_ptr<ChunkSource> cs, ::StorageVersion /*ver*/) {

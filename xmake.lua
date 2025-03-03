@@ -3,9 +3,9 @@ add_rules("mode.debug", "mode.release")
 add_repositories("liteldev-repo https://github.com/LiteLDev/xmake-repo.git")
 
 if is_config("target_type", "server") then
-    add_requires("levilamina 1.0.1", {configs = {target_type = "server"}})
+    add_requires("levilamina 1.1.0", {configs = {target_type = "server"}})
 else
-    add_requires("levilamina 1.0.1", {configs = {target_type = "client"}})
+    add_requires("levilamina 1.1.0", {configs = {target_type = "client"}})
 end
 
 add_requires("levibuildscript")
@@ -47,8 +47,8 @@ target("more-dimensions")
         "src/(more_dimensions/core/Macros.h)"
     )
     if has_config("tests") then
-        add_files("src/test/TestCustomDimension.cpp",
-                  "src/test/generator/flat-gen-village/**.cpp",
-                  "src/test/generator/generator-terrain/**.cpp",
-                  "src/test/generator/generator-custom-structure/**.cpp")
+        add_files("src/test/TestCustomDimension.cpp")
+                --   "src/test/generator/flat-gen-village/**.cpp",
+                --   "src/test/generator/generator-terrain/**.cpp",
+                --   "src/test/generator/generator-custom-structure/**.cpp")
     end

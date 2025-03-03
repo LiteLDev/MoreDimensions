@@ -2,6 +2,9 @@
 #include "CustomDimensionManager.h"
 
 #include "more_dimensions/MoreDimenison.h"
+#include "more_dimensions/core/dimension/CustomDimensionConfig.h"
+#include "more_dimensions/core/dimension/FakeDimensionId.h"
+#include "more_dimensions/core/dimension/VanillaDimensionId2.h"
 
 #include "snappy.h"
 
@@ -12,6 +15,7 @@
 #include "ll/api/utils/StringUtils.h"
 
 #include "mc/deps/core/math/Vec3.h"
+#include "mc/server/DedicatedServer.h"
 #include "mc/server/PropertiesSettings.h"
 #include "mc/util/BidirectionalUnorderedMap.h"
 #include "mc/world/actor/player/Player.h"
@@ -19,8 +23,6 @@
 #include "mc/world/level/dimension/Dimension.h"
 #include "mc/world/level/dimension/VanillaDimensions.h"
 #include "mc/world/level/storage/LevelStorage.h"
-#include "more_dimensions/core/dimension/CustomDimensionConfig.h"
-#include "more_dimensions/core/dimension/FakeDimensionId.h"
 
 
 class Scheduler;
@@ -88,28 +90,20 @@ LL_TYPE_STATIC_HOOK(
     return {dimId};
 }
 
-LL_TYPE_STATIC_HOOK(
-    VanillaDimensionsToSerializedIntHook,
-    HookPriority::Normal,
-    VanillaDimensions,
-    VanillaDimensions::toSerializedInt,
-    int,
-    DimensionType const& dim
-) {
-    if (dim <= 2) return origin(dim);
-    return dim.id;
-}
-
-LL_TYPE_STATIC_HOOK(
-    VanillaDimensionsToStringHook,
-    HookPriority::Normal,
-    VanillaDimensions,
-    VanillaDimensions::toString,
-    std::string const,
-    DimensionType const& dim
-) {
-    return VanillaDimensions::DimensionMap().mLeft.at(dim);
-}
+// inline function use patch
+// -->PropertiesSettingsisClientSideGenEnabledHook
+//
+// LL_TYPE_STATIC_HOOK(
+//     VanillaDimensionsToSerializedIntHook,
+//     HookPriority::Normal,
+//     VanillaDimensions,
+//     VanillaDimensions::toSerializedInt,
+//     int,
+//     DimensionType const& dim
+// ) {
+//     if (dim <= 2) return origin(dim);
+//     return dim.id;
+// }
 
 // 当玩家加入服务器时，生成时的维度不存在，并且维度id不是Undefined时，把玩家放到主世界
 LL_TYPE_INSTANCE_HOOK(
@@ -135,11 +129,20 @@ LL_TYPE_INSTANCE_HOOK(
 LL_AUTO_TYPE_INSTANCE_HOOK(
     PropertiesSettingsisClientSideGenEnabledHook,
     HookPriority::Normal,
-    PropertiesSettings,
-    &PropertiesSettings::isClientSideGenEnabled,
-    bool
+    DedicatedServer,
+    &DedicatedServer::runDedicatedServerLoop,
+    DedicatedServer::StartResult,
+    Core::FilePathManager&              filePathManager,
+    PropertiesSettings&                 properties,
+    LevelSettings&                      settings,
+    AllowListFile&                      userAllowList,
+    std::unique_ptr<PermissionsFile>& permissionsFile,
+    Bedrock::ActivationArguments const& args,
+    TestConfig&                         testConfig
 ) {
-    return false;
+    properties.mClientSideGenerationEnabled = false;
+    injectNaticeCode();
+    return origin(filePathManager, properties, settings, userAllowList, permissionsFile, args, testConfig);
 }
 
 // 1.21.50.10 unnecessary
@@ -154,8 +157,7 @@ using HookReg = ll::memory::HookRegistrar<
     VanillaDimensionsConverHook,
     VanillaDimensionsFromSerializedIntHook,
     VanillaDimensionsFromSerializedIntHookI,
-    VanillaDimensionsToSerializedIntHook,
-    VanillaDimensionsToStringHook,
+    // VanillaDimensionsToSerializedIntHook,
     LevelStorageloadServerPlayerDataHook,
     PropertiesSettingsisClientSideGenEnabledHook>;
 

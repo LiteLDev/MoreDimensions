@@ -44,6 +44,5 @@ public:
 
     MORE_DIMENSIONS_API short getCloudHeight() const override;
 
-    MORE_DIMENSIONS_API bool hasPrecipitationFog() const override;
 };
 } // namespace more_dimensions
