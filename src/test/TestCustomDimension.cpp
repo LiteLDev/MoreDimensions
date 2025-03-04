@@ -51,19 +51,48 @@ static bool reg = [] {
 
 
 // #include "ll/api/memory/Hook.h"
-// #include "mc/world/level/dimension/DimensionManager.h"
-// #include "mc/world/level/dimension/DimensionFactory.h"
-//
+// #include "mc/world/level/DimensionManager.h"
+
+
 // LL_AUTO_TYPE_INSTANCE_HOOK(
 //     GetOrCreateDimension,
 //     HookPriority::Normal,
 //     DimensionManager,
-//     "?getOrCreateDimension@DimensionManager@@QEAA?AV?$WeakRef@VDimension@@@@V?$AutomaticID@VDimension@@H@@@Z",
+//     &DimensionManager::getOrCreateDimension,
 //     WeakRef<Dimension>,
-//     DimensionType dim) {
-//     std::cout<<"getOrCreateDimension->"<< dim.id <<std::endl;;
+//     DimensionType dim
+// ) {
+//     std::cout << "getOrCreateDimension->" << dim.id << std::endl;
 //     return origin(dim);
 // };
+
+// #include "mc/server/commands/standard/TeleportCommand.h"
+// #include "mc/server/commands/standard/TeleportTarget.h"
+// #include "mc/util/rotation_command_utils/RotationData.h"
+// #include "mc/world/level/dimension/VanillaDimensions.h"
+// LL_AUTO_TYPE_STATIC_HOOK(
+//     TeleportCommandTest,
+//     HookPriority::Normal,
+//     TeleportCommand,
+//     &TeleportCommand::computeTarget,
+//     TeleportTarget,
+//     ::Actor&                                                     victim,
+//     ::Vec3                                                       destination,
+//     ::Vec3*                                                      facePosition,
+//     ::DimensionType                                              destinationDimension,
+//     ::std::optional<::RotationCommandUtils::RotationData> const& rotationData,
+//     int                                                          commandVersion
+// ) {
+//     for(auto& item:VanillaDimensions::DimensionMap().mLeft) {
+//         std::cout<<"Dimension name: "<<item.second<<" Id: "<<item.first<<std::endl;
+//     }
+//     for(auto& item:VanillaDimensions::DimensionMap().mRight) {
+//         std::cout<<"Dimension name: "<<item.first<<" Id: "<<item.second<<std::endl;
+//     }
+//     std::cout << "computeTarget->" << destinationDimension << std::endl;
+//     return origin(victim, destination, facePosition, destinationDimension, rotationData, commandVersion);
+// };
+
 //
 // LL_AUTO_TYPE_INSTANCE_HOOK(
 //     DimensonFactory123,

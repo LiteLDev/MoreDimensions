@@ -175,7 +175,7 @@ SimpleCustomDimension::createGenerator(br::worldgen::StructureSetRegistry const&
                 worldGenerator->getBiomeSource(),
                 structureSetRegistry
             );
-        
+
         // worldGenerator->mStructureFeatureRegistry->mStructureFeatures->emplace_back(
         //     std::make_unique<EndCityFeature>(*this, seed)
         // );

@@ -4,7 +4,7 @@
 #include "more_dimensions/MoreDimenison.h"
 #include "more_dimensions/core/dimension/CustomDimensionConfig.h"
 #include "more_dimensions/core/dimension/FakeDimensionId.h"
-#include "more_dimensions/core/dimension/VanillaDimensionId2.h"
+#include "more_dimensions/core/dimension/VanillaDimensionId2Patch.h"
 
 #include "snappy.h"
 
@@ -136,7 +136,7 @@ LL_AUTO_TYPE_INSTANCE_HOOK(
     PropertiesSettings&                 properties,
     LevelSettings&                      settings,
     AllowListFile&                      userAllowList,
-    std::unique_ptr<PermissionsFile>& permissionsFile,
+    std::unique_ptr<PermissionsFile>&   permissionsFile,
     Bedrock::ActivationArguments const& args,
     TestConfig&                         testConfig
 ) {

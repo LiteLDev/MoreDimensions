@@ -2,6 +2,7 @@
 
 #include "more_dimensions//api/dimension/CustomDimensionManager.h"
 #include "more_dimensions/MoreDimenison.h"
+#include "more_dimensions/core/mc/LoadingScreenId.h"
 
 #include "ll/api/memory/Hook.h"
 #include "ll/api/service/Bedrock.h"
@@ -34,7 +35,6 @@
 #include "mc/network/packet/SubChunkRequestPacket.h"
 #include "mc/network/packet/UpdateBlockPacket.h"
 #include "mc/server/ServerPlayer.h"
-#include "mc/util/LoadingScreenId.h"
 #include "mc/util/MolangVariableMap.h"
 #include "mc/util/VarIntDataOutput.h"
 #include "mc/world/actor/ActorDataIDs.h"
@@ -410,7 +410,9 @@ LL_TYPE_INSTANCE_HOOK(
         return origin(player, std::move(changeRequest));
     };
     // issue #7
-    auto screedId = ll::memory::dAccess<uint>(&this->mLoadingScreenIdManager, 8) + 1;
+    auto loadingScreenIdManager = ll::memory::dAccess<LoadingScreenIdManager*>(&this->mLoadingScreenIdManager, 8);
+    auto screedId               = loadingScreenIdManager->mUnk7db596.as<uint>() + 1;
+    ++loadingScreenIdManager->mUnk7db596.as<uint>();
     // screedId.mValue.emplace(screedId.mValue.value() + 1);
 
     fakeChangeDimension(
