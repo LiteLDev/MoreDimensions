@@ -12,7 +12,7 @@
             "plugin"
         ]
     },
-    "asset_url": "https://github.com/LiteLDev/MoreDimensions/releases/download/v0.5.0/more-dimensions-windows-x64-v0.6.0.zip",
+    "asset_url": "https://github.com/LiteLDev/MoreDimensions/releases/download/v0.6.0/more-dimensions-windows-x64-v0.6.0.zip",
     "prerequisites": {
         "github.com/LiteLDev/LeviLamina": "1.1.x"
     },
