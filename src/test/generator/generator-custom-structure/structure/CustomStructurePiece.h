@@ -1,10 +1,14 @@
 #pragma once
 
+#include "mc/util/Rotation.h"
 #include "mc/world/level/biome/components/vanilla/VanillaBiomeTypes.h"
 #include "mc/world/level/levelgen/structure/PoolElementStructurePiece.h"
 
 
+
 class JigsawStructureRegistry;
+class StructurePoolElement;
+struct JigsawJunction;
 
 namespace custom_structure {
 

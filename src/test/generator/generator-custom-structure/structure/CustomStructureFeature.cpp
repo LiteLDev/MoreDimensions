@@ -45,7 +45,7 @@ std::unique_ptr<::StructureStart> CustomStructureFeature::
         {cpos.x * 16, 0, cpos.z * 16},
         start->pieces,
         random,
-        dim.getLevel().getJigsawStructureRegistry(),
+        dim.mLevel.getJigsawStructureRegistry(),
         biomeSource.getBiome(cpos.x * 16, 1, cpos.z * 16)->getBiomeType(),
         dim
     );

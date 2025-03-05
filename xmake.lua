@@ -47,8 +47,8 @@ target("more-dimensions")
         "src/(more_dimensions/core/Macros.h)"
     )
     if has_config("tests") then
-        add_files("src/test/TestCustomDimension.cpp")
-                --   "src/test/generator/flat-gen-village/**.cpp",
-                --   "src/test/generator/generator-terrain/**.cpp",
+        add_files("src/test/TestCustomDimension.cpp",
+                  "src/test/generator/flat-gen-village/**.cpp",
+                  "src/test/generator/generator-terrain/**.cpp")
                 --   "src/test/generator/generator-custom-structure/**.cpp")
     end

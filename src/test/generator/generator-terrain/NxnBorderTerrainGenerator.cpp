@@ -4,8 +4,9 @@
 
 #include "NxnBorderTerrainGenerator.h"
 
+#include "test/mc/FixedBiomeSource.h"
+
 #include "mc/world/level/ChunkPos.h"
-#include "mc/world/level/biome/source/FixedBiomeSource.h"
 #include "mc/world/level/block/BedrockBlockNames.h"
 #include "mc/world/level/block/Block.h"
 #include "mc/world/level/block/BlockVolume.h"
@@ -99,11 +100,11 @@ NxnBorderTerrainGenerator::NxnBorderTerrainGenerator(
 }
 
 void NxnBorderTerrainGenerator::loadChunk(LevelChunk& levelchunk, bool forceImmediateReplacementDataLoad) {
-    auto chunkPos = levelchunk.getPosition();
+    auto chunkPos = levelchunk.mPosition;
 
     int  n     = chunk_n;
-    auto pos_x = (chunkPos.x % n + n) % n;
-    auto pos_z = (chunkPos.z % n + n) % n;
+    auto pos_x = (chunkPos->x % n + n) % n;
+    auto pos_z = (chunkPos->z % n + n) % n;
 
     if (pos_x == 0) {
         if (pos_z == 0) {
@@ -132,10 +133,12 @@ void NxnBorderTerrainGenerator::loadChunk(LevelChunk& levelchunk, bool forceImme
 
     levelchunk.recomputeHeightMap(false);
     mBiomeSource = std::make_unique<FixedBiomeSource>(*mBiome);
-    ChunkLocalNoiseCache chunkLocalNoiseCache;
+    DividedPos2d<4> dividedPos2D;
+    ChunkLocalNoiseCache chunkLocalNoiseCache(dividedPos2D, 8);
     mBiomeSource->fillBiomes(levelchunk, chunkLocalNoiseCache);
     levelchunk.setSaved();
-    levelchunk.changeState(ChunkState::Generating, ChunkState::Generated);
+    auto loadState = ChunkState::Generating;
+    levelchunk.mLoadState->compare_exchange_weak(loadState, ChunkState::Generated);
 }
 
 } // namespace nxn_border_terrain

@@ -43,7 +43,7 @@ public:
     short getCloudHeight() const override;
 
     // 非必要。下雨时，可视范围的更改
-    bool hasPrecipitationFog() const override;
+    // bool hasPrecipitationFog() const override;
 };
 
 } // namespace nxn_border_terrain

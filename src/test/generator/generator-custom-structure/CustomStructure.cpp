@@ -27,7 +27,7 @@
 namespace custom_structure {
 
 void CustomJigsawStructureBlockRules::initialize(JigsawStructureRegistry& registry) {
-    auto& jigsawBlockRulesRegistry = registry.getJigsawStructureBlockRulesRegistry();
+    auto& jigsawBlockRulesRegistry = registry.mUnk807a76.as<JigsawStructureBlockRulesRegistry>();
     // auto& DefaultBlockState =
     // BlockTypeRegistry::getDefaultBlockState(VanillaBlockTypeIds::PolishedBlackstoneBricks(), 1);
     auto& resultBlock = BlockTypeRegistry::getDefaultBlockState(VanillaBlockTypeIds::RedstoneBlock(), 1);
@@ -40,7 +40,6 @@ void CustomJigsawStructureBlockRules::initialize(JigsawStructureRegistry& regist
 
     auto blockRule =
         std::make_unique<StructurePoolBlockRule>(std::move(sourceBlock), std::move(targetBlock), &resultBlock);
-
     auto ruleList = std::make_unique<std::vector<std::unique_ptr<StructurePoolBlockRule>>>();
 
     ruleList->push_back(std::move(blockRule));
@@ -53,8 +52,8 @@ void CustomJigsawStructureElements::initialize(
     FeatureRegistry&                                          featureRegistry,
     JigsawStructureRegistry&                                  jigsawRegistry
 ) {
-    auto& jigsawBlockRulesRegistry       = jigsawRegistry.getJigsawStructureBlockRulesRegistry();
-    auto& jigsawStructureElementRegistry = jigsawRegistry.getJigsawStructureElementRegistry();
+    auto& jigsawBlockRulesRegistry       = jigsawRegistry.mUnk807a76.as<JigsawStructureBlockRulesRegistry>();
+    auto& jigsawStructureElementRegistry = jigsawRegistry.mUnk8230cc.as<JigsawStructureElementRegistry>();
     auto  ruleList                       = jigsawBlockRulesRegistry.lookupByName("custom:custom_structure_block_rule");
     std::vector<std::unique_ptr<StructurePoolBlockTagRule>> blockTag{};
     std::vector<std::unique_ptr<StructurePoolActorRule>>    actorRule{};
@@ -109,7 +108,7 @@ void CustomJigsawStructure::initialize(
 ) {
     CustomJigsawStructureBlockRules::initialize(registry);
     CustomJigsawStructureElements::initialize(manager, featureRegistry, registry);
-    auto& jigsawStructureElementRegistry = registry.getJigsawStructureElementRegistry();
+    auto& jigsawStructureElementRegistry = registry.mUnk8230cc.as<JigsawStructureElementRegistry>();
 
     std::vector<std::pair<StructurePoolElement const*, int>> templates_room{
         {jigsawStructureElementRegistry.lookupByName("mike:21room"), 1}

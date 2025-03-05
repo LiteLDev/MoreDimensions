@@ -47,27 +47,27 @@ CompoundTag NxnBorderTerrainDimension::generateNewData(uint chunkLength) {
 std::unique_ptr<WorldGenerator> NxnBorderTerrainDimension::createGenerator(br::worldgen::StructureSetRegistry const&) {
 
     std::unique_ptr<WorldGenerator> worldGenerator;
-    auto                            seed      = getLevel().getSeed();
-    auto&                           levelData = getLevel().getLevelData();
+    auto                            seed      = mLevel.getSeed();
+    auto&                           levelData = mLevel.getLevelData();
 
     // 实例化一个FlatWorldGenerator类
     worldGenerator =
-        std::make_unique<NxnBorderTerrainGenerator>(*this, seed, chunkLength, levelData.getFlatWorldGeneratorOptions());
+        std::make_unique<NxnBorderTerrainGenerator>(*this, seed, chunkLength, levelData.mFlatworldGeneratorOptions);
     // 此为必须，一些结构生成相关
-    worldGenerator->getStructureFeatureRegistry().mGeneratorState =
+    worldGenerator->mStructureFeatureRegistry->mGeneratorState =
         br::worldgen::ChunkGeneratorStructureState::createFlat(seed, worldGenerator->getBiomeSource(), {});
 
     return std::move(worldGenerator);
 }
 
 void NxnBorderTerrainDimension::upgradeLevelChunk(ChunkSource& cs, LevelChunk& lc, LevelChunk& generatedChunk) {
-    auto blockSource = BlockSource(getLevel(), *this, cs, false, true, false);
+    auto blockSource = BlockSource(static_cast<Level&>(mLevel), *this, cs, false, true, false);
     VanillaLevelChunkUpgrade::_upgradeLevelChunkViaMetaData(lc, generatedChunk, blockSource);
     VanillaLevelChunkUpgrade::_upgradeLevelChunkLegacy(lc, blockSource);
 }
 
 void NxnBorderTerrainDimension::fixWallChunk(ChunkSource& cs, LevelChunk& lc) {
-    auto blockSource = BlockSource(getLevel(), *this, cs, false, true, false);
+    auto blockSource = BlockSource(static_cast<Level&>(mLevel), *this, cs, false, true, false);
     VanillaLevelChunkUpgrade::fixWallChunk(lc, blockSource);
 }
 
@@ -75,7 +75,7 @@ bool NxnBorderTerrainDimension::levelChunkNeedsUpgrade(LevelChunk const& lc) con
     return VanillaLevelChunkUpgrade::levelChunkNeedsUpgrade(lc);
 }
 void NxnBorderTerrainDimension::_upgradeOldLimboEntity(CompoundTag& tag, ::LimboEntitiesVersion vers) {
-    auto isTemplate = getLevel().getLevelData().isFromWorldTemplate();
+    auto isTemplate = mLevel.getLevelData().mIsFromLockedTemplate;
     return VanillaLevelChunkUpgrade::upgradeOldLimboEntity(tag, vers, isTemplate);
 }
 
@@ -86,13 +86,7 @@ std::unique_ptr<ChunkSource> NxnBorderTerrainDimension::
 
 Vec3 NxnBorderTerrainDimension::translatePosAcrossDimension(Vec3 const& fromPos, DimensionType fromId) const {
     Vec3 topos;
-    VanillaDimensions::convertPointBetweenDimensions(
-        fromPos,
-        topos,
-        fromId,
-        mId,
-        getLevel().getDimensionConversionData()
-    );
+    VanillaDimensions::convertPointBetweenDimensions(fromPos, topos, fromId, mId, mLevel.getDimensionConversionData());
     constexpr auto clampVal = 32000000.0f - 128.0f;
 
     topos.x = std::clamp(topos.x, -clampVal, clampVal);
@@ -103,6 +97,6 @@ Vec3 NxnBorderTerrainDimension::translatePosAcrossDimension(Vec3 const& fromPos,
 
 short NxnBorderTerrainDimension::getCloudHeight() const { return 192; }
 
-bool NxnBorderTerrainDimension::hasPrecipitationFog() const { return true; }
+// bool NxnBorderTerrainDimension::hasPrecipitationFog() const { return true; }
 
 } // namespace nxn_border_terrain

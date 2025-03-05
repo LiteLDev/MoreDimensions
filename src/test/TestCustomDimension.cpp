@@ -1,6 +1,6 @@
-// #include "test/generator/flat-gen-village/FlatVillageDimension.h"
+#include "test/generator/flat-gen-village/FlatVillageDimension.h"
 // #include "test/generator/generator-custom-structure/dimension/CustomStructureDimension.h"
-// #include "test/generator/generator-terrain/NxnBorderTerrainDimension.h"
+#include "test/generator/generator-terrain/NxnBorderTerrainDimension.h"
 
 #include "ll/api/event/EventBus.h"
 #include "ll/api/event/server/ServerStartedEvent.h"
@@ -33,14 +33,14 @@ static bool reg = [] {
         more_dimensions::CustomDimensionManager::getInstance()
             .addDimension<more_dimensions::SimpleCustomDimension>("testNewVoidDimension", 345, GeneratorType::Void);
 
-        // // custom diomension test
-        // // flat type generator village dimension test
-        // more_dimensions::CustomDimensionManager::getInstance()
-        //     .addDimension<flat_village_dimension::FlatVillageDimension>("testFlatVillage");
+        // custom diomension test
+        // flat type generator village dimension test
+        more_dimensions::CustomDimensionManager::getInstance()
+            .addDimension<flat_village_dimension::FlatVillageDimension>("testFlatVillage");
 
-        // // flat type custom terrain dimension test
-        // more_dimensions::CustomDimensionManager::getInstance()
-        //     .addDimension<nxn_border_terrain::NxnBorderTerrainDimension>("testFlatTerrain", 5);
+        // flat type custom terrain dimension test
+        more_dimensions::CustomDimensionManager::getInstance()
+            .addDimension<nxn_border_terrain::NxnBorderTerrainDimension>("testFlatTerrain", 5);
 
         // // flat type custom structure dimension test
         // more_dimensions::CustomDimensionManager::getInstance()

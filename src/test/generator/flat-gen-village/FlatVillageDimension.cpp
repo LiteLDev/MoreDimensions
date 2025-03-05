@@ -39,13 +39,13 @@ std::unique_ptr<WorldGenerator>
 FlatVillageDimension::createGenerator(br::worldgen::StructureSetRegistry const& structureSetRegistry) {
     std::unique_ptr<WorldGenerator> worldGenerator;
     uint                            seed      = 2024;
-    auto&                           levelData = getLevel().getLevelData();
+    auto&                           levelData = mLevel.getLevelData();
 
     // 实例化我们写的Generator类
     worldGenerator = std::make_unique<flat_village_generator::FlatVillageGenerator>(
         *this,
         seed,
-        levelData.getFlatWorldGeneratorOptions()
+        levelData.mFlatworldGeneratorOptions
     );
     // structureSetRegistry里面仅有的土径结构村庄生成需要用到，所以我们拿一下
     std::vector<std::shared_ptr<const br::worldgen::StructureSet>> structureMap;
@@ -53,16 +53,16 @@ FlatVillageDimension::createGenerator(br::worldgen::StructureSetRegistry const& 
          iter++) {
         structureMap.emplace_back(iter->second);
     }
-    worldGenerator->getStructureFeatureRegistry().mGeneratorState->mSeed   = seed;
-    worldGenerator->getStructureFeatureRegistry().mGeneratorState->mSeed64 = LevelSeed64{seed};
+    worldGenerator->mStructureFeatureRegistry->mGeneratorState->mSeed   = seed;
+    worldGenerator->mStructureFeatureRegistry->mGeneratorState->mSeed64 = LevelSeed64{seed};
 
     // 这个就相当于在这个生成器里注册结构了
     // VillageFeature的第二第三个参数是村庄之间的最大间隔与最小间隔
-    worldGenerator->getStructureFeatureRegistry().mStructureFeatures->emplace_back(
+    worldGenerator->mStructureFeatureRegistry->mStructureFeatures->emplace_back(
         std::make_unique<VillageFeature>(seed, 34, 8)
     );
     // 此为必须，一些结构生成相关
-    worldGenerator->getStructureFeatureRegistry().mGeneratorState =
+    worldGenerator->mStructureFeatureRegistry->mGeneratorState =
         br::worldgen::ChunkGeneratorStructureState::createFlat(seed, worldGenerator->getBiomeSource(), structureMap);
 
     // 必须调用，初始化生成器
@@ -71,13 +71,13 @@ FlatVillageDimension::createGenerator(br::worldgen::StructureSetRegistry const& 
 }
 
 void FlatVillageDimension::upgradeLevelChunk(ChunkSource& cs, LevelChunk& lc, LevelChunk& generatedChunk) {
-    auto blockSource = BlockSource(getLevel(), *this, cs, false, true, false);
+    auto blockSource = BlockSource(static_cast<Level&>(mLevel), *this, cs, false, true, false);
     VanillaLevelChunkUpgrade::_upgradeLevelChunkViaMetaData(lc, generatedChunk, blockSource);
     VanillaLevelChunkUpgrade::_upgradeLevelChunkLegacy(lc, blockSource);
 }
 
 void FlatVillageDimension::fixWallChunk(ChunkSource& cs, LevelChunk& lc) {
-    auto blockSource = BlockSource(getLevel(), *this, cs, false, true, false);
+    auto blockSource = BlockSource(static_cast<Level&>(mLevel), *this, cs, false, true, false);
     VanillaLevelChunkUpgrade::fixWallChunk(lc, blockSource);
 }
 
@@ -85,7 +85,7 @@ bool FlatVillageDimension::levelChunkNeedsUpgrade(LevelChunk const& lc) const {
     return VanillaLevelChunkUpgrade::levelChunkNeedsUpgrade(lc);
 }
 void FlatVillageDimension::_upgradeOldLimboEntity(CompoundTag& tag, ::LimboEntitiesVersion vers) {
-    auto isTemplate = getLevel().getLevelData().isFromWorldTemplate();
+    auto isTemplate = mLevel.getLevelData().mIsFromLockedTemplate;
     return VanillaLevelChunkUpgrade::upgradeOldLimboEntity(tag, vers, isTemplate);
 }
 
@@ -101,7 +101,7 @@ Vec3 FlatVillageDimension::translatePosAcrossDimension(Vec3 const& fromPos, Dime
         topos,
         fromId,
         mId,
-        getLevel().getDimensionConversionData()
+        mLevel.getDimensionConversionData()
     );
     constexpr auto clampVal = 32000000.0f - 128.0f;
 
@@ -113,6 +113,6 @@ Vec3 FlatVillageDimension::translatePosAcrossDimension(Vec3 const& fromPos, Dime
 
 short FlatVillageDimension::getCloudHeight() const { return 192; }
 
-bool FlatVillageDimension::hasPrecipitationFog() const { return true; }
+// bool FlatVillageDimension::hasPrecipitationFog() const { return true; }
 
 } // namespace flat_village_dimension
