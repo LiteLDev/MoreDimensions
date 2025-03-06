@@ -1,9 +1,8 @@
 on:
-  pull_request:
   push:
     paths:
-      - 'src/more_dimensions/**.cpp'
-      - 'src/more_dimensions/**.h'
+      - 'src/test/**.cpp'
+      - 'src/test/**.h'
   workflow_dispatch:
   
 jobs:
@@ -26,13 +25,13 @@ jobs:
           xmake repo -u
 
       - run: |
-          xmake f -a x64 -m release -p windows -v -y
+          xmake f --tests=y -a x64 -m release -p windows -v -y
 
       - run: |
           xmake -v -w -y
 
       - uses: actions/upload-artifact@v4
         with:
-          name: more-dimensions-windows-x64-${{ github.sha }}
+          name: more-dimensions-test-windows-x64-${{ github.sha }}
           path: |
             bin/

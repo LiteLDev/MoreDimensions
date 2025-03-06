@@ -1,5 +1,5 @@
 #include "test/generator/flat-gen-village/FlatVillageDimension.h"
-// #include "test/generator/generator-custom-structure/dimension/CustomStructureDimension.h"
+#include "test/generator/generator-custom-structure/dimension/CustomStructureDimension.h"
 #include "test/generator/generator-terrain/NxnBorderTerrainDimension.h"
 
 #include "ll/api/event/EventBus.h"
@@ -42,9 +42,9 @@ static bool reg = [] {
         more_dimensions::CustomDimensionManager::getInstance()
             .addDimension<nxn_border_terrain::NxnBorderTerrainDimension>("testFlatTerrain", 5);
 
-        // // flat type custom structure dimension test
-        // more_dimensions::CustomDimensionManager::getInstance()
-        //     .addDimension<custom_structure_dimension::CustomStructureDimension>("testCustomStructure");
+        // flat type custom structure dimension test
+        more_dimensions::CustomDimensionManager::getInstance()
+            .addDimension<custom_structure_dimension::CustomStructureDimension>("testCustomStructure");
     });
     return true;
 }();

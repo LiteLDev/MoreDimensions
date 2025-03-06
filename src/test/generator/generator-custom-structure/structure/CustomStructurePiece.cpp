@@ -6,12 +6,12 @@
 #include "mc/world/level/block/registry/BlockTypeRegistry.h"
 #include "mc/world/level/dimension/Dimension.h"
 #include "mc/world/level/levelgen/structure/BoundingBox.h"
-#include "mc/world/level/levelgen/structure/JigsawJunction.h"
-#include "mc/world/level/levelgen/structure/JigsawPlacement.h"
+#include "test/mc/JigsawJunction.h"
+#include "test/mc/JigsawPlacement.h"
 #include "mc/world/level/levelgen/structure/registry/JigsawStructureRegistry.h"
 #include "mc/world/level/levelgen/structure/structurepools/StructurePoolElement.h"
-#include "mc/world/level/levelgen/structure/structurepools/StructureTemplatePool.h"
-#include "mc/world/level/levelgen/structure/structurepools/alias/PoolAliasBinding.h"
+#include "test/mc/StructureTemplatePool.h"
+#include "test/mc/PoolAliasBinding.h"
 #include "mc/world/level/levelgen/v1/AdjustmentEffect.h"
 
 
@@ -45,15 +45,7 @@ CustomStructurePiece::CustomStructurePiece(
     ::BoundingBox const&          box,
     ::BlockPos                    refPos
 )
-: PoolElementStructurePiece() {
-    mUnkc93c20.as<StructurePoolElement&>() = element;
-    mUnkea11e1.as<BlockPos>()              = position;
-    mUnk8a1f71.as<Rotation>()              = rotation;
-    mUnkd032f6.as<JigsawJunction>()        = junction;
-    mUnkcaf6a7.as<BlockPos>()              = refPos;
-    mUnk8c6046.as<BoundingBox>()           = box;
-    mUnk85df9a.as<int>()                   = genDepth;
-};
+: PoolElementStructurePiece(element, position, rotation, genDepth, junction, box, refPos) {};
 
 void CustomStructurePiece::addPieces(
     BlockPos                                      position,
@@ -77,10 +69,9 @@ void CustomStructurePiece::addPieces(
     };
     JigsawPlacement place(15, 80, pieces, lambda, random, pools, dimension);
 
-    auto index = random.nextInt(0, templates->mUnk305a7f.as<std::vector<StructurePoolElement const*>>().size() - 1);
-
+    auto index = random.nextInt(0, templates->mTemplates->size() - 1);
     place.addPieces(
-        *templates->mUnk305a7f.as<std::vector<StructurePoolElement const*>>()[index],
+        *templates->mTemplates->at(index),
         position,
         Rotation::Rotate90,
         "",
@@ -89,5 +80,3 @@ void CustomStructurePiece::addPieces(
 }
 
 } // namespace custom_structure
-
-PoolAliasBinding::PoolAliasLookup::PoolAliasLookup() = default;

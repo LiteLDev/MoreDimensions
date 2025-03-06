@@ -2,7 +2,7 @@
 
 #include "mc/util/Rotation.h"
 #include "mc/world/level/biome/components/vanilla/VanillaBiomeTypes.h"
-#include "mc/world/level/levelgen/structure/PoolElementStructurePiece.h"
+#include "test/mc/PoolElementStructurePiece.h"
 
 
 

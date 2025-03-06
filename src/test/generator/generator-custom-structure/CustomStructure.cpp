@@ -13,11 +13,9 @@
 #include "mc/world/level/levelgen/structure/registry/JigsawStructureElementRegistry.h"
 #include "mc/world/level/levelgen/structure/registry/JigsawStructureRegistry.h"
 #include "mc/world/level/levelgen/structure/registry/StructurePools.h"
-#include "mc/world/level/levelgen/structure/structurepools/StructurePoolActorRule.h"
 #include "mc/world/level/levelgen/structure/structurepools/StructurePoolBlockPredicateAlwaysTrue.h"
-#include "mc/world/level/levelgen/structure/structurepools/StructurePoolBlockPredicateBlockMatchRandom.h"
-#include "mc/world/level/levelgen/structure/structurepools/StructurePoolBlockRule.h"
-#include "mc/world/level/levelgen/structure/structurepools/StructurePoolBlockTagRule.h"
+#include "test/mc/StructurePoolBlockPredicateBlockMatchRandom.h"
+#include "test/mc/StructurePoolBlockRule.h"
 #include "mc/world/level/levelgen/structure/structurepools/StructurePoolElement.h"
 #include "mc/world/level/levelgen/structure/structurepools/StructureTemplatePool.h"
 #include "mc/world/level/storage/Experiments.h"
@@ -55,10 +53,6 @@ void CustomJigsawStructureElements::initialize(
     auto& jigsawBlockRulesRegistry       = jigsawRegistry.mUnk807a76.as<JigsawStructureBlockRulesRegistry>();
     auto& jigsawStructureElementRegistry = jigsawRegistry.mUnk8230cc.as<JigsawStructureElementRegistry>();
     auto  ruleList                       = jigsawBlockRulesRegistry.lookupByName("custom:custom_structure_block_rule");
-    std::vector<std::unique_ptr<StructurePoolBlockTagRule>> blockTag{};
-    std::vector<std::unique_ptr<StructurePoolActorRule>>    actorRule{};
-    // blockTag.push_back(nullptr);
-    // actorRule.push_back(nullptr);
 
     // 每一个结构nbt文件都得这样注册进来，多个nbt结构文件的可以使用同一个Block Rule
     jigsawStructureElementRegistry.registerStructureElement(
