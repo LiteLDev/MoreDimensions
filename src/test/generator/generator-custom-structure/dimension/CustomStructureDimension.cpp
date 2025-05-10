@@ -66,7 +66,7 @@ CustomStructureDimension::createGenerator(br::worldgen::StructureSetRegistry con
         std::make_unique<VillageFeature>(seed, 34, 8)
     );
     worldGenerator->mStructureFeatureRegistry->mStructureFeatures->emplace_back(
-        std::make_unique<custom_structure::CustomStructureFeature>(seed)
+        std::make_unique<custom_structure::CustomStructureFeature>(seed, 8, 34)
     );
     // 此为必须，一些结构生成相关
     worldGenerator->mStructureFeatureRegistry->mGeneratorState =

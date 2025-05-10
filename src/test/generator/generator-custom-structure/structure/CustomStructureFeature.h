@@ -4,6 +4,9 @@
 
 namespace custom_structure {
 class CustomStructureFeature : public StructureFeature {
+    uint mSeed;       // 虚函数的参数传过来的都是默认的level种子，自定义就存一下
+    int  mMaxSpacing; // 最大间距
+    int  mMinSpacing; // 最小间距
 public:
     virtual bool getNearestGeneratedFeature(
         ::Dimension&                           dimension,
@@ -21,7 +24,7 @@ public:
     virtual ::std::unique_ptr<::StructureStart>
     createStructureStart(::Dimension&, ::BiomeSource const&, ::Random&, ::ChunkPos const&, ::IPreliminarySurfaceProvider const&);
 
-    CustomStructureFeature(uint seed);
+    CustomStructureFeature(uint seed, uint minSpacing, uint maxSpacing);
 };
 
 } // namespace custom_structure
