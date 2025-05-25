@@ -2,7 +2,6 @@
 
 #include "more_dimensions//api/dimension/CustomDimensionManager.h"
 #include "more_dimensions/MoreDimenison.h"
-#include "more_dimensions/core/mc/LoadingScreenId.h"
 
 #include "ll/api/memory/Hook.h"
 #include "ll/api/service/Bedrock.h"
@@ -117,12 +116,15 @@ static void fakeChangeDimension(
     changeDimensionPacket.mPos             = pos;
     changeDimensionPacket.mRespawn         = true;
     changeDimensionPacket.mLoadingScreenId = {screedId};
+    std::cout<<"test id:"<< changeDimensionPacket.mDimensionId->id <<std::endl;
     ll::service::getLevel()->getPacketSender()->sendToClient(netId, changeDimensionPacket, SubClientId::PrimaryClient);
     PlayerActionPacket playerActionPacket;
     playerActionPacket.mAction    = PlayerActionType::ChangeDimensionAck;
     playerActionPacket.mRuntimeId = runtimeId;
+    std::cout<<"test1"<<std::endl;
     ll::service::getLevel()->getPacketSender()->sendToClient(netId, playerActionPacket, SubClientId::PrimaryClient);
     sendEmptyChunks(netId, pos, 3, true);
+    std::cout<<"test2"<<std::endl;
 }
 
 namespace CustomDimensionHookList {
@@ -303,6 +305,27 @@ LL_TYPE_INSTANCE_HOOK(
 //     return origin(dimId, pos, respawn, loadingScreenId);
 // }
 
+LL_TYPE_INSTANCE_HOOK(
+    ChangeDimensionPacketHandler,
+    HookPriority::Normal,
+    ChangeDimensionPacket,
+    &ChangeDimensionPacket::$write,
+    void,
+    BinaryStream& stream
+) {
+    stream.writeVarInt(
+    this->mDimensionId->id,
+    "Dimension ID",
+    "Currently supported: (0 -> Overworld, 1 -> Nether, 2 -> The End, 3 -> Undefined)");
+    stream.writeFloat(this->mPos->x, "X", 0LL);
+    stream.writeFloat(this->mPos->y, "Y", 0LL);
+    stream.writeFloat(this->mPos->z, "Z", 0LL);
+    stream.writeBool(this->mRespawn, "Respawn", 0LL);
+    stream.writeBool(this->mLoadingScreenId->mValue.has_value(), "Has Value", "If true, follow with appropriate data type, otherwise nothing");
+    if (this->mLoadingScreenId->mValue.has_value())
+    stream.writeUnsignedInt(this->mLoadingScreenId->mValue.value(), "Unsigned Int", 0LL);
+}
+
 // SubChunkPacket and SubChunkRequestPacket
 LL_TYPE_INSTANCE_HOOK(
     SubChunkPacketHandler,
@@ -374,7 +397,7 @@ LL_TYPE_INSTANCE_HOOK(
     PlayerActionPacket const& packet
 ) {
     auto& handler         = ll::memory::dAccess<ServerNetworkHandler>(this, -16);
-    auto  player          = handler._getServerPlayer(netId, packet.mClientSubId);
+    auto  player          = handler._getServerPlayer(netId, packet.mSenderSubId);
     auto  uuid            = player->getUuid();
     auto& fakeDimensionId = FakeDimensionId::getInstance();
     if (packet.mAction == PlayerActionType::Respawn) {
@@ -429,6 +452,7 @@ using HookReg = ll::memory::HookRegistrar<
     sendpackethook::LoopbackPacketSendersendToClientHandler1,
     sendpackethook::LoopbackPacketSendersendToClientHandler2,
     sendpackethook::LoopbackPacketSendersendToClientsHandler,
+    // sendpackethook::ChangeDimensionPacketHandler,
     sendpackethook::SubChunkPacketHandler,
     sendpackethook::SpawnParticleEffectPacketHandler,
     sendpackethook::StartGamePacketHandler,

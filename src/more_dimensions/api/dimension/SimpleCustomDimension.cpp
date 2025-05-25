@@ -42,6 +42,7 @@
 #include "mc/world/level/storage/LevelData.h"
 
 #include <memory>
+#include <windows.h>
 
 
 namespace more_dimensions {
@@ -49,9 +50,18 @@ namespace more_dimensions {
 
 namespace {
 using namespace ll::memory_literals;
-static auto* overworldAddress =
-    "`anonymous namespace'::unity_5c986e6b9d6571cc96912b0bfa0329e2::addStructureFeatures"_symp;
-static auto* netherAddress = "`anonymous namespace'::unity_3da1d4c9fa90b4b1becbca96840255a5::addStructureFeatures"_symp;
+
+DWORD overworld_addStructureFeatures_rva = 0x2C6640;
+DWORD nethrer_addStructureFeatures_rva = 0x2C4F90;
+
+HMODULE hModule = GetModuleHandle(L"bedrock_server_mod.exe");
+
+static void* overworldAddress = (void*)((BYTE*)hModule + overworld_addStructureFeatures_rva);
+static void* netherAddress = (void*)((BYTE*)hModule + nethrer_addStructureFeatures_rva);
+
+// static auto* overworldAddress =
+//     "`anonymous namespace'::unity_5c986e6b9d6571cc96912b0bfa0329e2::addStructureFeatures"_symp;
+// static auto* netherAddress = "`anonymous namespace'::unity_3da1d4c9fa90b4b1becbca96840255a5::addStructureFeatures"_symp;
 
 void overworldAddStructureFeatures(
     StructureFeatureRegistry& registry,
@@ -182,7 +192,7 @@ SimpleCustomDimension::createGenerator(br::worldgen::StructureSetRegistry const&
         break;
     }
     case GeneratorType::Flat: {
-        worldGenerator = std::make_unique<FlatWorldGenerator>(*this, seed, levelData.mFlatworldGeneratorOptions);
+        worldGenerator = std::make_unique<FlatWorldGenerator>(*this, seed, levelData.mFlatWorldOptions);
         worldGenerator->mStructureFeatureRegistry->mGeneratorState =
             br::worldgen::ChunkGeneratorStructureState::createFlat(seed, worldGenerator->getBiomeSource(), {});
         break;

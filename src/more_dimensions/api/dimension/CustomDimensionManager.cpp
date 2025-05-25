@@ -4,7 +4,6 @@
 #include "more_dimensions/MoreDimenison.h"
 #include "more_dimensions/core/dimension/CustomDimensionConfig.h"
 #include "more_dimensions/core/dimension/FakeDimensionId.h"
-#include "more_dimensions/core/dimension/VanillaDimensionId2Patch.h"
 
 #include "snappy.h"
 
@@ -141,7 +140,6 @@ LL_AUTO_TYPE_INSTANCE_HOOK(
     TestConfig&                         testConfig
 ) {
     properties.mClientSideGenerationEnabled = false;
-    injectNaticeCode();
     return origin(filePathManager, properties, settings, userAllowList, permissionsFile, args, testConfig);
 }
 

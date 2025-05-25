@@ -49,7 +49,7 @@ CustomStructureDimension::createGenerator(br::worldgen::StructureSetRegistry con
     worldGenerator = std::make_unique<custom_structure_generator::CustomStructureGenerator>(
         *this,
         seed,
-        levelData.mFlatworldGeneratorOptions
+        levelData.mFlatWorldOptions
     );
     // structureSetRegistry里面仅有的土径结构村庄生成需要用到，所以我们拿一下
     std::vector<std::shared_ptr<const br::worldgen::StructureSet>> structureMap;

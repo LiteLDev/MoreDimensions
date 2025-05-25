@@ -2,6 +2,7 @@
 
 #include "ll/api/Versions.h"
 #include "ll/api/mod/RegisterHelper.h"
+#include "more_dimensions/core/dimension/VanillaDimensionId2Patch.h"
 
 namespace more_dimensions {
 
@@ -19,6 +20,7 @@ bool MoreDimenison::load() {
         );
         return false;
     }
+    injectNaticeCode();
     getSelf().getLogger().info("More dimension is loaded");
     getSelf().getLogger().info("Version: {}, Developer: LiteLDev", getSelf().getManifest().version->to_string());
     return true;

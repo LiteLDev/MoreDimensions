@@ -52,7 +52,7 @@ std::unique_ptr<WorldGenerator> NxnBorderTerrainDimension::createGenerator(br::w
 
     // 实例化一个FlatWorldGenerator类
     worldGenerator =
-        std::make_unique<NxnBorderTerrainGenerator>(*this, seed, chunkLength, levelData.mFlatworldGeneratorOptions);
+        std::make_unique<NxnBorderTerrainGenerator>(*this, seed, chunkLength, levelData.mFlatWorldOptions);
     // 此为必须，一些结构生成相关
     worldGenerator->mStructureFeatureRegistry->mGeneratorState =
         br::worldgen::ChunkGeneratorStructureState::createFlat(seed, worldGenerator->getBiomeSource(), {});
