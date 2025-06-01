@@ -6,5 +6,5 @@
 class CustomStructureStart : public StructureStart {
 public:
     CustomStructureStart() = default;
-    virtual std::string_view getStructureName() const { return "custom:custom_structure_start"; };
+    virtual std::string_view getStructureName() const { return "mike:basic_dungeon"; };
 };

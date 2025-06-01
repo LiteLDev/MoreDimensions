@@ -2,7 +2,7 @@
 
 #include "ll/api/Versions.h"
 #include "ll/api/mod/RegisterHelper.h"
-#include "more_dimensions/core/dimension/VanillaDimensionId2Patch.h"
+#include "more_dimensions/core/dimension/MoreDimensionsPatch.h"
 
 namespace more_dimensions {
 

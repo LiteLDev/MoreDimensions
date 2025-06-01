@@ -26,23 +26,51 @@ namespace custom_structure {
 
 void CustomJigsawStructureBlockRules::initialize(JigsawStructureRegistry& registry) {
     auto& jigsawBlockRulesRegistry = registry.mJigsawBlockRulesRegistry;
-    // auto& DefaultBlockState =
-    // BlockTypeRegistry::getDefaultBlockState(VanillaBlockTypeIds::PolishedBlackstoneBricks(), 1);
-    auto& resultBlock = BlockTypeRegistry::getDefaultBlockState(VanillaBlockTypeIds::RedstoneBlock(), 1);
-    auto& block       = BlockTypeRegistry::getDefaultBlockState(VanillaBlockTypeIds::Blackstone(), 1);
 
-    std::unique_ptr<IStructurePoolBlockPredicate> sourceBlock =
-        std::make_unique<StructurePoolBlockPredicateBlockMatchRandom>(block, 0.3);
+    // input_predicate block
+    auto& stoneBricks       = BlockTypeRegistry::getDefaultBlockState(VanillaBlockTypeIds::StoneBricks());
+
+    // output_state blocks
+    auto& mossyStoneBricks = BlockTypeRegistry::getDefaultBlockState(VanillaBlockTypeIds::MossyStoneBricks());
+    auto& crackedStoneBricks = BlockTypeRegistry::getDefaultBlockState(VanillaBlockTypeIds::CrackedStoneBricks());
+    auto& cobblestone = BlockTypeRegistry::getDefaultBlockState(VanillaBlockTypeIds::Cobblestone());
+
+    // input_predicate
+    std::unique_ptr<IStructurePoolBlockPredicate> sourceBlock_pro1 =
+        std::make_unique<StructurePoolBlockPredicateBlockMatchRandom>(stoneBricks, 0.2);
+    std::unique_ptr<IStructurePoolBlockPredicate> sourceBlock_pro2 =
+        std::make_unique<StructurePoolBlockPredicateBlockMatchRandom>(stoneBricks, 0.1);
+
     std::unique_ptr<IStructurePoolBlockPredicate> targetBlock =
         std::make_unique<StructurePoolBlockPredicateAlwaysTrue>();
 
-    auto blockRule =
-        std::make_unique<StructurePoolBlockRule>(std::move(sourceBlock), std::move(targetBlock), &resultBlock);
+    auto blockRule_1 =
+        std::make_unique<StructurePoolBlockRule>(std::move(sourceBlock_pro1), std::move(targetBlock), &mossyStoneBricks);
+    auto blockRule_2 =
+        std::make_unique<StructurePoolBlockRule>(std::move(sourceBlock_pro1), std::move(targetBlock), &crackedStoneBricks);
+    auto blockRule_3 =
+        std::make_unique<StructurePoolBlockRule>(std::move(sourceBlock_pro2), std::move(targetBlock), &cobblestone);
+
+
     auto ruleList = std::make_unique<std::vector<std::unique_ptr<StructurePoolBlockRule>>>();
 
-    ruleList->push_back(std::move(blockRule));
+    ruleList->emplace_back(std::move(blockRule_1));
+    ruleList->emplace_back(std::move(blockRule_2));
+    ruleList->emplace_back(std::move(blockRule_3));
 
-    jigsawBlockRulesRegistry->registerBlockRules("custom:custom_structure_block_rule", std::move(ruleList));
+    jigsawBlockRulesRegistry->registerBlockRules("mike:stone_brick_replacement_jig", std::move(ruleList));
+
+    // br::worldgen::processors::BlockRules::Test block_test;
+    // block_test.mData = br::worldgen::processors::BlockRules::RandomBlockMatch(stoneBricks.mLegacyBlock.get(), 0.2);
+
+    // auto blockRule_1 = br::worldgen::processors::RuleSet::from(block_test, mossyStoneBricks);
+    // auto blockRule_2 = br::worldgen::processors::RuleSet::from(block_test, crackedStoneBricks);
+    // auto blockRule_3 = br::worldgen::processors::RuleSet::from(block_test, cobblestone);
+
+    // auto ruleList = br::worldgen::StructureProcessor::Rule({blockRule_1, blockRule_2, blockRule_3});
+    // auto prot = br::worldgen::StructureProcessor::Protected(VanillaBlockTypeIds::RedstoneBlock());
+    // jigsawBlockRulesRegistry->record("mike:stone_brick_replacement", {ruleList, prot});
+
 }
 
 void CustomJigsawStructureElements::initialize(
@@ -52,45 +80,124 @@ void CustomJigsawStructureElements::initialize(
 ) {
     auto& jigsawBlockRulesRegistry       = jigsawRegistry.mJigsawBlockRulesRegistry;
     auto& jigsawStructureElementRegistry = jigsawRegistry.mJigsawElementRegistry;
-    auto  ruleList                       = jigsawBlockRulesRegistry->lookupByName("custom:custom_structure_block_rule");
+    auto  ruleList                       = jigsawBlockRulesRegistry->lookupByName("mike:stone_brick_replacement");
 
     // 每一个结构nbt文件都得这样注册进来，多个nbt结构文件的可以使用同一个Block Rule
+    // mike:5x5int
     jigsawStructureElementRegistry->registerStructureElement(
-        "mike:21room",
+        "mike:5x5intb",
         std::make_unique<StructurePoolElement>(
             manager,
-            "custom/21room",
+            "custom/beds5x5int",
             ruleList,
             nullptr,
             nullptr,
-            Projection::Rigid,
-            PostProcessSettings::None
+            Projection::TerrainMatching,
+            PostProcessSettings::All
+        )
+    );
+    jigsawStructureElementRegistry->registerStructureElement(
+        "mike:5x5intc",
+        std::make_unique<StructurePoolElement>(
+            manager,
+            "custom/chestcarpet5x5int",
+            ruleList,
+            nullptr,
+            nullptr,
+            Projection::TerrainMatching,
+            PostProcessSettings::All
+        )
+    );
+    jigsawStructureElementRegistry->registerStructureElement(
+        "mike:5x5intk",
+        std::make_unique<StructurePoolElement>(
+            manager,
+            "custom/kitchen5x5int",
+            ruleList,
+            nullptr,
+            nullptr,
+            Projection::TerrainMatching,
+            PostProcessSettings::All
         )
     );
 
+    //mike:ew7x4
     jigsawStructureElementRegistry->registerStructureElement(
-        "mike:ew7x4",
+        "mike:ew7x4h",
         std::make_unique<StructurePoolElement>(
             manager,
             "custom/ewhall",
             ruleList,
             nullptr,
             nullptr,
-            Projection::Rigid,
-            PostProcessSettings::None
+            Projection::TerrainMatching,
+            PostProcessSettings::All
+        )
+    );
+    jigsawStructureElementRegistry->registerStructureElement(
+        "mike:ew7x4r",
+        std::make_unique<StructurePoolElement>(
+            manager,
+            "custom/21room",
+            ruleList,
+            nullptr,
+            nullptr,
+            Projection::TerrainMatching,
+            PostProcessSettings::All
         )
     );
 
+    //mike:ns7x4
     jigsawStructureElementRegistry->registerStructureElement(
-        "mike:ns7x4",
+        "mike:ns7x4h",
         std::make_unique<StructurePoolElement>(
             manager,
             "custom/nshall",
             ruleList,
             nullptr,
             nullptr,
-            Projection::Rigid,
-            PostProcessSettings::None
+            Projection::TerrainMatching,
+            PostProcessSettings::All
+        )
+    );
+    jigsawStructureElementRegistry->registerStructureElement(
+        "mike:ns7x4r",
+        std::make_unique<StructurePoolElement>(
+            manager,
+            "custom/21room",
+            ruleList,
+            nullptr,
+            nullptr,
+            Projection::TerrainMatching,
+            PostProcessSettings::All
+        )
+    );
+
+    //mike:ewcap
+    jigsawStructureElementRegistry->registerStructureElement(
+        "mike:ewcap",
+        std::make_unique<StructurePoolElement>(
+            manager,
+            "custom/ewcap",
+            ruleList,
+            nullptr,
+            nullptr,
+            Projection::TerrainMatching,
+            PostProcessSettings::All
+        )
+    );
+
+    //mike:nacap
+    jigsawStructureElementRegistry->registerStructureElement(
+        "mike:nscap",
+        std::make_unique<StructurePoolElement>(
+            manager,
+            "custom/nscap",
+            ruleList,
+            nullptr,
+            nullptr,
+            Projection::TerrainMatching,
+            PostProcessSettings::All
         )
     );
 }
@@ -104,19 +211,31 @@ void CustomJigsawStructure::initialize(
     CustomJigsawStructureElements::initialize(manager, featureRegistry, registry);
     auto& jigsawStructureElementRegistry = registry.mJigsawElementRegistry;
 
-    std::vector<std::pair<StructurePoolElement const*, int>> templates_room{
-        {jigsawStructureElementRegistry->lookupByName("mike:21room"), 1}
+    std::vector<std::pair<StructurePoolElement const*, int>> templates_5x5{
+        {jigsawStructureElementRegistry->lookupByName("mike:5x5intb"), 4},
+        {jigsawStructureElementRegistry->lookupByName("mike:5x5intc"), 1},
+        {jigsawStructureElementRegistry->lookupByName("mike:5x5intk"), 1}
     };
     std::vector<std::pair<StructurePoolElement const*, int>> templates_ew{
-        {jigsawStructureElementRegistry->lookupByName("mike:ew7x4"), 1}
+        {jigsawStructureElementRegistry->lookupByName("mike:ew7x4h"), 4},
+        {jigsawStructureElementRegistry->lookupByName("mike:ew7x4r"), 1}
     };
     std::vector<std::pair<StructurePoolElement const*, int>> templates_ns{
-        {jigsawStructureElementRegistry->lookupByName("mike:ns7x4"), 1}
+        {jigsawStructureElementRegistry->lookupByName("mike:ns7x4h"), 4},
+        {jigsawStructureElementRegistry->lookupByName("mike:ns7x4r"), 1}
+    };
+    std::vector<std::pair<StructurePoolElement const*, int>> templates_ewcap{
+        {jigsawStructureElementRegistry->lookupByName("mike:ewcap"), 4}
+    };
+    std::vector<std::pair<StructurePoolElement const*, int>> templates_nscap{
+        {jigsawStructureElementRegistry->lookupByName("mike:nscap"), 4}
     };
 
-    registry.registerPool(std::make_unique<StructureTemplatePool>("mike:21room", "empty", templates_room));
-    registry.registerPool(std::make_unique<StructureTemplatePool>("mike:ew7x4", "empty", templates_ew));
-    registry.registerPool(std::make_unique<StructureTemplatePool>("mike:ns7x4", "empty", templates_ns));
+    registry.registerPool(std::make_unique<StructureTemplatePool>("mike:5x5int", "empty", templates_5x5));
+    registry.registerPool(std::make_unique<StructureTemplatePool>("mike:ew7x4", "mike:ewcap", templates_ew));
+    registry.registerPool(std::make_unique<StructureTemplatePool>("mike:ns7x4", "mike:nscap", templates_ns));
+    registry.registerPool(std::make_unique<StructureTemplatePool>("mike:ewcap", "empty", templates_ewcap));
+    registry.registerPool(std::make_unique<StructureTemplatePool>("mike:nscap", "empty", templates_nscap));
 }
 
 } // namespace custom_structure

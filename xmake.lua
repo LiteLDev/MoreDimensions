@@ -3,13 +3,14 @@ add_rules("mode.debug", "mode.release")
 add_repositories("liteldev-repo https://github.com/LiteLDev/xmake-repo.git")
 
 if is_config("target_type", "server") then
-    add_requires("levilamina a22a1e5ac62a1fdf9470e9711660d1cac36a0c2f", {configs = {target_type = "server"}})
+    add_requires("levilamina 1.2.0", {configs = {target_type = "server"}})
 else
-    add_requires("levilamina 1.1.0", {configs = {target_type = "client"}})
+    add_requires("levilamina 1.2.0", {configs = {target_type = "client"}})
 end
 
 add_requires("levibuildscript")
 add_requires("snappy 1.2.1")
+add_requires("preloader 1.15.2")
 
 if not has_config("vs_runtime") then
     set_runtimes("MD")
@@ -31,7 +32,7 @@ target("more-dimensions")
     add_rules("@levibuildscript/modpacker")
     add_cxflags( "/EHa", "/utf-8", "/W4", "/w44265", "/w44289", "/w44296", "/w45263", "/w44738", "/w45204")
     add_defines("NOMINMAX", "UNICODE", "MORE_DIMENSIONS_EXPORTS")
-    add_packages("levilamina", "snappy")
+    add_packages("levilamina", "snappy", "preloader")
     set_exceptions("none")
     set_kind("shared")
     set_languages("c++20")

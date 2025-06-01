@@ -3,7 +3,9 @@
 #include <iostream>
 #include <vector>
 
-
+extern "C" {
+__declspec(dllimport) bool pl_notice(void* target);
+}
 namespace {
 struct AddressAndReg {
     DWORD                   func_rva_start;
@@ -126,5 +128,27 @@ void injectNaticeCode() {
     }
     for (auto& item : data) {
         PatchFunction(hModule, item.func_rva_start, item.func_rva_end, item.native_code);
+        if(item.func_rva_start == 0x12A9A9F){
+            void* funcp = (void*)((BYTE*)hModule + 0x12A9A80);
+            pl_notice(funcp);
+        }
     };
 };
+
+// BOOL APIENTRY DllMain(HMODULE hModule,
+//     DWORD  ul_reason_for_call,
+//     LPVOID lpReserved
+// )
+// {
+//     switch (ul_reason_for_call)
+//     {
+//     case DLL_PROCESS_ATTACH:
+//         injectNaticeCode();
+//         break;
+//     case DLL_THREAD_ATTACH:
+//     case DLL_THREAD_DETACH:
+//     case DLL_PROCESS_DETACH:
+//         break;
+//     }
+//     return TRUE;
+// }

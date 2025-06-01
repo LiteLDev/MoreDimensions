@@ -116,15 +116,12 @@ static void fakeChangeDimension(
     changeDimensionPacket.mPos             = pos;
     changeDimensionPacket.mRespawn         = true;
     changeDimensionPacket.mLoadingScreenId = {screedId};
-    std::cout<<"test id:"<< changeDimensionPacket.mDimensionId->id <<std::endl;
     ll::service::getLevel()->getPacketSender()->sendToClient(netId, changeDimensionPacket, SubClientId::PrimaryClient);
     PlayerActionPacket playerActionPacket;
     playerActionPacket.mAction    = PlayerActionType::ChangeDimensionAck;
     playerActionPacket.mRuntimeId = runtimeId;
-    std::cout<<"test1"<<std::endl;
     ll::service::getLevel()->getPacketSender()->sendToClient(netId, playerActionPacket, SubClientId::PrimaryClient);
     sendEmptyChunks(netId, pos, 3, true);
-    std::cout<<"test2"<<std::endl;
 }
 
 namespace CustomDimensionHookList {

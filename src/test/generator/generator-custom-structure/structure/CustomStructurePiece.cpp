@@ -23,18 +23,18 @@ namespace custom_structure {
 int CustomStructurePiece::
     generateHeightAtPosition(BlockPos const&, Dimension& dim, BlockVolume&, std::unordered_map<ChunkPos, std::unique_ptr<std::vector<short>>>&)
         const {
-    return dim.mSeaLevel + 1;
+    return dim.mSeaLevel + 2;
 };
 
 Block const* CustomStructurePiece::getSupportBlock(::BlockSource&, ::BlockPos const&, ::Block const&) const {
-    return &BlockTypeRegistry::getDefaultBlockState(VanillaBlockTypeIds::Netherrack(), 1);
+    return &BlockTypeRegistry::getDefaultBlockState(VanillaBlockTypeIds::GrassBlock());
 };
 
 Block const& CustomStructurePiece::getBeardStabilizeBlock(::Block const&) const {
-    return BlockTypeRegistry::getDefaultBlockState(VanillaBlockTypeIds::Netherrack(), 1);
+    return BlockTypeRegistry::getDefaultBlockState(VanillaBlockTypeIds::GrassBlock());
 };
 
-AdjustmentEffect CustomStructurePiece::getTerrainAdjustmentEffect() const { return AdjustmentEffect::BeardAndShave; };
+AdjustmentEffect CustomStructurePiece::getTerrainAdjustmentEffect() const { return AdjustmentEffect::Beard; };
 
 CustomStructurePiece::CustomStructurePiece(
     ::StructurePoolElement const& element,
@@ -55,7 +55,7 @@ void CustomStructurePiece::addPieces(
     VanillaBiomeTypes                             biomeType,
     Dimension&                                    dimension
 ) {
-    auto templates = pools.lookupByName("mike:21room");
+    auto templates = pools.lookupByName("mike:ns7x4");
     // templates.getRandomTemplate(random);
 
     auto lambda = [](StructurePoolElement const& element,
@@ -73,7 +73,7 @@ void CustomStructurePiece::addPieces(
     place.addPieces(
         *templates->mTemplates->at(index),
         position,
-        Rotation::Rotate90,
+        Rotation(random.nextInt(4)),
         "",
         {}
     );

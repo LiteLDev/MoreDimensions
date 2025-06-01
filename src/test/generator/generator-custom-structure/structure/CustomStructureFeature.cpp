@@ -33,7 +33,7 @@ bool CustomStructureFeature::getNearestGeneratedFeature(
 
 bool CustomStructureFeature::
     isFeatureChunk(::BiomeSource const&, ::Random& random, ::ChunkPos const& cpos, uint, ::IPreliminarySurfaceProvider const&, ::Dimension const&) {
-    int  salt    = 0x13272F0;
+    int  salt    = 39281139;
     uint newSeed = mSeed + salt + 0xF1565BD5 * (cpos.z / mMaxSpacing) - 0x66C60AF8 * (cpos.x / mMaxSpacing);
     random.mRandom->mObject.mHaveNextNextGaussian   = false;
     random.mRandom->mObject.mSeed                   = newSeed;
@@ -75,7 +75,7 @@ std::unique_ptr<::StructureStart> CustomStructureFeature::
 };
 
 CustomStructureFeature::CustomStructureFeature(uint seed, uint minSpacing, uint maxSpacing)
-: StructureFeature(seed, HashedString("custom:custom_structure_test")),
+: StructureFeature(seed, HashedString("mike:basic_dungeon")),
   mSeed(seed),
   mMinSpacing(minSpacing),
   mMaxSpacing(maxSpacing) {}
