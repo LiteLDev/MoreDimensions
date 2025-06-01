@@ -1,18 +1,36 @@
 
 #include "CustomDimensionConfig.h"
 
+#include "mc/nbt/Tag.h"
 #include "more_dimensions/MoreDimenison.h"
+
+#include "snappy.h"
 
 #include "ll/api/Config.h"
 #include "ll/api/service/Bedrock.h"
+#include "ll/api/utils/Base64Utils.h"
 #include "ll/api/utils/ErrorUtils.h"
 
+#include "mc/nbt/CompoundTag.h"
 #include "mc/server/PropertiesSettings.h"
+
 
 namespace more_dimensions::CustomDimensionConfig {
 
 // static ll::Logger            logger("CustomDimensionConfig");
 auto& logger = MoreDimenison::getInstance().getSelf().getLogger();
+
+std::string compress(std::string_view sv) {
+    std::string res;
+    snappy::Compress(sv.data(), sv.size(), &res);
+    return res;
+}
+
+std::string decompress(std::string_view sv) {
+    std::string res;
+    snappy::Uncompress(sv.data(), sv.size(), &res);
+    return res;
+}
 
 static std::filesystem::path dimensionConfigPath{u8"./worlds"};
 
@@ -27,7 +45,25 @@ void setDimensionConfigPath() {
 bool loadConfigFile() {
     if (std::ifstream(dimensionConfigPath).good()) {
         try {
-            if (ll::config::loadConfig(getConfig(), dimensionConfigPath)) {
+            if (ll::config::loadConfig(
+                    getConfig(),
+                    dimensionConfigPath,
+                    [](Config& config, nlohmann::ordered_json& data) {
+                        if (data["version"] < config.version) {
+                            for (auto& item : data["dimensionList"]) {
+                                item["sNbt"] =
+                                    CompoundTag::fromBinaryNbt(decompress(ll::base64_utils::decode(item["base64Nbt"])))
+                                        ->toSnbt(SnbtFormat::Minimize);
+                                item.erase("base64Nbt");
+                            }
+                        }
+                        data.erase("version");
+                        auto patch = ll::reflection::serialize<nlohmann::ordered_json>(config);
+                        patch.value().merge_patch(data);
+                        data = *std::move(patch);
+                        return true;
+                    }
+                )) {
                 logger.info("Config file load success!");
                 return true;
             }
@@ -51,7 +87,7 @@ bool loadConfigFile() {
 }
 
 bool saveConfigFile() {
-    bool result = false;
+    bool result{};
     try {
         result = ll::config::saveConfig(getConfig(), dimensionConfigPath);
     } catch (...) {
@@ -64,4 +100,17 @@ bool saveConfigFile() {
     }
     return true;
 }
+
+// void updateConfigVersion() {
+//     if (getConfig().version < 4) {
+//         logger.info("Config need update");
+//         auto config = getConfig();
+//         for (auto& item : config.dimensionList) {
+//             auto oldStrNbt        = item.second.base64Nbt;
+//             item.second.base64Nbt = CompoundTag::fromBinaryNbt(decompress(ll::base64_utils::decode(oldStrNbt)))
+//                                         ->toSnbt(SnbtFormat::Minimize);
+//         }
+//         saveConfigFile();
+//     }
+// }
 } // namespace more_dimensions::CustomDimensionConfig

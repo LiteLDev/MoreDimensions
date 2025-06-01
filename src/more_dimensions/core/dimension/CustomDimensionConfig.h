@@ -1,9 +1,5 @@
 #pragma once
 
-#include "ll/api/base/StdInt.h"
-
-#include "mc/world/level/GeneratorType.h"
-
 #include <string>
 #include <unordered_map>
 
@@ -12,13 +8,13 @@ namespace more_dimensions::CustomDimensionConfig {
 struct Config {
     struct Info {
         int         dimId{};
-        std::string base64Nbt;
+        std::string sNbt;
     };
-    int                                   version = 3;
+    int                                   version = 4;
     std::unordered_map<std::string, Info> dimensionList{};
 };
 
-static Config& getConfig() {
+inline Config& getConfig() {
     static Config instance;
     return instance;
 }

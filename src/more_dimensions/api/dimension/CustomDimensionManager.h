@@ -2,9 +2,9 @@
 
 #include "more_dimensions/core/Macros.h"
 
+#include "mc/deps/core/utility/AutomaticID.h"
 #include "mc/nbt/CompoundTag.h"
 #include "mc/world/level/GeneratorType.h"
-#include <mc/deps/core/utility/AutomaticID.h>
 
 class Dimension;
 class ILevel;

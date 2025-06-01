@@ -1,6 +1,7 @@
 
 #include "CustomDimensionManager.h"
 
+#include "mc/nbt/Tag.h"
 #include "more_dimensions/MoreDimenison.h"
 #include "more_dimensions/core/dimension/CustomDimensionConfig.h"
 #include "more_dimensions/core/dimension/FakeDimensionId.h"
@@ -183,7 +184,7 @@ CustomDimensionManager::CustomDimensionManager() : impl(std::make_unique<Impl>()
                 name,
                 Impl::DimensionInfo{
                     info.dimId,
-                    *CompoundTag::fromBinaryNbt(decompress(ll::base64_utils::decode(info.base64Nbt)))
+                    *CompoundTag::fromSnbt(info.sNbt)
                 }
             );
         }
@@ -261,7 +262,7 @@ DimensionType CustomDimensionManager::addDimension(
         impl->customDimensionMap.emplace(dimName, info);
         CustomDimensionConfig::getConfig().dimensionList.emplace(
             dimName,
-            CustomDimensionConfig::Config::Info{info.id, ll::base64_utils::encode(compress(info.nbt.toBinaryNbt()))}
+            CustomDimensionConfig::Config::Info{info.id, info.nbt.toSnbt(SnbtFormat::Minimize)}
         );
         CustomDimensionConfig::saveConfigFile();
     }
