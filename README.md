@@ -6,7 +6,7 @@ More than three dimensions on BDS!
 
 ## Install
 
-Install with [lip](https://github.com/lippkg/lip):
+Install with [lip](https://github.com/futrime/lip):
 
 ```sh
 lip install github.com/LiteLDev/MoreDimensions
