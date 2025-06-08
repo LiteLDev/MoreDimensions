@@ -8,6 +8,8 @@ class FeatureRegistry;
 class JigsawStructureRegistry;
 class WorkerPool;
 class StructureManager;
+class BaseGameVersion;
+class Experiments;
 
 namespace custom_structure {
 
@@ -17,7 +19,9 @@ namespace CustomJigsawStructure {
 void initialize(
     Bedrock::NotNullNonOwnerPtr<::StructureManager> manager,
     FeatureRegistry&                                featureRegistry,
-    JigsawStructureRegistry&                        registry
+    JigsawStructureRegistry&                        registry,
+    BaseGameVersion const&                          baseGameVersion,
+    Experiments const&                              experiments
 );
 
 } // namespace CustomJigsawStructure

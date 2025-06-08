@@ -28,7 +28,7 @@ bool CustomStructureFeature::getNearestGeneratedFeature(
     bool                                   mustBeInNewChunks,
     ::std::optional<::HashedString> const& biomeTag
 ) {
-    return false;
+    return StructureFeature::findNearestFeaturePositionBySpacing(dimension, preliminarySurfaceLevel, *this, biomeTag, biomeSource, origin, pos, mMaxSpacing, mMinSpacing, 39281139, true, 0, mustBeInNewChunks);
 };
 
 bool CustomStructureFeature::

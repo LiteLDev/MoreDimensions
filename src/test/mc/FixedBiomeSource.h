@@ -55,6 +55,9 @@ public:
     // vIndex: 9
     virtual bool hasByHashId(uint64 id) const /*override*/;
 
+    // vIndex: 10
+    virtual ::BiomeSourceType const getType() const /*override*/;
+
     // vIndex: 0
     virtual ~FixedBiomeSource() /*override*/ = default;
     // NOLINTEND

@@ -23,7 +23,7 @@ namespace custom_structure {
 int CustomStructurePiece::
     generateHeightAtPosition(BlockPos const&, Dimension& dim, BlockVolume&, std::unordered_map<ChunkPos, std::unique_ptr<std::vector<short>>>&)
         const {
-    return dim.mSeaLevel + 2;
+    return dim.mSeaLevel + 100;
 };
 
 Block const* CustomStructurePiece::getSupportBlock(::BlockSource&, ::BlockPos const&, ::Block const&) const {

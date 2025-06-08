@@ -14,12 +14,17 @@
 #include "mc/world/level/levelgen/structure/registry/JigsawStructureRegistry.h"
 #include "mc/world/level/levelgen/structure/registry/StructurePools.h"
 #include "mc/world/level/levelgen/structure/structurepools/StructurePoolBlockPredicateAlwaysTrue.h"
-#include "test/mc/StructurePoolBlockPredicateBlockMatchRandom.h"
-#include "test/mc/StructurePoolBlockRule.h"
 #include "mc/world/level/levelgen/structure/structurepools/StructurePoolElement.h"
 #include "mc/world/level/levelgen/structure/structurepools/StructureTemplatePool.h"
 #include "mc/world/level/storage/Experiments.h"
+#include "test/mc/StructurePoolBlockPredicateBlockMatchRandom.h"
+#include "test/mc/StructurePoolBlockRule.h"
 
+// #include "mc/world/level/storage/Experiments.h"
+// #include "test/mc/StructureTemplateRegistrationContext.h"
+// #include "test/mc/WeightedStructureTemplateRegistration.h"
+
+// #include <initializer_list>
 #include <memory>
 
 namespace custom_structure {
@@ -28,12 +33,12 @@ void CustomJigsawStructureBlockRules::initialize(JigsawStructureRegistry& regist
     auto& jigsawBlockRulesRegistry = registry.mJigsawBlockRulesRegistry;
 
     // input_predicate block
-    auto& stoneBricks       = BlockTypeRegistry::getDefaultBlockState(VanillaBlockTypeIds::StoneBricks());
+    auto& stoneBricks = BlockTypeRegistry::getDefaultBlockState(VanillaBlockTypeIds::StoneBricks());
 
     // output_state blocks
-    auto& mossyStoneBricks = BlockTypeRegistry::getDefaultBlockState(VanillaBlockTypeIds::MossyStoneBricks());
+    auto& mossyStoneBricks   = BlockTypeRegistry::getDefaultBlockState(VanillaBlockTypeIds::MossyStoneBricks());
     auto& crackedStoneBricks = BlockTypeRegistry::getDefaultBlockState(VanillaBlockTypeIds::CrackedStoneBricks());
-    auto& cobblestone = BlockTypeRegistry::getDefaultBlockState(VanillaBlockTypeIds::Cobblestone());
+    auto& cobblestone        = BlockTypeRegistry::getDefaultBlockState(VanillaBlockTypeIds::Cobblestone());
 
     // input_predicate
     std::unique_ptr<IStructurePoolBlockPredicate> sourceBlock_pro1 =
@@ -44,10 +49,16 @@ void CustomJigsawStructureBlockRules::initialize(JigsawStructureRegistry& regist
     std::unique_ptr<IStructurePoolBlockPredicate> targetBlock =
         std::make_unique<StructurePoolBlockPredicateAlwaysTrue>();
 
-    auto blockRule_1 =
-        std::make_unique<StructurePoolBlockRule>(std::move(sourceBlock_pro1), std::move(targetBlock), &mossyStoneBricks);
-    auto blockRule_2 =
-        std::make_unique<StructurePoolBlockRule>(std::move(sourceBlock_pro1), std::move(targetBlock), &crackedStoneBricks);
+    auto blockRule_1 = std::make_unique<StructurePoolBlockRule>(
+        std::move(sourceBlock_pro1),
+        std::move(targetBlock),
+        &mossyStoneBricks
+    );
+    auto blockRule_2 = std::make_unique<StructurePoolBlockRule>(
+        std::move(sourceBlock_pro1),
+        std::move(targetBlock),
+        &crackedStoneBricks
+    );
     auto blockRule_3 =
         std::make_unique<StructurePoolBlockRule>(std::move(sourceBlock_pro2), std::move(targetBlock), &cobblestone);
 
@@ -58,7 +69,7 @@ void CustomJigsawStructureBlockRules::initialize(JigsawStructureRegistry& regist
     ruleList->emplace_back(std::move(blockRule_2));
     ruleList->emplace_back(std::move(blockRule_3));
 
-    jigsawBlockRulesRegistry->registerBlockRules("mike:stone_brick_replacement_jig", std::move(ruleList));
+    jigsawBlockRulesRegistry->registerBlockRules("mike:stone_brick_replacement", std::move(ruleList));
 
     // br::worldgen::processors::BlockRules::Test block_test;
     // block_test.mData = br::worldgen::processors::BlockRules::RandomBlockMatch(stoneBricks.mLegacyBlock.get(), 0.2);
@@ -70,7 +81,6 @@ void CustomJigsawStructureBlockRules::initialize(JigsawStructureRegistry& regist
     // auto ruleList = br::worldgen::StructureProcessor::Rule({blockRule_1, blockRule_2, blockRule_3});
     // auto prot = br::worldgen::StructureProcessor::Protected(VanillaBlockTypeIds::RedstoneBlock());
     // jigsawBlockRulesRegistry->record("mike:stone_brick_replacement", {ruleList, prot});
-
 }
 
 void CustomJigsawStructureElements::initialize(
@@ -93,7 +103,7 @@ void CustomJigsawStructureElements::initialize(
             nullptr,
             nullptr,
             Projection::TerrainMatching,
-            PostProcessSettings::All
+            PostProcessSettings::Beard
         )
     );
     jigsawStructureElementRegistry->registerStructureElement(
@@ -105,7 +115,7 @@ void CustomJigsawStructureElements::initialize(
             nullptr,
             nullptr,
             Projection::TerrainMatching,
-            PostProcessSettings::All
+            PostProcessSettings::Beard
         )
     );
     jigsawStructureElementRegistry->registerStructureElement(
@@ -117,11 +127,11 @@ void CustomJigsawStructureElements::initialize(
             nullptr,
             nullptr,
             Projection::TerrainMatching,
-            PostProcessSettings::All
+            PostProcessSettings::Beard
         )
     );
 
-    //mike:ew7x4
+    // mike:ew7x4
     jigsawStructureElementRegistry->registerStructureElement(
         "mike:ew7x4h",
         std::make_unique<StructurePoolElement>(
@@ -131,7 +141,7 @@ void CustomJigsawStructureElements::initialize(
             nullptr,
             nullptr,
             Projection::TerrainMatching,
-            PostProcessSettings::All
+            PostProcessSettings::Beard
         )
     );
     jigsawStructureElementRegistry->registerStructureElement(
@@ -143,11 +153,11 @@ void CustomJigsawStructureElements::initialize(
             nullptr,
             nullptr,
             Projection::TerrainMatching,
-            PostProcessSettings::All
+            PostProcessSettings::Beard
         )
     );
 
-    //mike:ns7x4
+    // mike:ns7x4
     jigsawStructureElementRegistry->registerStructureElement(
         "mike:ns7x4h",
         std::make_unique<StructurePoolElement>(
@@ -157,7 +167,7 @@ void CustomJigsawStructureElements::initialize(
             nullptr,
             nullptr,
             Projection::TerrainMatching,
-            PostProcessSettings::All
+            PostProcessSettings::Beard
         )
     );
     jigsawStructureElementRegistry->registerStructureElement(
@@ -169,11 +179,11 @@ void CustomJigsawStructureElements::initialize(
             nullptr,
             nullptr,
             Projection::TerrainMatching,
-            PostProcessSettings::All
+            PostProcessSettings::Beard
         )
     );
 
-    //mike:ewcap
+    // mike:ewcap
     jigsawStructureElementRegistry->registerStructureElement(
         "mike:ewcap",
         std::make_unique<StructurePoolElement>(
@@ -183,11 +193,11 @@ void CustomJigsawStructureElements::initialize(
             nullptr,
             nullptr,
             Projection::TerrainMatching,
-            PostProcessSettings::All
+            PostProcessSettings::Beard
         )
     );
 
-    //mike:nacap
+    // mike:nacap
     jigsawStructureElementRegistry->registerStructureElement(
         "mike:nscap",
         std::make_unique<StructurePoolElement>(
@@ -197,7 +207,7 @@ void CustomJigsawStructureElements::initialize(
             nullptr,
             nullptr,
             Projection::TerrainMatching,
-            PostProcessSettings::All
+            PostProcessSettings::Beard
         )
     );
 }
@@ -205,11 +215,15 @@ void CustomJigsawStructureElements::initialize(
 void CustomJigsawStructure::initialize(
     Bedrock::NotNullNonOwnerPtr<::StructureManager> manager,
     FeatureRegistry&                                featureRegistry,
-    JigsawStructureRegistry&                        registry
+    JigsawStructureRegistry&                        registry,
+    BaseGameVersion const&                          baseGameVersion,
+    Experiments const&                              experiments
 ) {
     CustomJigsawStructureBlockRules::initialize(registry);
     CustomJigsawStructureElements::initialize(manager, featureRegistry, registry);
     auto& jigsawStructureElementRegistry = registry.mJigsawElementRegistry;
+
+    // auto ruleList = registry.mJigsawBlockRulesRegistry->lookupByName("mike:stone_brick_replacement");
 
     std::vector<std::pair<StructurePoolElement const*, int>> templates_5x5{
         {jigsawStructureElementRegistry->lookupByName("mike:5x5intb"), 4},
@@ -236,6 +250,45 @@ void CustomJigsawStructure::initialize(
     registry.registerPool(std::make_unique<StructureTemplatePool>("mike:ns7x4", "mike:nscap", templates_ns));
     registry.registerPool(std::make_unique<StructureTemplatePool>("mike:ewcap", "empty", templates_ewcap));
     registry.registerPool(std::make_unique<StructureTemplatePool>("mike:nscap", "empty", templates_nscap));
+
+    // StructureTemplateRegistrationContext
+    //     context{manager, jigsawStructureElementRegistry, featureRegistry, baseGameVersion, experiments};
+
+    // std::initializer_list<WeightedStructureTemplateRegistration> templates_5x5{
+    //     {StructurePoolElement::single("mike:5x5intb", ruleList, {}, {}), 4},
+    //     {StructurePoolElement::single("mike:5x5intc", ruleList, {}, {}), 1},
+    //     {StructurePoolElement::single("mike:5x5intk", ruleList, {}, {}), 1}
+    // };
+    // std::initializer_list<WeightedStructureTemplateRegistration> templates_ew{
+    //     {StructurePoolElement::single("mike:ew7x4h", ruleList, {}, {}), 4},
+    //     {StructurePoolElement::single("mike:ew7x4r", ruleList, {}, {}), 1}
+    // };
+    // std::initializer_list<WeightedStructureTemplateRegistration> templates_ns{
+    //     {StructurePoolElement::single("mike:ns7x4h", ruleList, {}, {}), 4},
+    //     {StructurePoolElement::single("mike:ns7x4r", ruleList, {}, {}), 1}
+    // };
+    // std::initializer_list<WeightedStructureTemplateRegistration> templates_ewcap{
+    //     {StructurePoolElement::single("mike:ewcap", ruleList, {}, {}), 4}
+    // };
+    // std::initializer_list<WeightedStructureTemplateRegistration> templates_nscap{
+    //     {StructurePoolElement::single("mike:nscap", ruleList, {}, {}), 4}
+    // };
+
+    // registry.registerPool(
+    //     std::make_unique<StructureTemplatePool>(context, "mike:5x5int", "empty", Projection::Invalid, templates_5x5)
+    // );
+    // registry.registerPool(
+    //     std::make_unique<StructureTemplatePool>(context, "mike:ew7x4", "mike:ewcap", Projection::Invalid, templates_ew)
+    // );
+    // registry.registerPool(
+    //     std::make_unique<StructureTemplatePool>(context, "mike:ns7x4", "mike:nscap", Projection::Invalid, templates_ns)
+    // );
+    // registry.registerPool(
+    //     std::make_unique<StructureTemplatePool>(context, "mike:ewcap", "empty", Projection::Invalid, templates_ewcap)
+    // );
+    // registry.registerPool(
+    //     std::make_unique<StructureTemplatePool>(context, "mike:nscap", "empty", Projection::Invalid, templates_nscap)
+    // );
 }
 
 } // namespace custom_structure
@@ -252,7 +305,13 @@ LL_AUTO_TYPE_STATIC_HOOK(
     BaseGameVersion const&                        baseGameVersion,
     Experiments const&                            experiments
 ) {
+    custom_structure::CustomJigsawStructure::initialize(
+        structureManager,
+        featureRegistry,
+        jigsawStructureRegistry,
+        baseGameVersion,
+        experiments
+    );
     origin(structureManager, featureRegistry, jigsawStructureRegistry, baseGameVersion, experiments);
-    custom_structure::CustomJigsawStructure::initialize(structureManager, featureRegistry, jigsawStructureRegistry);
     return;
 };
