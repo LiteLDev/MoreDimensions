@@ -51,7 +51,7 @@ std::vector<AddressAndReg> data = {
     {0x0d013f0, 0x0d01657, 0x0d01683, {0x89, 0xcf}                     },
     {0x10fef90, 0x10ff015, 0x10ff04d, {0x89, 0xc8}                     },
     {0x25824e0, 0x2582560, 0x25825c2, {0x89, 0xc8}                     },
-    {0x2a572d0, 0x25687a5, 0x25687ea, {0x89, 0x8e, 0xe0, 0xa, 0x0, 0x0}},
+    {0x25681d0, 0x25687a5, 0x25687ea, {0x89, 0x8e, 0xe0, 0xa, 0x0, 0x0}},
     {0x2d2c450, 0x2d2c5c1, 0x2d2c5ed, {0x89, 0xc8}                     },
     {0x2d2fcd0, 0x2d2fe6e, 0x2d2fe9a, {0x89, 0xc8}                     },
     {0x31ff0b0, 0x31ff164, 0x31ff190, {0x89, 0xc8}                     },
@@ -133,21 +133,3 @@ void injectNaticeCode() {
         pl_notice(funcp);
     };
 };
-
-// BOOL APIENTRY DllMain(HMODULE hModule,
-//     DWORD  ul_reason_for_call,
-//     LPVOID lpReserved
-// )
-// {
-//     switch (ul_reason_for_call)
-//     {
-//     case DLL_PROCESS_ATTACH:
-//         injectNaticeCode();
-//         break;
-//     case DLL_THREAD_ATTACH:
-//     case DLL_THREAD_DETACH:
-//     case DLL_PROCESS_DETACH:
-//         break;
-//     }
-//     return TRUE;
-// }
