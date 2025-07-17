@@ -4,6 +4,7 @@
 
 // auto generated inclusion list
 #include "mc/world/level/biome/source/BiomeSource.h"
+#include "mc/world/level/biome/source/BiomeSourceType.h"
 
 // auto generated forward declare list
 // clang-format off
@@ -37,7 +38,9 @@ public:
     virtual ::Biome const* getBiome(::BlockPos const& blockPos) const /*override*/;
 
     // vIndex: 6
-    virtual ::Biome const* getBiome(::GetBiomeOptions const& getBiomeOptions) const /*override*/;
+    virtual ::Biome const* getBiome(::GetBiomeOptions const& getBiomeOptions) const /*override*/{
+        return &mFixedBiome;
+    };
 
     // vIndex: 5
     virtual ::Biome const* getBiome(int blockX, int blockY, int blockZ) const /*override*/;
@@ -50,10 +53,10 @@ public:
     getBiomeArea(::BoundingBox const& area, uint scale, ::GetBiomeOptions const& getBiomeOptions) const /*override*/;
 
     // vIndex: 8
-    virtual bool has(uint64 id) const /*override*/;
+    virtual bool hasBiomeById(ushort id) const /*override*/;
 
     // vIndex: 9
-    virtual bool hasByHashId(uint64 id) const /*override*/;
+    virtual bool hasBiomeByNameHash(uint64 hash) const /*override*/;
 
     // vIndex: 10
     virtual ::BiomeSourceType const getType() const /*override*/;
@@ -87,14 +90,16 @@ public:
     MCAPI ::BiomeArea
     $getBiomeArea(::BoundingBox const& area, uint scale, ::GetBiomeOptions const& getBiomeOptions) const;
 
-    MCAPI bool $has(uint64 id) const;
+    MCAPI bool $hasBiomeById(ushort id) const;
 
-    MCAPI bool $hasByHashId(uint64 id) const;
+    MCAPI bool $hasBiomeByNameHash(uint64 hash) const;
+
+    MCFOLD ::BiomeSourceType const $getType() const;
     // NOLINTEND
 
 public:
     // vftables
     // NOLINTBEGIN
-    MCAPI static void** $vftable();
+    MCNAPI static void** $vftable();
     // NOLINTEND
 };

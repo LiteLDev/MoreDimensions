@@ -51,8 +51,8 @@ namespace more_dimensions {
 namespace {
 using namespace ll::memory_literals;
 
-DWORD overworld_addStructureFeatures_rva = 0x044F390;
-DWORD nethrer_addStructureFeatures_rva = 0x044DC00;
+DWORD overworld_addStructureFeatures_rva = 0x0478550;
+DWORD nethrer_addStructureFeatures_rva = 0x0477110;
 
 HMODULE hModule = GetModuleHandle(L"bedrock_server_mod.exe");
 
