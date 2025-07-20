@@ -126,23 +126,23 @@ LL_TYPE_INSTANCE_HOOK(
 }
 
 // 由于这个的调用在维度注册之前，所以使用AUTO
-LL_AUTO_TYPE_INSTANCE_HOOK(
-    PropertiesSettingsisClientSideGenEnabledHook,
-    HookPriority::Normal,
-    DedicatedServer,
-    &DedicatedServer::runDedicatedServerLoop,
-    DedicatedServer::StartResult,
-    Core::FilePathManager&              filePathManager,
-    PropertiesSettings&                 properties,
-    LevelSettings&                      settings,
-    AllowListFile&                      userAllowList,
-    std::unique_ptr<PermissionsFile>&   permissionsFile,
-    Bedrock::ActivationArguments const& args,
-    TestConfig&                         testConfig
-) {
-    properties.mClientSideGenerationEnabled = false;
-    return origin(filePathManager, properties, settings, userAllowList, permissionsFile, args, testConfig);
-}
+// LL_AUTO_TYPE_INSTANCE_HOOK(
+//     PropertiesSettingsisClientSideGenEnabledHook,
+//     HookPriority::Normal,
+//     DedicatedServer,
+//     &DedicatedServer::runDedicatedServerLoop,
+//     DedicatedServer::StartResult,
+//     Core::FilePathManager&              filePathManager,
+//     PropertiesSettings&                 properties,
+//     LevelSettings&                      settings,
+//     AllowListFile&                      userAllowList,
+//     std::unique_ptr<PermissionsFile>&   permissionsFile,
+//     Bedrock::ActivationArguments const& args,
+//     TestConfig&                         testConfig
+// ) {
+//     properties.mClientSideGenerationEnabled = false;
+//     return origin(filePathManager, properties, settings, userAllowList, permissionsFile, args, testConfig);
+// }
 
 // 1.21.50.10 unnecessary
 // registry dimensoin when in ll, must reload Dimension::getWeakRef
@@ -157,8 +157,8 @@ using HookReg = ll::memory::HookRegistrar<
     VanillaDimensionsFromSerializedIntHook,
     VanillaDimensionsFromSerializedIntHookI,
     // VanillaDimensionsToSerializedIntHook,
-    LevelStorageloadServerPlayerDataHook,
-    PropertiesSettingsisClientSideGenEnabledHook>;
+    LevelStorageloadServerPlayerDataHook
+    >;
 
 } // namespace CustomDimensionHookList
 
@@ -190,7 +190,7 @@ CustomDimensionManager::CustomDimensionManager() : impl(std::make_unique<Impl>()
         }
         impl->mNewDimensionId += static_cast<int>(impl->customDimensionMap.size());
     }
-    FakeDimensionId::getInstance();
+    // FakeDimensionId::getInstance();
     CustomDimensionHookList::HookReg::hook();
 };
 
