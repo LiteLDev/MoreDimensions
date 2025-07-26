@@ -51,10 +51,11 @@ namespace more_dimensions {
 namespace {
 using namespace ll::memory_literals;
 
-DWORD overworld_addStructureFeatures_rva = 0x044F390;
-DWORD nethrer_addStructureFeatures_rva = 0x044DC00;
+DWORD overworld_addStructureFeatures_rva = 0x685CFD0;
+DWORD nethrer_addStructureFeatures_rva = 0x685B8E0;
 
-HMODULE hModule = GetModuleHandle(L"bedrock_server_mod.exe");
+// HMODULE hModule = GetModuleHandle(L"bedrock_server_mod.exe");
+HMODULE hModule = GetModuleHandle(L"Minecraft.Windows.exe");
 
 static void* overworldAddress = (void*)((BYTE*)hModule + overworld_addStructureFeatures_rva);
 static void* netherAddress = (void*)((BYTE*)hModule + nethrer_addStructureFeatures_rva);

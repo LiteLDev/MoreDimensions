@@ -13,6 +13,7 @@
 
 #include "mc/nbt/CompoundTag.h"
 #include "mc/server/PropertiesSettings.h"
+#include "mc/world/level/storage/DBStorage.h"
 
 
 namespace more_dimensions::CustomDimensionConfig {
@@ -32,14 +33,21 @@ std::string decompress(std::string_view sv) {
     return res;
 }
 
-static std::filesystem::path dimensionConfigPath{u8"./worlds"};
+// static std::filesystem::path dimensionConfigPath{"C:/Users/Administrator/AppData/Local/Packages/Microsoft.MinecraftUWP_8wekyb3d8bbwe/AC/Levi/1.21.80.03"};
+static std::filesystem::path dimensionConfigPath;
 
 void setDimensionConfigPath() {
-    if (!ll::service::getLevel()) {
-        throw std::runtime_error("Level nullptr");
+    // if (!ll::service::getLevel()) {
+    //     throw std::runtime_error("Level nullptr");
+    // }
+    dimensionConfigPath /= ll::string_utils::str2u8str(ll::service::getDBStorage()->mFullPath->value);
+    if (ll::service::getDBStorage()) {
+        logger.debug("Path:{}",ll::service::getDBStorage()->mFullPath->value);
+    } else {
+        logger.debug("DBStorafe is nullptr!");
     }
-    // dimensionConfigPath /= ll::string_utils::str2u8str(ll::service::getPropertiesSettings()->mLevelName);
     dimensionConfigPath /= u8"dimension_config.json";
+    logger.debug("Config Path: {0}", dimensionConfigPath);
 }
 
 bool loadConfigFile() {

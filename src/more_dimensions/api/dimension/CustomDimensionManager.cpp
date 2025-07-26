@@ -17,12 +17,14 @@
 #include "mc/deps/core/math/Vec3.h"
 #include "mc/server/DedicatedServer.h"
 #include "mc/server/PropertiesSettings.h"
+#include "mc/server/module/VanillaGameModuleServer.h"
 #include "mc/util/BidirectionalUnorderedMap.h"
 #include "mc/world/actor/player/Player.h"
 #include "mc/world/level/Level.h"
 #include "mc/world/level/dimension/Dimension.h"
 #include "mc/world/level/dimension/VanillaDimensions.h"
 #include "mc/world/level/storage/LevelStorage.h"
+
 
 
 class Scheduler;
@@ -157,8 +159,7 @@ using HookReg = ll::memory::HookRegistrar<
     VanillaDimensionsFromSerializedIntHook,
     VanillaDimensionsFromSerializedIntHookI,
     // VanillaDimensionsToSerializedIntHook,
-    LevelStorageloadServerPlayerDataHook
-    >;
+    LevelStorageloadServerPlayerDataHook>;
 
 } // namespace CustomDimensionHookList
 
@@ -180,13 +181,7 @@ CustomDimensionManager::CustomDimensionManager() : impl(std::make_unique<Impl>()
     CustomDimensionConfig::loadConfigFile();
     if (!CustomDimensionConfig::getConfig().dimensionList.empty()) {
         for (auto& [name, info] : CustomDimensionConfig::getConfig().dimensionList) {
-            impl->customDimensionMap.emplace(
-                name,
-                Impl::DimensionInfo{
-                    info.dimId,
-                    *CompoundTag::fromSnbt(info.sNbt)
-                }
-            );
+            impl->customDimensionMap.emplace(name, Impl::DimensionInfo{info.dimId, *CompoundTag::fromSnbt(info.sNbt)});
         }
         impl->mNewDimensionId += static_cast<int>(impl->customDimensionMap.size());
     }
@@ -207,6 +202,7 @@ DimensionType CustomDimensionManager::getDimensionIdFromName(std::string const& 
 
 DimensionType CustomDimensionManager::addDimension(
     std::string const&                  dimName,
+    bool                                isClient,
     std::function<DimensionFactoryT>    factory,
     std::function<CompoundTag()> const& data
 ) {
@@ -231,16 +227,24 @@ DimensionType CustomDimensionManager::addDimension(
     };
 
     // registry create dimension function
-    if (!ll::service::getLevel()) {
-        throw std::runtime_error("Level is nullptr, cannot registry new dimension " + dimName);
+    if (isClient && !ll::service::getMultiPlayerLevel()) {
+        ll::service::getLevel()->getDimensionFactory().mFactoryMap.emplace(
+            dimName,
+            [dimName, info, factory = std::move(factory)](ILevel& ilevel, Scheduler& scheduler) -> OwnerPtr<Dimension> {
+                loggerMoreDimMag.debug("Server Level Create dimension, name: {}, id: {}", dimName, info.id.id);
+                return factory(DimensionFactoryInfo{ilevel, scheduler, info.nbt, info.id});
+            }
+        );
+    } else {
+        ll::service::getMultiPlayerLevel()->getDimensionFactory().mFactoryMap.emplace(
+            dimName,
+            [dimName, info, factory = std::move(factory)](ILevel& ilevel, Scheduler& scheduler) -> OwnerPtr<Dimension> {
+                loggerMoreDimMag.debug("Client Level Create dimension, name: {}, id: {}", dimName, info.id.id);
+                return factory(DimensionFactoryInfo{ilevel, scheduler, info.nbt, info.id});
+            }
+        );
+        return info.id;
     }
-    ll::service::getLevel()->getDimensionFactory().mFactoryMap.emplace(
-        dimName,
-        [dimName, info, factory = std::move(factory)](ILevel& ilevel, Scheduler& scheduler) -> OwnerPtr<Dimension> {
-            loggerMoreDimMag.debug("Create dimension, name: {}, id: {}", dimName, info.id.id);
-            return factory(DimensionFactoryInfo{ilevel, scheduler, info.nbt, info.id});
-        }
-    );
 
     // modify default dimension map
     loggerMoreDimMag.debug("Add new dimension to DimensionMap");
@@ -266,7 +270,6 @@ DimensionType CustomDimensionManager::addDimension(
         );
         CustomDimensionConfig::saveConfigFile();
     }
-
     // add to command enum
 
     ll::command::CommandRegistrar::getInstance().addEnumValues(

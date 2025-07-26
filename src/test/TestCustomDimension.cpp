@@ -5,66 +5,95 @@
 #include "ll/api/event/EventBus.h"
 // #include "ll/api/event/server/ServerStartedEvent.h"
 
+#include "mc/module/VanillaGameModuleClient.h"
+#include "mc/world/level/dimension/VanillaDimensionFactory.h"
+#include "more_dimensions/MoreDimenison.h"
 #include "more_dimensions/api/dimension/CustomDimensionManager.h"
 #include "more_dimensions/api/dimension/SimpleCustomDimension.h"
-#include "mc/world/level/dimension/VanillaDimensionFactory.h"
-#include "mc/module/VanillaGameModuleClient.h"
+#include "ll/api/service/Bedrock.h"
 
 #include "ll/api/memory/Hook.h"
 
-LL_AUTO_TYPE_INSTANCE_HOOK(
+auto& logger = more_dimensions::MoreDimenison::getInstance().getSelf().getLogger();
+LL_AUTO_STATIC_HOOK(
     RegisterDimensionFactory,
     ll::memory::HookPriority::Highest,
-    VanillaGameModuleClient,
-    &VanillaGameModuleClient::$configureLevel,
+    &VanillaDimensionFactory::registerDimensionTypes,
     void,
-    IClientInstance&                                       client,
-    Bedrock::NotNullNonOwnerPtr<::MultiPlayerLevel> const& level,
-    Experiments const&                                     experiments,
-    BaseGameVersion const&                                 baseGameVersion
+    OwnerPtrFactory<::Dimension, ::ILevel&, ::Scheduler&>& dimensionFactory
 ) {
-
-    origin(client, level, experiments, baseGameVersion);
+    origin(dimensionFactory);
     // simplate dimension test
     // vanilla overworld type dimension test
-    // try{
     more_dimensions::CustomDimensionManager::getInstance().addDimension<more_dimensions::SimpleCustomDimension>(
-        "testNewDimension"
+        "testNewDimension",
+        true
     );
 
     // vanilla flat type dimension test
     more_dimensions::CustomDimensionManager::getInstance()
-        .addDimension<more_dimensions::SimpleCustomDimension>("testNewFlatDimension", 345, GeneratorType::Flat);
+        .addDimension<more_dimensions::SimpleCustomDimension>("testNewFlatDimension", true, 345, GeneratorType::Flat);
 
     // vanilla nether type dimension test
-    more_dimensions::CustomDimensionManager::getInstance()
-        .addDimension<more_dimensions::SimpleCustomDimension>("testNewNetherDimension", 345, GeneratorType::Nether);
+    more_dimensions::CustomDimensionManager::getInstance().addDimension<more_dimensions::SimpleCustomDimension>(
+        "testNewNetherDimension",
+        true,
+        345,
+        GeneratorType::Nether
+    );
 
     // vanilla the end type dimension test
-    more_dimensions::CustomDimensionManager::getInstance()
-        .addDimension<more_dimensions::SimpleCustomDimension>("testNewTheEndDimension", 345, GeneratorType::TheEnd);
+    more_dimensions::CustomDimensionManager::getInstance().addDimension<more_dimensions::SimpleCustomDimension>(
+        "testNewTheEndDimension",
+        true,
+        345,
+        GeneratorType::TheEnd
+    );
 
     // vanilla void dimension test
     more_dimensions::CustomDimensionManager::getInstance()
-        .addDimension<more_dimensions::SimpleCustomDimension>("testNewVoidDimension", 345, GeneratorType::Void);
+        .addDimension<more_dimensions::SimpleCustomDimension>("testNewVoidDimension",true, 345, GeneratorType::Void);
 
     // custom diomension test
     // flat type generator village dimension test
-    more_dimensions::CustomDimensionManager::getInstance()
-        .addDimension<flat_village_dimension::FlatVillageDimension>("testFlatVillage");
+    more_dimensions::CustomDimensionManager::getInstance().addDimension<flat_village_dimension::FlatVillageDimension>(
+        "testFlatVillage",
+        true
+    );
 
     // flat type custom terrain dimension test
     more_dimensions::CustomDimensionManager::getInstance()
-        .addDimension<nxn_border_terrain::NxnBorderTerrainDimension>("testFlatTerrain", 5);
+        .addDimension<nxn_border_terrain::NxnBorderTerrainDimension>("testFlatTerrain", true, 5);
 
     // flat type custom structure dimension test
     // more_dimensions::CustomDimensionManager::getInstance()
     //     .addDimension<custom_structure_dimension::CustomStructureDimension>("testCustomStructure");
-    // }catch(...){
-    //     printf("Error");
-    // }
 };
 
+
+#include "mc/client/network/LegacyClientNetworkHandler.h"
+#include "mc/world/level/Level.h"
+
+// LL_AUTO_TYPE_INSTANCE_HOOK(
+//     LegacyHandleHook,
+//     ll::memory::HookPriority::Normal,
+//     LegacyClientNetworkHandler,
+//     &LegacyClientNetworkHandler::$handle,
+//     void,
+//     NetworkIdentifier const& source,
+//     StartGamePacket const& packet
+// ) {
+//     origin(source, packet);
+//     auto& dimensionMap = this->mUnk54d468.as<Bedrock::NonOwnerPointer<ILevel>>()->getDimensionFactory().mFactoryMap;
+//     if (dimensionMap.empty()) {
+//         logger.debug("Factory map is empty!");
+//     } else {
+//         logger.debug("Factory size is: {0}", dimensionMap.size());
+//         for (auto& item: dimensionMap) {
+//             logger.debug("dimName: {0} find!",item.first);
+//         }
+//     }
+// }
 
 // #include "ll/api/memory/Hook.h"
 // #include "mc/world/level/DimensionManager.h"
@@ -127,44 +156,35 @@ LL_AUTO_TYPE_INSTANCE_HOOK(
 // #include "mc/server/commands/ServerCommands.h"
 // #include "ll/api/service/Bedrock.h"
 // #include "mc/world/level/Level.h"
-// #include "mc/world/level/dimension/DimensionFactory.h"
+// #include "mc/world/actor/Actor.h"
 // #include "mc/world/level/dimension/VanillaDimensions.h"
-//
-// #include "mc/world/events/ServerInstanceEventCoordinator.h"
-//
+
 // struct ParamTest {
 //     int      p1;
 // };
-//
-// LL_AUTO_TYPE_INSTANCE_HOOK(
-//     registerBuiltinCommands,
+
+// LL_AUTO_STATIC_HOOK(
+//     RegisterTestCommands,
 //     ll::memory::HookPriority::Normal,
-//     ServerInstanceEventCoordinator,
-//     &ServerInstanceEventCoordinator::sendServerThreadStarted,
+//     &ServerCommands::setupStandardServer,
 //     void,
-//     ::ServerInstance& ins
-//) {
-//     origin(ins);
-//
-//     auto&       cmd    = ll::command::CommandRegistrar::getInstance().getOrCreateCommand("t", "test tttttt");
-//     static auto lambda = [](CommandOrigin const&, CommandOutput& output, ParamTest const& param) {
-//         output.success("p1: {}", param.p1);
-//         auto dim = ll::service::getLevel()->getOrCreateDimension(param.p1);
-//         if (dim.expired()) {
-//             std::cout<<"他宝贝的，销毁了"<<std::endl;
-//         } else {
-//             auto dim_ptr = dim.lock();
-//             std::cout<<"这是正常的:"<<dim_ptr->mName<<std::endl;
-//         }
-//         auto& dimM = ll::service::getLevel()->getDimensionManager();
-//         for (auto& item: dimM.mDimensions) {
-//             std::cout<<"Dimension have->" <<item.first.id<<std::endl;
-//         };
-//         for (auto item: VanillaDimensions::DimensionMap.mLeft) {
-//             std::cout<< "Dimension Factory->"<<item.first<<",name:"<<item.second<<std::endl;
-//             std::cout<< "Dimension Factory->"<<item.first<<",get
-//             name:"<<VanillaDimensions::toString(item.first)<<std::endl;
-//         }
+//     Minecraft&         server,
+//     std::string const& networkCommands,
+//     std::string const& networkTestCommands,
+//     PermissionsFile*   permissionsFile
+// ) {
+//     origin(server, networkCommands, networkTestCommands, permissionsFile);
+
+//     auto&       cmd    = ll::command::CommandRegistrar::getInstance().getOrCreateCommand("tpme", "test tttttt");
+//     static auto lambda = [](CommandOrigin const& origin, CommandOutput& output, ParamTest const& param) {
+//         auto self = origin.getEntity();
+//         Vec3 pos{1, 100, 1};
+//         self->teleport(pos, param.p1);
+//             output.success("Teleported {0} to {1} {2}",
+//                 origin.getName(),
+//                 VanillaDimensions::toString(param.p1),
+//                 pos.toString()
+//             );
 //     };
 //     cmd.overload<ParamTest>()
 //         .required("p1")

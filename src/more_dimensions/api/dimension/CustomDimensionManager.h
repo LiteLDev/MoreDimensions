@@ -5,10 +5,12 @@
 #include "mc/deps/core/utility/AutomaticID.h"
 #include "mc/nbt/CompoundTag.h"
 #include "mc/world/level/GeneratorType.h"
+#include "mc/util/OwnerPtrFactory.h"
 
 class Dimension;
 class ILevel;
 class Scheduler;
+class Level;
 
 namespace more_dimensions {
 
@@ -32,6 +34,7 @@ public:
 protected:
     MORE_DIMENSIONS_API DimensionType addDimension(
         std::string const&                  dimName,
+        bool                                isClient,
         std::function<DimensionFactoryT>    factory,
         std::function<CompoundTag()> const& newData
     );
@@ -43,9 +46,10 @@ public:
     getDimensionIdFromName(std::string const& dimName);
 
     template <std::derived_from<Dimension> D, class... Args>
-    DimensionType addDimension(std::string const& dimName, Args&&... args) {
+    DimensionType addDimension(std::string const& dimName, bool isClient, Args&&... args) {
         return addDimension(
             dimName,
+            isClient,
             [dimName](more_dimensions::DimensionFactoryInfo const& info) -> std::shared_ptr<Dimension> {
                 return std::make_shared<D>(dimName, info);
             },
