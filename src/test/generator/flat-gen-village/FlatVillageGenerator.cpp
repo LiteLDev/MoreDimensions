@@ -1,8 +1,5 @@
 #include "FlatVillageGenerator.h"
 
-#include "mc/world/level/chunk/ChunkState.h"
-#include "test/mc/FixedBiomeSource.h"
-
 #include "mc/deps/core/math/Random.h"
 #include "mc/platform/threading/Mutex.h"
 #include "mc/util/ThreadOwner.h"
@@ -11,13 +8,13 @@
 #include "mc/world/level/Level.h"
 #include "mc/world/level/biome/registry/BiomeRegistry.h"
 #include "mc/world/level/biome/registry/VanillaBiomeNames.h"
+#include "mc/world/level/biome/source/FixedBiomeSource.h"
+#include "mc/world/level/chunk/ChunkState.h"
 #include "mc/world/level/chunk/ChunkViewSource.h"
 #include "mc/world/level/chunk/LevelChunk.h"
 #include "mc/world/level/chunk/PostprocessingManager.h"
 #include "mc/world/level/dimension/Dimension.h"
 #include "mc/world/level/levelgen/v1/ChunkLocalNoiseCache.h"
-
-
 
 
 namespace flat_village_generator {
@@ -41,8 +38,7 @@ bool FlatVillageGenerator::postProcess(ChunkViewSource& neighborhood) {
     auto seed = mSeed;
 
     // 必须，需要给区块上锁
-    auto lockChunk =
-        levelChunk->mDimension.mPostProcessingManager->tryLock(levelChunk->mPosition, neighborhood);
+    auto lockChunk = levelChunk->mDimension.mPostProcessingManager->tryLock(levelChunk->mPosition, neighborhood);
 
     if (!lockChunk.has_value()) {
         return false;

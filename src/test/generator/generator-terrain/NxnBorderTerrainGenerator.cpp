@@ -4,9 +4,8 @@
 
 #include "NxnBorderTerrainGenerator.h"
 
-#include "test/mc/FixedBiomeSource.h"
-
 #include "mc/world/level/ChunkPos.h"
+#include "mc/world/level/biome/source/FixedBiomeSource.h"
 #include "mc/world/level/block/BedrockBlockNames.h"
 #include "mc/world/level/block/Block.h"
 #include "mc/world/level/block/BlockVolume.h"
@@ -16,7 +15,6 @@
 #include "mc/world/level/dimension/Dimension.h"
 #include "mc/world/level/levelgen/v1/ChunkLocalNoiseCache.h"
 
-#include "mc/world/level/block/Block.h"
 
 
 namespace nxn_border_terrain {
@@ -133,7 +131,7 @@ void NxnBorderTerrainGenerator::loadChunk(LevelChunk& levelchunk, bool forceImme
 
     levelchunk.recomputeHeightMap(false);
     mBiomeSource = std::make_unique<FixedBiomeSource>(*mBiome);
-    DividedPos2d<4> dividedPos2D;
+    DividedPos2d<4>      dividedPos2D;
     ChunkLocalNoiseCache chunkLocalNoiseCache(dividedPos2D, 8);
     mBiomeSource->fillBiomes(levelchunk, chunkLocalNoiseCache);
     levelchunk.setSaved();

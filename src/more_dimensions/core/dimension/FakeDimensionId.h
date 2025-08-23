@@ -1,8 +1,9 @@
 #pragma once
 
+#include "mc/client/renderer/rendergraph/Packet.h"
 #include "mc/deps/core/utility/AutomaticID.h"
-#include "mc/network/packet/Packet.h"
 #include "mc/platform/UUID.h"
+
 
 
 #include <mutex>
