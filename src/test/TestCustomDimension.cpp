@@ -43,8 +43,8 @@ static bool reg = [] {
             .addDimension<nxn_border_terrain::NxnBorderTerrainDimension>("testFlatTerrain", 5);
 
         // flat type custom structure dimension test
-        more_dimensions::CustomDimensionManager::getInstance()
-            .addDimension<custom_structure_dimension::CustomStructureDimension>("testCustomStructure");
+        // more_dimensions::CustomDimensionManager::getInstance()
+        //     .addDimension<custom_structure_dimension::CustomStructureDimension>("testCustomStructure");
     });
     return true;
 }();

@@ -42,19 +42,10 @@ FlatVillageDimension::createGenerator(br::worldgen::StructureSetRegistry const& 
     auto&                           levelData = mLevel.getLevelData();
 
     // 实例化我们写的Generator类
-    worldGenerator = std::make_unique<flat_village_generator::FlatVillageGenerator>(
-        *this,
-        seed,
-        levelData.mFlatWorldOptions
-    );
+    worldGenerator =
+        std::make_unique<flat_village_generator::FlatVillageGenerator>(*this, seed, levelData.mFlatWorldOptions);
     // structureSetRegistry里面仅有的土径结构村庄生成需要用到，所以我们拿一下
     std::vector<std::shared_ptr<const br::worldgen::StructureSet>> structureMap;
-    for (auto iter = structureSetRegistry.mStructureSets->begin(); iter != structureSetRegistry.mStructureSets->end();
-         iter++) {
-        structureMap.emplace_back(iter->second);
-    }
-    worldGenerator->mStructureFeatureRegistry->mGeneratorState->mSeed   = seed;
-    worldGenerator->mStructureFeatureRegistry->mGeneratorState->mSeed64 = LevelSeed64{seed};
 
     // 这个就相当于在这个生成器里注册结构了
     // VillageFeature的第二第三个参数是村庄之间的最大间隔与最小间隔
@@ -65,8 +56,6 @@ FlatVillageDimension::createGenerator(br::worldgen::StructureSetRegistry const& 
     worldGenerator->mStructureFeatureRegistry->mGeneratorState =
         br::worldgen::ChunkGeneratorStructureState::createFlat(seed, worldGenerator->getBiomeSource(), structureMap);
 
-    // 必须调用，初始化生成器
-    // worldGenerator->init();
     return std::move(worldGenerator);
 }
 
@@ -96,13 +85,7 @@ FlatVillageDimension::_wrapStorageForVersionCompatibility(std::unique_ptr<ChunkS
 
 Vec3 FlatVillageDimension::translatePosAcrossDimension(Vec3 const& fromPos, DimensionType fromId) const {
     Vec3 topos;
-    VanillaDimensions::convertPointBetweenDimensions(
-        fromPos,
-        topos,
-        fromId,
-        mId,
-        mLevel.getDimensionConversionData()
-    );
+    VanillaDimensions::convertPointBetweenDimensions(fromPos, topos, fromId, mId, mLevel.getDimensionConversionData());
     constexpr auto clampVal = 32000000.0f - 128.0f;
 
     topos.x = std::clamp(topos.x, -clampVal, clampVal);

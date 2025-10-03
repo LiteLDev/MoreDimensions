@@ -30,8 +30,8 @@ NxnBorderTerrainGenerator::NxnBorderTerrainGenerator(
 : FlatWorldGenerator(dimension, seed, generationOptionsJSON) {
     chunk_n           = chunkLength;
     auto  height      = mPrototype->mHeight;
-    auto& roadBlock   = BlockTypeRegistry::getDefaultBlockState(VanillaBlockTypeIds::GrassPath());
-    auto& borderBlock = BlockTypeRegistry::getDefaultBlockState(VanillaBlockTypeIds::SmoothStoneSlab());
+    auto& roadBlock   = BlockTypeRegistry::get().getDefaultBlockState(VanillaBlockTypeIds::GrassPath());
+    auto& borderBlock = BlockTypeRegistry::get().getDefaultBlockState(VanillaBlockTypeIds::SmoothStoneSlab());
 
     east_side_b.mBlocks  = {east_side.data(), east_side.data() + east_side.size()};
     south_side_b.mBlocks = {south_side.data(), south_side.data() + south_side.size()};
@@ -133,7 +133,7 @@ void NxnBorderTerrainGenerator::loadChunk(LevelChunk& levelchunk, bool forceImme
 
     levelchunk.recomputeHeightMap(false);
     mBiomeSource = std::make_unique<FixedBiomeSource>(*mBiome);
-    DividedPos2d<4> dividedPos2D;
+    DividedPos2d<4>      dividedPos2D;
     ChunkLocalNoiseCache chunkLocalNoiseCache(dividedPos2D, 8);
     mBiomeSource->fillBiomes(levelchunk, chunkLocalNoiseCache);
     levelchunk.setSaved();

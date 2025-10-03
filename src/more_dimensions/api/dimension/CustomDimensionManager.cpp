@@ -1,7 +1,6 @@
 
 #include "CustomDimensionManager.h"
 
-#include "mc/nbt/Tag.h"
 #include "more_dimensions/MoreDimenison.h"
 #include "more_dimensions/core/dimension/CustomDimensionConfig.h"
 #include "more_dimensions/core/dimension/FakeDimensionId.h"
@@ -15,6 +14,7 @@
 #include "ll/api/utils/StringUtils.h"
 
 #include "mc/deps/core/math/Vec3.h"
+#include "mc/nbt/Tag.h"
 #include "mc/server/DedicatedServer.h"
 #include "mc/server/PropertiesSettings.h"
 #include "mc/util/BidirectionalUnorderedMap.h"
@@ -70,7 +70,7 @@ LL_TYPE_STATIC_HOOK(
     Bedrock::Result<DimensionType>,
     Bedrock::Result<int>&& dim
 ) {
-    if (!VanillaDimensions::DimensionMap().mLeft.contains(*dim)) {
+    if (!VanillaDimensions::DimensionMap().mLeft.containsF(*dim)) {
         return VanillaDimensions::Undefined();
     }
     return *dim;
@@ -130,18 +130,13 @@ LL_AUTO_TYPE_INSTANCE_HOOK(
     PropertiesSettingsisClientSideGenEnabledHook,
     HookPriority::Normal,
     DedicatedServer,
-    &DedicatedServer::runDedicatedServerLoop,
-    DedicatedServer::StartResult,
-    Core::FilePathManager&              filePathManager,
-    PropertiesSettings&                 properties,
-    LevelSettings&                      settings,
-    AllowListFile&                      userAllowList,
-    std::unique_ptr<PermissionsFile>&   permissionsFile,
-    Bedrock::ActivationArguments const& args,
-    TestConfig&                         testConfig
+    &DedicatedServer::initializeHttp,
+    void,
+    PropertiesSettings const& properties
 ) {
-    properties.mClientSideGenerationEnabled = false;
-    return origin(filePathManager, properties, settings, userAllowList, permissionsFile, args, testConfig);
+    auto& properties_modiy = const_cast<PropertiesSettings&>(properties);
+    properties_modiy.mClientSideGenerationEnabled = false;
+    return origin(properties_modiy);
 }
 
 // 1.21.50.10 unnecessary
@@ -180,13 +175,7 @@ CustomDimensionManager::CustomDimensionManager() : impl(std::make_unique<Impl>()
     CustomDimensionConfig::loadConfigFile();
     if (!CustomDimensionConfig::getConfig().dimensionList.empty()) {
         for (auto& [name, info] : CustomDimensionConfig::getConfig().dimensionList) {
-            impl->customDimensionMap.emplace(
-                name,
-                Impl::DimensionInfo{
-                    info.dimId,
-                    *CompoundTag::fromSnbt(info.sNbt)
-                }
-            );
+            impl->customDimensionMap.emplace(name, Impl::DimensionInfo{info.dimId, *CompoundTag::fromSnbt(info.sNbt)});
         }
         impl->mNewDimensionId += static_cast<int>(impl->customDimensionMap.size());
     }

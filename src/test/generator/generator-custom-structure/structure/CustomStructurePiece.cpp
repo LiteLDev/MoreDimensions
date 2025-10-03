@@ -27,11 +27,11 @@ int CustomStructurePiece::
 };
 
 Block const* CustomStructurePiece::getSupportBlock(::BlockSource&, ::BlockPos const&, ::Block const&) const {
-    return &BlockTypeRegistry::getDefaultBlockState(VanillaBlockTypeIds::GrassBlock());
+    return &BlockTypeRegistry::get().getDefaultBlockState(VanillaBlockTypeIds::GrassBlock());
 };
 
 Block const& CustomStructurePiece::getBeardStabilizeBlock(::Block const&) const {
-    return BlockTypeRegistry::getDefaultBlockState(VanillaBlockTypeIds::GrassBlock());
+    return BlockTypeRegistry::get().getDefaultBlockState(VanillaBlockTypeIds::GrassBlock());
 };
 
 AdjustmentEffect CustomStructurePiece::getTerrainAdjustmentEffect() const { return AdjustmentEffect::Beard; };

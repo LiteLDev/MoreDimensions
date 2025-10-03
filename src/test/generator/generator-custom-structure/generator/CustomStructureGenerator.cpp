@@ -9,7 +9,6 @@
 #include "mc/world/level/ChunkPos.h"
 #include "mc/world/level/Level.h"
 #include "mc/world/level/biome/registry/BiomeRegistry.h"
-#include "mc/world/level/biome/registry/VanillaBiomeNames.h"
 #include "mc/world/level/chunk/ChunkViewSource.h"
 #include "mc/world/level/chunk/LevelChunk.h"
 #include "mc/world/level/chunk/PostprocessingManager.h"
@@ -29,7 +28,7 @@ CustomStructureGenerator::CustomStructureGenerator(
     random.mRandom->mObject.mSeed = seed;
     mSeed                         = seed;
 
-    mBiome       = mLevel->getBiomeRegistry().lookupByHash(VanillaBiomeNames::Plains());
+    mBiome       = mLevel->getBiomeRegistry().lookupByName("minecraft::plains");
     mBiomeSource = std::make_unique<FixedBiomeSource>(*mBiome);
 }
 
@@ -42,8 +41,7 @@ bool CustomStructureGenerator::postProcess(ChunkViewSource& neighborhood) {
     auto seed = mSeed;
 
     // 必须，需要给区块上锁
-    auto lockChunk =
-        levelChunk->mDimension.mPostProcessingManager->tryLock(levelChunk->mPosition, neighborhood);
+    auto lockChunk = levelChunk->mDimension.mPostProcessingManager->tryLock(levelChunk->mPosition, neighborhood);
 
     if (!lockChunk) {
         return false;
@@ -71,7 +69,7 @@ void CustomStructureGenerator::loadChunk(LevelChunk& levelchunk, bool forceImmed
     dividedPos2D.z = (blockPos.z >> 31) - ((blockPos.z >> 31) - blockPos.z) / 4;
 
     // 处理其它单体结构，比如沉船，这里不是必须
-    // WorldGenerator::preProcessStructures(getDimension(), chunkPos, getBiomeSource());
+    WorldGenerator::preProcessStructures(*mDimension, chunkPos, getBiomeSource());
     // 准备要放置的结构，如果是某个某个结构的区块，就会准备结构
     WorldGenerator::prepareStructureFeatureBlueprints(*mDimension, chunkPos, getBiomeSource(), *this);
 
@@ -83,7 +81,7 @@ void CustomStructureGenerator::loadChunk(LevelChunk& levelchunk, bool forceImmed
     mBiomeSource->fillBiomes(levelchunk, chunkLocalNoiseCache);
     levelchunk.setSaved();
     auto loadState = ChunkState::Generating;
-    levelchunk.mLoadState->compare_exchange_weak(loadState, ChunkState::Generated);
+    levelchunk.mLoadState->compare_exchange_strong(loadState, ChunkState::Generated);
 }
 
 std::optional<short> CustomStructureGenerator::getPreliminarySurfaceLevel(DividedPos2d<4> worldPos) const {

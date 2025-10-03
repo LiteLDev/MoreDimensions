@@ -1,7 +1,7 @@
 #pragma once
 
 #include "mc/deps/core/utility/AutomaticID.h"
-#include "mc/client/renderer/rendergraph/Packet.h"
+#include "mc/network/Packet.h"
 #include "mc/platform/UUID.h"
 
 

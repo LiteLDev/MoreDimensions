@@ -33,12 +33,12 @@ void CustomJigsawStructureBlockRules::initialize(JigsawStructureRegistry& regist
     auto& jigsawBlockRulesRegistry = registry.mJigsawBlockRulesRegistry;
 
     // input_predicate block
-    auto& stoneBricks = BlockTypeRegistry::getDefaultBlockState(VanillaBlockTypeIds::StoneBricks());
+    auto& stoneBricks = BlockTypeRegistry::get().getDefaultBlockState(VanillaBlockTypeIds::StoneBricks());
 
     // output_state blocks
-    auto& mossyStoneBricks   = BlockTypeRegistry::getDefaultBlockState(VanillaBlockTypeIds::MossyStoneBricks());
-    auto& crackedStoneBricks = BlockTypeRegistry::getDefaultBlockState(VanillaBlockTypeIds::CrackedStoneBricks());
-    auto& cobblestone        = BlockTypeRegistry::getDefaultBlockState(VanillaBlockTypeIds::Cobblestone());
+    auto& mossyStoneBricks   = BlockTypeRegistry::get().getDefaultBlockState(VanillaBlockTypeIds::MossyStoneBricks());
+    auto& crackedStoneBricks = BlockTypeRegistry::get().getDefaultBlockState(VanillaBlockTypeIds::CrackedStoneBricks());
+    auto& cobblestone        = BlockTypeRegistry::get().getDefaultBlockState(VanillaBlockTypeIds::Cobblestone());
 
     // input_predicate
     std::unique_ptr<IStructurePoolBlockPredicate> sourceBlock_pro1 =
@@ -278,10 +278,12 @@ void CustomJigsawStructure::initialize(
     //     std::make_unique<StructureTemplatePool>(context, "mike:5x5int", "empty", Projection::Invalid, templates_5x5)
     // );
     // registry.registerPool(
-    //     std::make_unique<StructureTemplatePool>(context, "mike:ew7x4", "mike:ewcap", Projection::Invalid, templates_ew)
+    //     std::make_unique<StructureTemplatePool>(context, "mike:ew7x4", "mike:ewcap", Projection::Invalid,
+    //     templates_ew)
     // );
     // registry.registerPool(
-    //     std::make_unique<StructureTemplatePool>(context, "mike:ns7x4", "mike:nscap", Projection::Invalid, templates_ns)
+    //     std::make_unique<StructureTemplatePool>(context, "mike:ns7x4", "mike:nscap", Projection::Invalid,
+    //     templates_ns)
     // );
     // registry.registerPool(
     //     std::make_unique<StructureTemplatePool>(context, "mike:ewcap", "empty", Projection::Invalid, templates_ewcap)

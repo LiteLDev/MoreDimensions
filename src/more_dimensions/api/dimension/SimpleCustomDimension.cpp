@@ -1,4 +1,3 @@
-
 #include "SimpleCustomDimension.h"
 
 #include "more_dimensions/MoreDimenison.h"
@@ -17,7 +16,6 @@
 #include "mc/world/level/Level.h"
 #include "mc/world/level/LevelSeed64.h"
 #include "mc/world/level/biome/registry/BiomeRegistry.h"
-#include "mc/world/level/biome/registry/VanillaBiomeNames.h"
 #include "mc/world/level/biome/source/BiomeSource.h"
 #include "mc/world/level/biome/source/FixedBiomeSource.h"
 #include "mc/world/level/block/BlockVolume.h"
@@ -27,7 +25,6 @@
 #include "mc/world/level/dimension/OverworldBrightnessRamp.h"
 #include "mc/world/level/dimension/VanillaDimensions.h"
 #include "mc/world/level/levelgen/flat/FlatWorldGenerator.h"
-#include "mc/world/level/levelgen/structure/EndCityFeature.h"
 #include "mc/world/level/levelgen/structure/StructureFeatureRegistry.h"
 #include "mc/world/level/levelgen/structure/registry/StructureSetRegistry.h"
 #include "mc/world/level/levelgen/synth/PerlinNoise.h"
@@ -51,17 +48,13 @@ namespace more_dimensions {
 namespace {
 using namespace ll::memory_literals;
 
-DWORD overworld_addStructureFeatures_rva = 0x0478550;
-DWORD nethrer_addStructureFeatures_rva = 0x0477110;
-
-HMODULE hModule = GetModuleHandle(L"bedrock_server_mod.exe");
-
-static void* overworldAddress = (void*)((BYTE*)hModule + overworld_addStructureFeatures_rva);
-static void* netherAddress = (void*)((BYTE*)hModule + nethrer_addStructureFeatures_rva);
+DWORD overworld_addStructureFeatures_rva = 0x047B350;
+DWORD nethrer_addStructureFeatures_rva   = 0x0479FC0;
 
 // static auto* overworldAddress =
 //     "`anonymous namespace'::unity_5c986e6b9d6571cc96912b0bfa0329e2::addStructureFeatures"_symp;
-// static auto* netherAddress = "`anonymous namespace'::unity_3da1d4c9fa90b4b1becbca96840255a5::addStructureFeatures"_symp;
+// static auto* netherAddress = "`anonymous
+// namespace'::unity_3da1d4c9fa90b4b1becbca96840255a5::addStructureFeatures"_symp;
 
 void overworldAddStructureFeatures(
     StructureFeatureRegistry& registry,
@@ -69,6 +62,8 @@ void overworldAddStructureFeatures(
     bool                      isLegacy,
     BaseGameVersion const&    baseGameVersion
 ) {
+    HMODULE hModule          = GetModuleHandle(NULL);
+    void*   overworldAddress = (void*)((BYTE*)hModule + overworld_addStructureFeatures_rva);
     ll::memory::addressCall<void*, StructureFeatureRegistry&, uint, bool, BaseGameVersion const&>(
         overworldAddress,
         registry,
@@ -84,6 +79,8 @@ void netherAddStructureFeatures(
     BaseGameVersion const&    baseGameVersion,
     Experiments const&        experiments
 ) {
+    HMODULE hModule       = GetModuleHandle(NULL);
+    void*   netherAddress = (void*)((BYTE*)hModule + nethrer_addStructureFeatures_rva);
     ll::memory::addressCall<void*, StructureFeatureRegistry&, uint, BaseGameVersion const&, Experiments const&>(
         netherAddress,
         registry,
@@ -186,6 +183,7 @@ SimpleCustomDimension::createGenerator(br::worldgen::StructureSetRegistry const&
                 structureSetRegistry
             );
 
+        // TODO
         // worldGenerator->mStructureFeatureRegistry->mStructureFeatures->emplace_back(
         //     std::make_unique<EndCityFeature>(*this, seed)
         // );
@@ -199,7 +197,7 @@ SimpleCustomDimension::createGenerator(br::worldgen::StructureSetRegistry const&
     }
     default: {
         auto generator    = std::make_unique<VoidGenerator>(*this);
-        generator->mBiome = level.getBiomeRegistry().lookupByHash(VanillaBiomeNames::Ocean());
+        generator->mBiome = level.getBiomeRegistry().lookupByName("minecraft:ocean");
         worldGenerator    = std::move(generator);
         worldGenerator->mStructureFeatureRegistry->mGeneratorState->mLevelSeed = seed;
         worldGenerator->mStructureFeatureRegistry->mGeneratorState->mRingsSeed = seed;

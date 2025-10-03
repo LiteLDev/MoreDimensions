@@ -30,7 +30,7 @@ CustomStructureDimension::CustomStructureDimension(
 )
 : Dimension(info.level, info.dimId, {-64, 320}, info.scheduler, name) {
     // 这里说明下，在DimensionFactoryInfo里面more-dimensions会提供维度id，请不要使用固定维度id，避免id冲突导致维度注册出现异常
-    mDefaultBrightness->sky   = Brightness::MAX();
+    mDefaultBrightness->sky  = Brightness::MAX();
     mSeaLevel                = -61;
     mHasWeather              = true;
     mDimensionBrightnessRamp = std::make_unique<OverworldBrightnessRamp>();
@@ -51,14 +51,8 @@ CustomStructureDimension::createGenerator(br::worldgen::StructureSetRegistry con
         seed,
         levelData.mFlatWorldOptions
     );
-    // structureSetRegistry里面仅有的土径结构村庄生成需要用到，所以我们拿一下
+
     std::vector<std::shared_ptr<const br::worldgen::StructureSet>> structureMap;
-    for (auto iter = structureSetRegistry.mStructureSets->begin(); iter != structureSetRegistry.mStructureSets->end(); iter++) {
-        structureMap.emplace_back(iter->second);
-    }
-    worldGenerator->mStructureFeatureRegistry->mGeneratorState->mSeed = seed;
-    worldGenerator->mStructureFeatureRegistry->mGeneratorState->mSeed64 =
-        LevelSeed64(seed);
 
     // 这个就相当于在这个生成器里注册结构了
     // VillageFeature的第二第三个参数是村庄之间的最大间隔与最小间隔
@@ -101,13 +95,7 @@ std::unique_ptr<ChunkSource> CustomStructureDimension::
 
 Vec3 CustomStructureDimension::translatePosAcrossDimension(Vec3 const& fromPos, DimensionType fromId) const {
     Vec3 topos;
-    VanillaDimensions::convertPointBetweenDimensions(
-        fromPos,
-        topos,
-        fromId,
-        mId,
-        mLevel.getDimensionConversionData()
-    );
+    VanillaDimensions::convertPointBetweenDimensions(fromPos, topos, fromId, mId, mLevel.getDimensionConversionData());
     constexpr auto clampVal = 32000000.0f - 128.0f;
 
     topos.x = std::clamp(topos.x, -clampVal, clampVal);
