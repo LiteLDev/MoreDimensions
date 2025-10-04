@@ -70,7 +70,7 @@ LL_TYPE_STATIC_HOOK(
     Bedrock::Result<DimensionType>,
     Bedrock::Result<int>&& dim
 ) {
-    if (!VanillaDimensions::DimensionMap().mLeft.containsF(*dim)) {
+    if (!VanillaDimensions::DimensionMap().mLeft.contains(*dim)) {
         return VanillaDimensions::Undefined();
     }
     return *dim;
@@ -134,7 +134,7 @@ LL_AUTO_TYPE_INSTANCE_HOOK(
     void,
     PropertiesSettings const& properties
 ) {
-    auto& properties_modiy = const_cast<PropertiesSettings&>(properties);
+    auto& properties_modiy                        = const_cast<PropertiesSettings&>(properties);
     properties_modiy.mClientSideGenerationEnabled = false;
     return origin(properties_modiy);
 }
