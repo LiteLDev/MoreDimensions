@@ -25,6 +25,7 @@ public:
     ::ll::TypedStorage<8, 8, ::Experiments const&>                               mExperiments;
     // NOLINTEND
 
+public:
     StructureTemplateRegistrationContext(
         Bedrock::NotNullNonOwnerPtr<::StructureManager> manager,
         JigsawStructureElementRegistry&                 structureRegistry,
@@ -46,24 +47,24 @@ public:
 public:
     // member functions
     // NOLINTBEGIN
-    MCNAPI StructureTemplateRegistrationContext(::StructureTemplateRegistrationContext const&);
+    MCAPI StructureTemplateRegistrationContext(::StructureTemplateRegistrationContext const&);
 
-    MCNAPI StructureTemplateRegistrationContext(::StructureTemplateRegistrationContext&&);
+    MCAPI StructureTemplateRegistrationContext(::StructureTemplateRegistrationContext&&);
 
-    MCNAPI ~StructureTemplateRegistrationContext();
+    MCAPI ~StructureTemplateRegistrationContext();
     // NOLINTEND
 
 public:
     // constructor thunks
     // NOLINTBEGIN
-    MCNAPI void* $ctor(::StructureTemplateRegistrationContext const&);
+    MCAPI void* $ctor(::StructureTemplateRegistrationContext const&);
 
-    MCNAPI void* $ctor(::StructureTemplateRegistrationContext&&);
+    MCAPI void* $ctor(::StructureTemplateRegistrationContext&&);
     // NOLINTEND
 
 public:
     // destructor thunk
     // NOLINTBEGIN
-    MCNAPI void $dtor();
+    MCAPI void $dtor();
     // NOLINTEND
 };

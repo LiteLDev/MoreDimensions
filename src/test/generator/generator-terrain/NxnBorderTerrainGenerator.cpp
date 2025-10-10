@@ -7,16 +7,12 @@
 #include "test/mc/FixedBiomeSource.h"
 
 #include "mc/world/level/ChunkPos.h"
-#include "mc/world/level/block/BedrockBlockNames.h"
 #include "mc/world/level/block/Block.h"
-#include "mc/world/level/block/BlockVolume.h"
 #include "mc/world/level/block/VanillaBlockTypeIds.h"
 #include "mc/world/level/block/registry/BlockTypeRegistry.h"
 #include "mc/world/level/chunk/LevelChunk.h"
 #include "mc/world/level/dimension/Dimension.h"
 #include "mc/world/level/levelgen/v1/ChunkLocalNoiseCache.h"
-
-#include "mc/world/level/block/Block.h"
 
 
 namespace nxn_border_terrain {

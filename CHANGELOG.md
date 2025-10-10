@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.11.0] - 2025-10-10
+
+### Changed
+
+- Adapt to LeviLamina 1.6.0(BDS-1.21.111.1)
+
 ## [0.10.1] - 2025-10-04
 
 ### Changed
@@ -114,7 +120,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Release the first version
 
-[Unreleased]: https://github.com/LiteLDev/MoreDimensions/compare/v0.10.1...HEAD
+[Unreleased]: https://github.com/LiteLDev/MoreDimensions/compare/v0.11.0...HEAD
+[0.11.0]: https://github.com/LiteLDev/MoreDimensions/compare/v0.10.1...v0.11.0
 [0.10.1]: https://github.com/LiteLDev/MoreDimensions/compare/v0.9.0...v0.10.1
 [0.9.0]: https://github.com/LiteLDev/MoreDimensions/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/LiteLDev/MoreDimensions/compare/v0.7.0...v0.8.0

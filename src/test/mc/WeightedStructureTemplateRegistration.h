@@ -15,7 +15,8 @@ struct WeightedStructureTemplateRegistration {
 public:
     // member variables
     // NOLINTBEGIN
-    std::function<::StructurePoolElement const&(::StructureTemplateRegistrationContext, ::Projection)> mElementFactory;
-    int                                                                                                mWeight;
+    ::std::function<::StructurePoolElement const&(::StructureTemplateRegistrationContext, ::Projection)>
+        mElementFactory;
+    int mWeight;
     // NOLINTEND
 };

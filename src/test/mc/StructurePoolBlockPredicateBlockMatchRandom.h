@@ -18,16 +18,14 @@ class StructurePoolBlockPredicateBlockMatchRandom : public ::IStructurePoolBlock
 public:
     // member variables
     // NOLINTBEGIN
-    ::ll::TypedStorage<8, 8, Block const*> mBlock;
-    ::ll::TypedStorage<4, 4, float const>  mProbability;
+    ::ll::TypedStorage<8, 8, ::Block const&> mBlock;
+    ::ll::TypedStorage<4, 4, float const>    mProbability;
     // NOLINTEND
 
-    StructurePoolBlockPredicateBlockMatchRandom(::Block const& block, float probability)
-    : mBlock(&block),
-      mProbability(probability){};
-
 public:
-    // prevent constructor by default
+    StructurePoolBlockPredicateBlockMatchRandom(::Block const& block, float probability)
+    : mBlock(block),
+      mProbability(probability){};
 
 public:
     // virtual functions
@@ -46,12 +44,6 @@ public:
 
     // vIndex: 0
     virtual ~StructurePoolBlockPredicateBlockMatchRandom() /*override*/ = default;
-    // NOLINTEND
-
-public:
-    // destructor thunk
-    // NOLINTBEGIN
-
     // NOLINTEND
 
 public:

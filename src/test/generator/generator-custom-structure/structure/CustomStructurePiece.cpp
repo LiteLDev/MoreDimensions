@@ -1,28 +1,28 @@
 #include "CustomStructurePiece.h"
 
 #include "mc/util/Random.h"
+#include "mc/world/actor/ActorDefinitionIdentifier.h"
 #include "mc/world/level/BlockPos.h"
 #include "mc/world/level/block/VanillaBlockTypeIds.h"
 #include "mc/world/level/block/registry/BlockTypeRegistry.h"
 #include "mc/world/level/dimension/Dimension.h"
 #include "mc/world/level/levelgen/structure/BoundingBox.h"
-#include "test/mc/JigsawJunction.h"
-#include "test/mc/JigsawPlacement.h"
 #include "mc/world/level/levelgen/structure/registry/JigsawStructureRegistry.h"
 #include "mc/world/level/levelgen/structure/structurepools/StructurePoolElement.h"
-#include "test/mc/StructureTemplatePool.h"
-#include "test/mc/PoolAliasBinding.h"
 #include "mc/world/level/levelgen/v1/AdjustmentEffect.h"
-
+#include "test/mc/JigsawPlacement.h"
+#include "test/mc/StructureTemplatePool.h"
 
 #include <memory>
 
-
 namespace custom_structure {
 
-int CustomStructurePiece::
-    generateHeightAtPosition(BlockPos const&, Dimension& dim, BlockVolume&, std::unordered_map<ChunkPos, std::unique_ptr<std::vector<short>>>&)
-        const {
+int CustomStructurePiece::generateHeightAtPosition(
+    BlockPos const&,
+    Dimension& dim,
+    BlockVolume&,
+    std::unordered_map<ChunkPos, std::unique_ptr<std::vector<short>>>&
+) const {
     return dim.mSeaLevel + 100;
 };
 
@@ -70,13 +70,7 @@ void CustomStructurePiece::addPieces(
     JigsawPlacement place(15, 80, pieces, lambda, random, pools, dimension);
 
     auto index = random.nextInt(0, templates->mTemplates->size() - 1);
-    place.addPieces(
-        *templates->mTemplates->at(index),
-        position,
-        Rotation(random.nextInt(4)),
-        "",
-        {}
-    );
+    place.addPieces(*templates->mTemplates->at(index), position, Rotation(random.nextInt(4)), "", {});
 }
 
 } // namespace custom_structure

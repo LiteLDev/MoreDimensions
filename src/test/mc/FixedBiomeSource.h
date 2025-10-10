@@ -27,7 +27,7 @@ public:
 
 public:
     // prevent constructor by default
-    
+
     FixedBiomeSource(Biome const& biome) : mFixedBiome(biome){};
 
 public:
@@ -84,9 +84,9 @@ public:
 
     MCFOLD ::Biome const* $getBiome(int blockX, int blockY, int blockZ) const;
 
-    MCAPI ::BiomeArea $getBiomeArea(::BoundingBox const& area, uint scale) const;
+    MCFOLD ::BiomeArea $getBiomeArea(::BoundingBox const& area, uint scale) const;
 
-    MCAPI ::BiomeArea
+    MCFOLD ::BiomeArea
     $getBiomeArea(::BoundingBox const& area, uint scale, ::GetBiomeOptions const& getBiomeOptions) const;
 
     MCAPI bool $hasBiomeById(::BiomeIdType id) const;

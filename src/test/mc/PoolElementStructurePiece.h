@@ -4,15 +4,11 @@
 
 // auto generated inclusion list
 #include "mc/util/Rotation.h"
-#include "mc/world/actor/ActorDefinitionIdentifier.h"
 #include "mc/world/level/BlockPos.h"
 #include "mc/world/level/levelgen/structure/BoundingBox.h"
-#include "test/mc/JigsawJunction.h"
-#include "mc/world/level/levelgen/structure/structurepools/StructurePoolElement.h"
+#include "mc/world/level/levelgen/structure/JigsawJunction.h"
+#include "mc/world/level/levelgen/structure/StructurePiece.h"
 #include "mc/world/level/levelgen/v1/AdjustmentEffect.h"
-#include "test/mc/StructurePiece.h"
-
-
 
 // auto generated forward declare list
 // clang-format off
@@ -22,6 +18,8 @@ class BlockVolume;
 class ChunkPos;
 class Dimension;
 class Random;
+class StructurePoolElement;
+struct ActorDefinitionIdentifier;
 // clang-format on
 
 class PoolElementStructurePiece : public ::StructurePiece {
@@ -42,6 +40,7 @@ public:
     ::ll::TypedStorage<4, 12, ::BlockPos> mRefPos;
     // NOLINTEND
 
+public:
     PoolElementStructurePiece(
         ::StructurePoolElement const& element,
         ::BlockPos                    position,
@@ -73,9 +72,12 @@ public:
     virtual void moveBoundingBox(int dx, int dy, int dz) /*override*/;
 
     // vIndex: 13
-    virtual int
-    generateHeightAtPosition(::BlockPos const&, ::Dimension&, ::BlockVolume&, ::std::unordered_map<::ChunkPos, ::std::unique_ptr<::std::vector<short>>>&)
-        const = 0;
+    virtual int generateHeightAtPosition(
+        ::BlockPos const&,
+        ::Dimension&,
+        ::BlockVolume&,
+        ::std::unordered_map<::ChunkPos, ::std::unique_ptr<::std::vector<short>>>&
+    ) const = 0;
 
     // vIndex: 14
     virtual ::Block const* getSupportBlock(::BlockSource&, ::BlockPos const&, ::Block const&) const = 0;
@@ -94,12 +96,6 @@ public:
     // NOLINTEND
 
 public:
-    // destructor thunk
-    // NOLINTBEGIN
-
-    // NOLINTEND
-
-public:
     // virtual function thunks
     // NOLINTBEGIN
     MCAPI bool $postProcess(::BlockSource& region, ::Random& random, ::BoundingBox const& chunkBB);
@@ -114,6 +110,6 @@ public:
 public:
     // vftables
     // NOLINTBEGIN
-    MCAPI static void** $vftable();
+    MCNAPI static void** $vftable();
     // NOLINTEND
 };

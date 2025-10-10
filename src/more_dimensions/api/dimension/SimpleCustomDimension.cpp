@@ -48,8 +48,8 @@ namespace more_dimensions {
 namespace {
 using namespace ll::memory_literals;
 
-DWORD overworld_addStructureFeatures_rva = 0x047B350;
-DWORD nethrer_addStructureFeatures_rva   = 0x0479FC0;
+DWORD overworld_addStructureFeatures_rva = 0x04ED250;
+DWORD nethrer_addStructureFeatures_rva   = 0x04EBEE0;
 
 // static auto* overworldAddress =
 //     "`anonymous namespace'::unity_5c986e6b9d6571cc96912b0bfa0329e2::addStructureFeatures"_symp;

@@ -11,7 +11,6 @@
 #include "ll/api/memory/Hook.h"
 #include "ll/api/service/Bedrock.h"
 #include "ll/api/utils/Base64Utils.h"
-#include "ll/api/utils/StringUtils.h"
 
 #include "mc/deps/core/math/Vec3.h"
 #include "mc/nbt/Tag.h"
@@ -23,7 +22,6 @@
 #include "mc/world/level/dimension/Dimension.h"
 #include "mc/world/level/dimension/VanillaDimensions.h"
 #include "mc/world/level/storage/LevelStorage.h"
-
 
 class Scheduler;
 
@@ -81,13 +79,13 @@ LL_TYPE_STATIC_HOOK(
     HookPriority::Normal,
     VanillaDimensions,
     VanillaDimensions::fromSerializedInt,
-    DimensionType,
-    int dimId
+    ::Bedrock::Result<::DimensionType>,
+    ::Bedrock::Result<int>&& i
 ) {
-    if (!VanillaDimensions::DimensionMap().mLeft.contains(dimId)) {
+    if (!VanillaDimensions::DimensionMap().mLeft.contains(i.value())) {
         return VanillaDimensions::Undefined();
     }
-    return {dimId};
+    return {i};
 }
 
 // inline function use patch

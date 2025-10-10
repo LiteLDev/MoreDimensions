@@ -61,7 +61,7 @@ bool FlatVillageGenerator::postProcess(ChunkViewSource& neighborhood) {
 void FlatVillageGenerator::loadChunk(LevelChunk& levelchunk, bool forceImmediateReplacementDataLoad) {
     auto chunkPos = levelchunk.mPosition;
 
-    auto            blockPos = BlockPos(chunkPos, 0);
+    auto            blockPos = BlockPos(chunkPos->x, 0, chunkPos->z);
     DividedPos2d<4> dividedPos2D;
     dividedPos2D.x = (blockPos.x >> 31) - ((blockPos.x >> 31) - blockPos.x) / 4;
     dividedPos2D.z = (blockPos.z >> 31) - ((blockPos.z >> 31) - blockPos.z) / 4;

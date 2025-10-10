@@ -8,7 +8,6 @@
 
 #include "mc/deps/core/math/Vec3.h"
 #include "mc/deps/core/utility/BinaryStream.h"
-#include "mc/deps/ecs/gamerefs_entity/EntityContext.h"
 #include "mc/entity/components/IPlayerTickPolicy.h"
 #include "mc/entity/components/MovementPackets.h"
 #include "mc/entity/components/ServerPlayerMovementComponent.h"
@@ -34,18 +33,23 @@
 #include "mc/network/packet/SubChunkRequestPacket.h"
 #include "mc/network/packet/UpdateBlockPacket.h"
 #include "mc/server/ServerPlayer.h"
-#include "mc/util/MolangVariableMap.h"
+#include "mc/util/MolangVariable.h"
 #include "mc/util/VarIntDataOutput.h"
-#include "mc/world/actor/ActorDataIDs.h"
-#include "mc/world/actor/SynchedActorDataEntityWrapper.h"
 #include "mc/world/level/ChangeDimensionRequest.h"
-#include "mc/world/level/ChunkPos.h"
 #include "mc/world/level/Level.h"
 #include "mc/world/level/LoadingScreenIdManager.h"
 #include "mc/world/level/SpawnSettings.h"
 #include "mc/world/level/dimension/VanillaDimensions.h"
-#include "mc/world/level/levelSettings.h"
 
+// From https://github.com/OEOTYAN/BedrockServerClientInterface/blob/6f74e2d00e574ea24cdac76238d7d67310586eec/src/bsci/particle/ParticleSpawner.cpp#L41
+MolangVariableMap::MolangVariableMap(MolangVariableMap const& rhs) {
+    mMapFromVariableIndexToVariableArrayOffset = rhs.mMapFromVariableIndexToVariableArrayOffset;
+    mVariables                                 = {};
+    for (auto& ptr : *rhs.mVariables) {
+        mVariables->push_back(std::make_unique<MolangVariable>(*ptr));
+    }
+    mHasPublicVariables = rhs.mHasPublicVariables;
+}
 
 // ChangeDimensionPacket.java
 // ClientboundMapItemDataPacket.java
@@ -334,15 +338,12 @@ LL_TYPE_INSTANCE_HOOK(
     SpawnParticleEffectPacket,
     &SpawnParticleEffectPacket::$ctor,
     void*,
-    Vec3 const&                      pos,
-    std::string const&               particle_name,
-    uchar                            dimId,
-    std::optional<MolangVariableMap> molang
+    ::SpawnParticleEffectPacketPayload payload
 ) {
-    if (dimId >= 3) {
-        dimId = FakeDimensionId::fakeDim.id;
+    if (mVanillaDimensionId >= 3) {
+        mVanillaDimensionId = FakeDimensionId::fakeDim.id;
     }
-    return origin(pos, particle_name, dimId, std::move(molang));
+    return origin(std::move(payload));
 }
 
 } // namespace sendpackethook
