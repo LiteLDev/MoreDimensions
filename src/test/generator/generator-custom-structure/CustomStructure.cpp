@@ -14,11 +14,15 @@
 #include "mc/world/level/levelgen/structure/registry/JigsawStructureRegistry.h"
 #include "mc/world/level/levelgen/structure/registry/StructurePools.h"
 #include "mc/world/level/levelgen/structure/structurepools/StructurePoolBlockPredicateAlwaysTrue.h"
+#include "mc/world/level/levelgen/structure/structurepools/StructurePoolBlockTagPredicateBlockTagStringMatches.h"
+#include "mc/world/level/levelgen/structure/structurepools/StructurePoolBlockTagRule.h"
 #include "mc/world/level/levelgen/structure/structurepools/StructurePoolElement.h"
 #include "mc/world/level/levelgen/structure/structurepools/StructureTemplatePool.h"
 #include "mc/world/level/storage/Experiments.h"
+
 #include "test/mc/StructurePoolBlockPredicateBlockMatchRandom.h"
 #include "test/mc/StructurePoolBlockRule.h"
+
 
 // #include "mc/world/level/storage/Experiments.h"
 // #include "test/mc/StructureTemplateRegistrationContext.h"
@@ -83,6 +87,22 @@ void CustomJigsawStructureBlockRules::initialize(JigsawStructureRegistry& regist
     // jigsawBlockRulesRegistry->record("mike:stone_brick_replacement", {ruleList, prot});
 }
 
+void CustomJigsawStructureBlockTagRules::initialize(JigsawStructureRegistry& registry) {
+    auto& defaultBlockState = BlockTypeRegistry::get().getDefaultBlockState(VanillaBlockTypeIds::Jigsaw());
+    auto  test              = std::make_unique<StructurePoolBlockTagRule>(
+        std::make_unique<StructurePoolBlockTagPredicateBlockTagStringMatches>(
+            defaultBlockState,
+            "target_pool",
+            "mike:custom"
+        ),
+        "",
+        "mike:custom/place"
+    );
+    auto ruleList = std::make_unique<std::vector<std::unique_ptr<StructurePoolBlockTagRule>>>();
+    ruleList->emplace_back(std::move(test));
+    registry.mJigsawBlockTagRulesRegistry->registerBlockTagRules("mike:custom_place", std::move(ruleList));
+}
+
 void CustomJigsawStructureElements::initialize(
     gsl::not_null<Bedrock::NonOwnerPointer<StructureManager>> manager,
     FeatureRegistry&                                          featureRegistry,
@@ -91,6 +111,7 @@ void CustomJigsawStructureElements::initialize(
     auto& jigsawBlockRulesRegistry       = jigsawRegistry.mJigsawBlockRulesRegistry;
     auto& jigsawStructureElementRegistry = jigsawRegistry.mJigsawElementRegistry;
     auto  ruleList                       = jigsawBlockRulesRegistry->lookupByName("mike:stone_brick_replacement");
+    auto  blockTagRuleList = jigsawRegistry.mJigsawBlockTagRulesRegistry->lookupByName("mike:custom_place");
 
     // 每一个结构nbt文件都得这样注册进来，多个nbt结构文件的可以使用同一个Block Rule
     // mike:5x5int
@@ -100,10 +121,10 @@ void CustomJigsawStructureElements::initialize(
             manager,
             "custom/beds5x5int",
             ruleList,
+            blockTagRuleList,
             nullptr,
-            nullptr,
-            Projection::TerrainMatching,
-            PostProcessSettings::Beard
+            Projection::Invalid,
+            PostProcessSettings::None
         )
     );
     jigsawStructureElementRegistry->registerStructureElement(
@@ -112,10 +133,10 @@ void CustomJigsawStructureElements::initialize(
             manager,
             "custom/chestcarpet5x5int",
             ruleList,
+            blockTagRuleList,
             nullptr,
-            nullptr,
-            Projection::TerrainMatching,
-            PostProcessSettings::Beard
+            Projection::Invalid,
+            PostProcessSettings::None
         )
     );
     jigsawStructureElementRegistry->registerStructureElement(
@@ -124,10 +145,10 @@ void CustomJigsawStructureElements::initialize(
             manager,
             "custom/kitchen5x5int",
             ruleList,
+            blockTagRuleList,
             nullptr,
-            nullptr,
-            Projection::TerrainMatching,
-            PostProcessSettings::Beard
+            Projection::Invalid,
+            PostProcessSettings::None
         )
     );
 
@@ -138,10 +159,10 @@ void CustomJigsawStructureElements::initialize(
             manager,
             "custom/ewhall",
             ruleList,
+            blockTagRuleList,
             nullptr,
-            nullptr,
-            Projection::TerrainMatching,
-            PostProcessSettings::Beard
+            Projection::Invalid,
+            PostProcessSettings::None
         )
     );
     jigsawStructureElementRegistry->registerStructureElement(
@@ -150,10 +171,10 @@ void CustomJigsawStructureElements::initialize(
             manager,
             "custom/21room",
             ruleList,
+            blockTagRuleList,
             nullptr,
-            nullptr,
-            Projection::TerrainMatching,
-            PostProcessSettings::Beard
+            Projection::Invalid,
+            PostProcessSettings::None
         )
     );
 
@@ -164,10 +185,10 @@ void CustomJigsawStructureElements::initialize(
             manager,
             "custom/nshall",
             ruleList,
+            blockTagRuleList,
             nullptr,
-            nullptr,
-            Projection::TerrainMatching,
-            PostProcessSettings::Beard
+            Projection::Invalid,
+            PostProcessSettings::None
         )
     );
     jigsawStructureElementRegistry->registerStructureElement(
@@ -176,7 +197,7 @@ void CustomJigsawStructureElements::initialize(
             manager,
             "custom/21room",
             ruleList,
-            nullptr,
+            blockTagRuleList,
             nullptr,
             Projection::TerrainMatching,
             PostProcessSettings::Beard
@@ -190,10 +211,10 @@ void CustomJigsawStructureElements::initialize(
             manager,
             "custom/ewcap",
             ruleList,
+            blockTagRuleList,
             nullptr,
-            nullptr,
-            Projection::TerrainMatching,
-            PostProcessSettings::Beard
+            Projection::Invalid,
+            PostProcessSettings::None
         )
     );
 
@@ -204,10 +225,10 @@ void CustomJigsawStructureElements::initialize(
             manager,
             "custom/nscap",
             ruleList,
+            blockTagRuleList,
             nullptr,
-            nullptr,
-            Projection::TerrainMatching,
-            PostProcessSettings::Beard
+            Projection::Invalid,
+            PostProcessSettings::None
         )
     );
 }
@@ -220,6 +241,7 @@ void CustomJigsawStructure::initialize(
     Experiments const&                              experiments
 ) {
     CustomJigsawStructureBlockRules::initialize(registry);
+    CustomJigsawStructureBlockTagRules::initialize(registry);
     CustomJigsawStructureElements::initialize(manager, featureRegistry, registry);
     auto& jigsawStructureElementRegistry = registry.mJigsawElementRegistry;
 

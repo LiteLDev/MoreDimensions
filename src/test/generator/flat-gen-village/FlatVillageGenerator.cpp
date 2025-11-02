@@ -1,6 +1,5 @@
 #include "FlatVillageGenerator.h"
 
-#include "mc/world/level/chunk/ChunkState.h"
 #include "test/mc/FixedBiomeSource.h"
 
 #include "mc/deps/core/math/Random.h"
@@ -9,7 +8,9 @@
 #include "mc/world/level/BlockSource.h"
 #include "mc/world/level/ChunkPos.h"
 #include "mc/world/level/Level.h"
+#include "mc/world/level/biome/Biome.h"
 #include "mc/world/level/biome/registry/BiomeRegistry.h"
+#include "mc/world/level/chunk/ChunkState.h"
 #include "mc/world/level/chunk/ChunkViewSource.h"
 #include "mc/world/level/chunk/LevelChunk.h"
 #include "mc/world/level/chunk/PostprocessingManager.h"
@@ -25,14 +26,14 @@ FlatVillageGenerator::FlatVillageGenerator(Dimension& dimension, uint seed, Json
     random.mRandom->mObject.mSeed = seed;
     mSeed                         = seed;
 
-    mBiome       = mLevel->getBiomeRegistry().lookupById(BiomeIdType(1));
+    mBiome       = mLevel->getBiomeRegistry().lookupByName("minecraft:plains");
     mBiomeSource = std::make_unique<FixedBiomeSource>(*mBiome);
 }
 
 bool FlatVillageGenerator::postProcess(ChunkViewSource& neighborhood) {
     ChunkPos chunkPos;
-    chunkPos.x      = neighborhood.mArea->mBounds.mMin->x;
-    chunkPos.z      = neighborhood.mArea->mBounds.mMin->z;
+    chunkPos.x      = neighborhood.mArea->mBounds.mMin->x + 1;
+    chunkPos.z      = neighborhood.mArea->mBounds.mMin->z + 1;
     auto levelChunk = neighborhood.getExistingChunk(chunkPos);
 
     auto seed = mSeed;

@@ -52,8 +52,6 @@ CustomStructureDimension::createGenerator(br::worldgen::StructureSetRegistry con
         levelData.mFlatWorldOptions
     );
 
-    std::vector<std::shared_ptr<const br::worldgen::StructureSet>> structureMap;
-
     // 这个就相当于在这个生成器里注册结构了
     // VillageFeature的第二第三个参数是村庄之间的最大间隔与最小间隔
     worldGenerator->mStructureFeatureRegistry->mStructureFeatures->emplace_back(
@@ -64,7 +62,7 @@ CustomStructureDimension::createGenerator(br::worldgen::StructureSetRegistry con
     );
     // 此为必须，一些结构生成相关
     worldGenerator->mStructureFeatureRegistry->mGeneratorState =
-        br::worldgen::ChunkGeneratorStructureState::createFlat(seed, worldGenerator->getBiomeSource(), structureMap);
+        br::worldgen::ChunkGeneratorStructureState::createFlat(seed, worldGenerator->getBiomeSource(), {});
 
     return std::move(worldGenerator);
 }

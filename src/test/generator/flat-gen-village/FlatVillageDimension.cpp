@@ -44,17 +44,16 @@ FlatVillageDimension::createGenerator(br::worldgen::StructureSetRegistry const& 
     // 实例化我们写的Generator类
     worldGenerator =
         std::make_unique<flat_village_generator::FlatVillageGenerator>(*this, seed, levelData.mFlatWorldOptions);
-    // structureSetRegistry里面仅有的土径结构村庄生成需要用到，所以我们拿一下
-    std::vector<std::shared_ptr<const br::worldgen::StructureSet>> structureMap;
+
+    // 此为必须，一些结构生成相关
+    worldGenerator->mStructureFeatureRegistry->mGeneratorState =
+        br::worldgen::ChunkGeneratorStructureState::createFlat(seed, worldGenerator->getBiomeSource(), {});
 
     // 这个就相当于在这个生成器里注册结构了
     // VillageFeature的第二第三个参数是村庄之间的最大间隔与最小间隔
     worldGenerator->mStructureFeatureRegistry->mStructureFeatures->emplace_back(
         std::make_unique<VillageFeature>(seed, 34, 8)
     );
-    // 此为必须，一些结构生成相关
-    worldGenerator->mStructureFeatureRegistry->mGeneratorState =
-        br::worldgen::ChunkGeneratorStructureState::createFlat(seed, worldGenerator->getBiomeSource(), structureMap);
 
     return std::move(worldGenerator);
 }

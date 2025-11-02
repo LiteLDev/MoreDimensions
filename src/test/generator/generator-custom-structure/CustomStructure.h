@@ -28,6 +28,14 @@ void initialize(
 
 namespace CustomJigsawStructureBlockRules {
 
+    // registry block rules
+void initialize(JigsawStructureRegistry& registry);
+
+}
+
+namespace CustomJigsawStructureBlockTagRules {
+
+    // registry block tag rules
 void initialize(JigsawStructureRegistry& registry);
 
 }
