@@ -39,7 +39,7 @@ bool FlatVillageGenerator::postProcess(ChunkViewSource& neighborhood) {
     auto seed = mSeed;
 
     // 必须，需要给区块上锁
-    auto lockChunk = levelChunk->mDimension.mPostProcessingManager->tryLock(levelChunk->mPosition, neighborhood);
+    auto lockChunk = levelChunk->mDimension.mPostProcessingManager->tryLock(levelChunk->mPosition, neighborhood, {});
 
     if (!lockChunk.has_value()) {
         return false;
@@ -77,7 +77,7 @@ void FlatVillageGenerator::loadChunk(LevelChunk& levelchunk, bool forceImmediate
 
     levelchunk.recomputeHeightMap(0);
     ChunkLocalNoiseCache chunkLocalNoiseCache(dividedPos2D, 8);
-    mBiomeSource->fillBiomes(levelchunk, chunkLocalNoiseCache);
+    mBiomeSource->fillBiomes(levelchunk, &chunkLocalNoiseCache);
     levelchunk.setSaved();
     auto loadState = ChunkState::Generating;
     levelchunk.mLoadState->compare_exchange_strong(loadState, ChunkState::Generated);

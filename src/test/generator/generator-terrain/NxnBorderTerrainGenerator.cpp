@@ -131,7 +131,7 @@ void NxnBorderTerrainGenerator::loadChunk(LevelChunk& levelchunk, bool forceImme
     mBiomeSource = std::make_unique<FixedBiomeSource>(*mBiome);
     DividedPos2d<4>      dividedPos2D;
     ChunkLocalNoiseCache chunkLocalNoiseCache(dividedPos2D, 8);
-    mBiomeSource->fillBiomes(levelchunk, chunkLocalNoiseCache);
+    mBiomeSource->fillBiomes(levelchunk, &chunkLocalNoiseCache);
     levelchunk.setSaved();
     auto loadState = ChunkState::Generating;
     levelchunk.mLoadState->compare_exchange_weak(loadState, ChunkState::Generated);

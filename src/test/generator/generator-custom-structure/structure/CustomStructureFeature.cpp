@@ -9,6 +9,7 @@
 #include "mc/world/level/ChunkPos.h"
 #include "mc/world/level/Level.h"
 #include "mc/world/level/biome/Biome.h"
+#include "mc/world/level/biome/GetBiomeOptions.h"
 #include "mc/world/level/biome/source/BiomeSource.h"
 #include "mc/world/level/dimension/Dimension.h"
 #include "mc/world/level/levelgen/structure/BoundingBox.h"
@@ -94,7 +95,7 @@ std::unique_ptr<::StructureStart> CustomStructureFeature::createStructureStart(
         start->pieces,
         random,
         dim.mLevel.getJigsawStructureRegistry(),
-        biomeSource.getBiome(cpos.x * 16, 1, cpos.z * 16)->getBiomeType(),
+        biomeSource._getBiome(GetBiomeOptions(BlockPos(cpos.x * 16, 1, cpos.z * 16), false))->getBiomeType(),
         dim
     );
     start->calculateBoundingBox();

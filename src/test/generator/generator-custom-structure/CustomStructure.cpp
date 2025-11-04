@@ -2,15 +2,12 @@
 
 #include "ll/api/memory/Hook.h"
 
-#include "mc/deps/core/threading/WorkerPool.h"
-#include "mc/resources/BaseGameVersion.h"
+#include "mc/util/BaseGameVersion.h"
 #include "mc/world/level/block/VanillaBlockTypeIds.h"
 #include "mc/world/level/block/registry/BlockTypeRegistry.h"
 #include "mc/world/level/levelgen/feature/registry/FeatureRegistry.h"
 #include "mc/world/level/levelgen/structure/Projection.h"
 #include "mc/world/level/levelgen/structure/StructureManager.h"
-#include "mc/world/level/levelgen/structure/registry/JigsawStructureBlockRulesRegistry.h"
-#include "mc/world/level/levelgen/structure/registry/JigsawStructureElementRegistry.h"
 #include "mc/world/level/levelgen/structure/registry/JigsawStructureRegistry.h"
 #include "mc/world/level/levelgen/structure/registry/StructurePools.h"
 #include "mc/world/level/levelgen/structure/structurepools/StructurePoolBlockPredicateAlwaysTrue.h"
@@ -118,7 +115,7 @@ void CustomJigsawStructureElements::initialize(
     jigsawStructureElementRegistry->registerStructureElement(
         "mike:5x5intb",
         std::make_unique<StructurePoolElement>(
-            manager,
+            *reinterpret_cast<gsl::not_null<Bedrock::NonOwnerPointer<IStructureTemplateManager>>*>(&manager), // TODO: Workaround
             "custom/beds5x5int",
             ruleList,
             blockTagRuleList,
@@ -130,7 +127,7 @@ void CustomJigsawStructureElements::initialize(
     jigsawStructureElementRegistry->registerStructureElement(
         "mike:5x5intc",
         std::make_unique<StructurePoolElement>(
-            manager,
+            *reinterpret_cast<gsl::not_null<Bedrock::NonOwnerPointer<IStructureTemplateManager>>*>(&manager),
             "custom/chestcarpet5x5int",
             ruleList,
             blockTagRuleList,
@@ -142,7 +139,7 @@ void CustomJigsawStructureElements::initialize(
     jigsawStructureElementRegistry->registerStructureElement(
         "mike:5x5intk",
         std::make_unique<StructurePoolElement>(
-            manager,
+            *reinterpret_cast<gsl::not_null<Bedrock::NonOwnerPointer<IStructureTemplateManager>>*>(&manager),
             "custom/kitchen5x5int",
             ruleList,
             blockTagRuleList,
@@ -156,7 +153,7 @@ void CustomJigsawStructureElements::initialize(
     jigsawStructureElementRegistry->registerStructureElement(
         "mike:ew7x4h",
         std::make_unique<StructurePoolElement>(
-            manager,
+            *reinterpret_cast<gsl::not_null<Bedrock::NonOwnerPointer<IStructureTemplateManager>>*>(&manager),
             "custom/ewhall",
             ruleList,
             blockTagRuleList,
@@ -168,7 +165,7 @@ void CustomJigsawStructureElements::initialize(
     jigsawStructureElementRegistry->registerStructureElement(
         "mike:ew7x4r",
         std::make_unique<StructurePoolElement>(
-            manager,
+            *reinterpret_cast<gsl::not_null<Bedrock::NonOwnerPointer<IStructureTemplateManager>>*>(&manager),
             "custom/21room",
             ruleList,
             blockTagRuleList,
@@ -182,7 +179,7 @@ void CustomJigsawStructureElements::initialize(
     jigsawStructureElementRegistry->registerStructureElement(
         "mike:ns7x4h",
         std::make_unique<StructurePoolElement>(
-            manager,
+            *reinterpret_cast<gsl::not_null<Bedrock::NonOwnerPointer<IStructureTemplateManager>>*>(&manager),
             "custom/nshall",
             ruleList,
             blockTagRuleList,
@@ -194,7 +191,7 @@ void CustomJigsawStructureElements::initialize(
     jigsawStructureElementRegistry->registerStructureElement(
         "mike:ns7x4r",
         std::make_unique<StructurePoolElement>(
-            manager,
+            *reinterpret_cast<gsl::not_null<Bedrock::NonOwnerPointer<IStructureTemplateManager>>*>(&manager),
             "custom/21room",
             ruleList,
             blockTagRuleList,
@@ -208,7 +205,7 @@ void CustomJigsawStructureElements::initialize(
     jigsawStructureElementRegistry->registerStructureElement(
         "mike:ewcap",
         std::make_unique<StructurePoolElement>(
-            manager,
+            *reinterpret_cast<gsl::not_null<Bedrock::NonOwnerPointer<IStructureTemplateManager>>*>(&manager),
             "custom/ewcap",
             ruleList,
             blockTagRuleList,
@@ -222,7 +219,7 @@ void CustomJigsawStructureElements::initialize(
     jigsawStructureElementRegistry->registerStructureElement(
         "mike:nscap",
         std::make_unique<StructurePoolElement>(
-            manager,
+            *reinterpret_cast<gsl::not_null<Bedrock::NonOwnerPointer<IStructureTemplateManager>>*>(&manager),
             "custom/nscap",
             ruleList,
             blockTagRuleList,

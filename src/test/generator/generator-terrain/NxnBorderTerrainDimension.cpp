@@ -3,14 +3,13 @@
 #include "test/generator/generator-terrain/NxnBorderTerrainGenerator.h"
 
 #include "mc/common/Brightness.h"
-#include "mc/common/BrightnessPair.h"
 #include "mc/deps/core/math/Vec3.h"
 #include "mc/world/level/BlockSource.h"
 #include "mc/world/level/DimensionConversionData.h"
 #include "mc/world/level/Level.h"
 #include "mc/world/level/chunk/vanilla_level_chunk_upgrade/VanillaLevelChunkUpgrade.h"
+#include "mc/world/level/dimension/DimensionArguments.h"
 #include "mc/world/level/dimension/DimensionBrightnessRamp.h"
-#include "mc/world/level/dimension/DimensionHeightRange.h"
 #include "mc/world/level/dimension/OverworldBrightnessRamp.h"
 #include "mc/world/level/dimension/VanillaDimensions.h"
 #include "mc/world/level/levelgen/flat/FlatWorldGenerator.h"
@@ -26,7 +25,7 @@ NxnBorderTerrainDimension::NxnBorderTerrainDimension(
     std::string const&                           name,
     more_dimensions::DimensionFactoryInfo const& info
 )
-: Dimension(info.level, info.dimId, {-64, 320}, info.scheduler, name) {
+: Dimension(DimensionArguments(info.arguments, info.dimId, {-64, 320}, name)) {
     // 这里说明下，在DimensionFactoryInfo里面more-dimensions会提供维度id，请不要使用固定维度id，避免id冲突导致维度注册出现异常
     mDefaultBrightness->sky  = Brightness::MAX();
     mSeaLevel                = -61;
@@ -51,8 +50,7 @@ std::unique_ptr<WorldGenerator> NxnBorderTerrainDimension::createGenerator(br::w
     auto&                           levelData = mLevel.getLevelData();
 
     // 实例化一个FlatWorldGenerator类
-    worldGenerator =
-        std::make_unique<NxnBorderTerrainGenerator>(*this, seed, chunkLength, levelData.mFlatWorldOptions);
+    worldGenerator = std::make_unique<NxnBorderTerrainGenerator>(*this, seed, chunkLength, levelData.mFlatWorldOptions);
     // 此为必须，一些结构生成相关
     worldGenerator->mStructureFeatureRegistry->mGeneratorState =
         br::worldgen::ChunkGeneratorStructureState::createFlat(seed, worldGenerator->getBiomeSource(), {});

@@ -23,8 +23,6 @@
 #include "mc/world/level/dimension/VanillaDimensions.h"
 #include "mc/world/level/storage/LevelStorage.h"
 
-class Scheduler;
-
 namespace more_dimensions {
 
 std::string compress(std::string_view sv) {
@@ -223,9 +221,9 @@ DimensionType CustomDimensionManager::addDimension(
     }
     ll::service::getLevel()->getDimensionFactory().mFactoryMap.emplace(
         dimName,
-        [dimName, info, factory = std::move(factory)](ILevel& ilevel, Scheduler& scheduler) -> OwnerPtr<Dimension> {
+        [dimName, info, factory = std::move(factory)](DerivedDimensionArguments&& arguments) -> OwnerPtr<Dimension> {
             loggerMoreDimMag.debug("Create dimension, name: {}, id: {}", dimName, info.id.id);
-            return factory(DimensionFactoryInfo{ilevel, scheduler, info.nbt, info.id});
+            return factory(DimensionFactoryInfo{arguments, info.nbt, info.id});
         }
     );
 

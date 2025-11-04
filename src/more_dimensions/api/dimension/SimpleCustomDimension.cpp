@@ -8,9 +8,7 @@
 #include "ll/api/service/Bedrock.h"
 
 #include "mc/common/Brightness.h"
-#include "mc/common/BrightnessPair.h"
 #include "mc/deps/core/math/Color.h"
-#include "mc/deps/core/string/HashedString.h"
 #include "mc/world/level/BlockSource.h"
 #include "mc/world/level/DimensionConversionData.h"
 #include "mc/world/level/Level.h"
@@ -18,8 +16,8 @@
 #include "mc/world/level/biome/registry/BiomeRegistry.h"
 #include "mc/world/level/biome/source/BiomeSource.h"
 #include "mc/world/level/biome/source/FixedBiomeSource.h"
-#include "mc/world/level/block/BlockVolume.h"
 #include "mc/world/level/chunk/vanilla_level_chunk_upgrade/VanillaLevelChunkUpgrade.h"
+#include "mc/world/level/dimension/DimensionArguments.h"
 #include "mc/world/level/dimension/DimensionHeightRange.h"
 #include "mc/world/level/dimension/NetherBrightnessRamp.h"
 #include "mc/world/level/dimension/OverworldBrightnessRamp.h"
@@ -27,8 +25,6 @@
 #include "mc/world/level/levelgen/flat/FlatWorldGenerator.h"
 #include "mc/world/level/levelgen/structure/StructureFeatureRegistry.h"
 #include "mc/world/level/levelgen/structure/registry/StructureSetRegistry.h"
-#include "mc/world/level/levelgen/synth/PerlinNoise.h"
-#include "mc/world/level/levelgen/synth/PerlinSimplexNoise.h"
 #include "mc/world/level/levelgen/synth/SimplexNoise.h"
 #include "mc/world/level/levelgen/v1/NetherGenerator.h"
 #include "mc/world/level/levelgen/v1/OverworldGeneratorMultinoise.h"
@@ -48,8 +44,8 @@ namespace more_dimensions {
 namespace {
 using namespace ll::memory_literals;
 
-DWORD overworld_addStructureFeatures_rva = 0x04ED250;
-DWORD nethrer_addStructureFeatures_rva   = 0x04EBEE0;
+DWORD overworld_addStructureFeatures_rva = 0x04FDB80;
+DWORD nethrer_addStructureFeatures_rva   = 0x04FC570;
 
 // static auto* overworldAddress =
 //     "`anonymous namespace'::unity_5c986e6b9d6571cc96912b0bfa0329e2::addStructureFeatures"_symp;
@@ -95,7 +91,7 @@ void netherAddStructureFeatures(
 auto& loggerMoreDim = MoreDimenison::getInstance().getSelf().getLogger();
 
 SimpleCustomDimension::SimpleCustomDimension(std::string const& name, DimensionFactoryInfo const& info)
-: Dimension(info.level, info.dimId, {-64, 320}, info.scheduler, name) {
+: Dimension(DimensionArguments(info.arguments, info.dimId, {-64, 320}, name)) {
     loggerMoreDim.debug("{} dimension name:{}", __FUNCTION__, name);
     mDefaultBrightness->sky = Brightness::MAX();
     generatorType           = *magic_enum::enum_cast<GeneratorType>((std::string_view)info.data["generatorType"]);
