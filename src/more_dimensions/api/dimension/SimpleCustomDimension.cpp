@@ -91,7 +91,7 @@ void netherAddStructureFeatures(
 auto& loggerMoreDim = MoreDimenison::getInstance().getSelf().getLogger();
 
 SimpleCustomDimension::SimpleCustomDimension(std::string const& name, DimensionFactoryInfo const& info)
-: Dimension(DimensionArguments(info.arguments, info.dimId, {-64, 320}, name)) {
+: Dimension(DimensionArguments(std::move(info.arguments), info.dimId, {-64, 320}, name)) {
     loggerMoreDim.debug("{} dimension name:{}", __FUNCTION__, name);
     mDefaultBrightness->sky = Brightness::MAX();
     generatorType           = *magic_enum::enum_cast<GeneratorType>((std::string_view)info.data["generatorType"]);
