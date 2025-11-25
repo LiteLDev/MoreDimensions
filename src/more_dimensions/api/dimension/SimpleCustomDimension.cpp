@@ -44,13 +44,9 @@ namespace more_dimensions {
 namespace {
 using namespace ll::memory_literals;
 
-DWORD overworld_addStructureFeatures_rva = 0x04FDB80;
-DWORD nethrer_addStructureFeatures_rva   = 0x04FC570;
-
-// static auto* overworldAddress =
-//     "`anonymous namespace'::unity_5c986e6b9d6571cc96912b0bfa0329e2::addStructureFeatures"_symp;
-// static auto* netherAddress = "`anonymous
-// namespace'::unity_3da1d4c9fa90b4b1becbca96840255a5::addStructureFeatures"_symp;
+static auto* overworldAddress =
+    "`anonymous namespace'::unity_5c986e6b9d6571cc96912b0bfa0329e2::addStructureFeatures"_symp;
+static auto* netherAddress = "`anonymous namespace'::unity_3da1d4c9fa90b4b1becbca96840255a5::addStructureFeatures"_symp;
 
 void overworldAddStructureFeatures(
     StructureFeatureRegistry& registry,
@@ -58,8 +54,6 @@ void overworldAddStructureFeatures(
     bool                      isLegacy,
     BaseGameVersion const&    baseGameVersion
 ) {
-    HMODULE hModule          = GetModuleHandle(NULL);
-    void*   overworldAddress = (void*)((BYTE*)hModule + overworld_addStructureFeatures_rva);
     ll::memory::addressCall<void*, StructureFeatureRegistry&, uint, bool, BaseGameVersion const&>(
         overworldAddress,
         registry,
@@ -75,8 +69,6 @@ void netherAddStructureFeatures(
     BaseGameVersion const&    baseGameVersion,
     Experiments const&        experiments
 ) {
-    HMODULE hModule       = GetModuleHandle(NULL);
-    void*   netherAddress = (void*)((BYTE*)hModule + nethrer_addStructureFeatures_rva);
     ll::memory::addressCall<void*, StructureFeatureRegistry&, uint, BaseGameVersion const&, Experiments const&>(
         netherAddress,
         registry,
