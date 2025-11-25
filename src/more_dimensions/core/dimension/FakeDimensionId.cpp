@@ -41,7 +41,8 @@
 #include "mc/world/level/SpawnSettings.h"
 #include "mc/world/level/dimension/VanillaDimensions.h"
 
-// From https://github.com/OEOTYAN/BedrockServerClientInterface/blob/6f74e2d00e574ea24cdac76238d7d67310586eec/src/bsci/particle/ParticleSpawner.cpp#L41
+// From
+// https://github.com/OEOTYAN/BedrockServerClientInterface/blob/6f74e2d00e574ea24cdac76238d7d67310586eec/src/bsci/particle/ParticleSpawner.cpp#L41
 MolangVariableMap::MolangVariableMap(MolangVariableMap const& rhs) {
     mMapFromVariableIndexToVariableArrayOffset = rhs.mMapFromVariableIndexToVariableArrayOffset;
     mVariables                                 = {};
@@ -413,8 +414,8 @@ LL_TYPE_INSTANCE_HOOK(
     };
     // issue #7
     auto loadingScreenIdManager = ll::memory::dAccess<LoadingScreenIdManager*>(&this->mLoadingScreenIdManager, 8);
-    auto screedId               = loadingScreenIdManager->mUnk7db596.as<uint>() + 1;
-    ++loadingScreenIdManager->mUnk7db596.as<uint>();
+    auto screedId               = loadingScreenIdManager->mLastLoadingScreenId + 1;
+    ++loadingScreenIdManager->mLastLoadingScreenId;
     // screedId.mValue.emplace(screedId.mValue.value() + 1);
 
     fakeChangeDimension(
