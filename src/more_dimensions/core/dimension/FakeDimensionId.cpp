@@ -20,6 +20,7 @@
 #include "mc/network/ServerNetworkHandler.h"
 #include "mc/network/packet/AddVolumeEntityPacket.h"
 #include "mc/network/packet/ChangeDimensionPacket.h"
+#include "mc/network/packet/DebugDrawerPacket.h"
 #include "mc/network/packet/InteractPacket.h"
 #include "mc/network/packet/InventoryTransactionPacket.h"
 #include "mc/network/packet/LevelChunkPacket.h"
@@ -27,6 +28,7 @@
 #include "mc/network/packet/PlayerActionType.h"
 #include "mc/network/packet/PlayerAuthInputPacket.h"
 #include "mc/network/packet/RemoveVolumeEntityPacket.h"
+#include "mc/network/packet/ShapeDataPayload.h"
 #include "mc/network/packet/SpawnParticleEffectPacket.h"
 #include "mc/network/packet/StartGamePacket.h"
 #include "mc/network/packet/SubChunkPacket.h"
@@ -462,6 +464,13 @@ void FakeDimensionId::changePacketDimension(Packet& packet) {
         auto& tempP          = (AddVolumeEntityPacket&)packet;
         tempP.mDimensionType = fakeDim;
         logger.debug("MinecraftPacketIds::AddVolumeEntityPacket: dimId change to {}", fakeDim.id);
+    }
+    case MinecraftPacketIds::DebugDrawerPacket: {
+        auto& tempP = (DebugDrawerPacket&)packet;
+        for (auto& shape : *tempP.mPayload->mShapes) {
+            shape.mDimensionId = fakeDim;
+        }
+        logger.debug("MinecraftPacketIds::DebugDrawerPacket: dimId change to {}", fakeDim.id);
     }
     default:
         return;
