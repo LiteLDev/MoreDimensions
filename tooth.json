@@ -23,7 +23,7 @@
                         "https://{{tooth}}/releases/download/v{{version}}/more-dimensions-windows-x64-v{{version}}.zip"
                     ],
                     "dependencies": {
-                        "github.com/LiteLDev/LeviLamina": "1.7.*"
+                        "github.com/LiteLDev/LeviLamina": ">=1.7.0 <=1.7.5"
                     },
                     "placements": [
                         {
