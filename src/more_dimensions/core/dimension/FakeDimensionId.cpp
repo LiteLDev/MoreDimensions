@@ -467,7 +467,7 @@ void FakeDimensionId::changePacketDimension(Packet& packet) {
     }
     case MinecraftPacketIds::DebugDrawerPacket: {
         auto& tempP = (DebugDrawerPacket&)packet;
-        for (auto& shape : *tempP.mPayload->mShapes) {
+        for (auto& shape : *tempP.mShapes) {
             shape.mDimensionId = fakeDim;
         }
         logger.debug("MinecraftPacketIds::DebugDrawerPacket: dimId change to {}", fakeDim.id);
