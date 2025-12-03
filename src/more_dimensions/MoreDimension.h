@@ -4,12 +4,12 @@
 
 namespace more_dimensions {
 
-class MoreDimenison {
+class MoreDimension {
 
 public:
-    static MoreDimenison& getInstance();
+    static MoreDimension& getInstance();
 
-    MoreDimenison() : mSelf(*ll::mod::NativeMod::current()) {}
+    MoreDimension() : mSelf(*ll::mod::NativeMod::current()) {}
 
     [[nodiscard]] ll::mod::NativeMod& getSelf() const { return mSelf; }
 

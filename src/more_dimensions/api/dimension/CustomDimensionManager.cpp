@@ -1,11 +1,11 @@
 
 #include "CustomDimensionManager.h"
 
-#include "more_dimensions/MoreDimenison.h"
+#include "more_dimensions/MoreDimension.h"
+#include "more_dimensions/core/Utils.h"
 #include "more_dimensions/core/dimension/CustomDimensionConfig.h"
 #include "more_dimensions/core/dimension/FakeDimensionId.h"
 
-#include "snappy.h"
 
 #include "ll/api/command/CommandRegistrar.h"
 #include "ll/api/memory/Hook.h"
@@ -25,20 +25,8 @@
 
 namespace more_dimensions {
 
-std::string compress(std::string_view sv) {
-    std::string res;
-    snappy::Compress(sv.data(), sv.size(), &res);
-    return res;
-}
-
-std::string decompress(std::string_view sv) {
-    std::string res;
-    snappy::Uncompress(sv.data(), sv.size(), &res);
-    return res;
-}
-
 // static ll::Logger loggerMoreDimMag("CustomDimensionManager");
-auto& loggerMoreDimMag = MoreDimenison::getInstance().getSelf().getLogger();
+auto& loggerMoreDimMag = MoreDimension::getInstance().getSelf().getLogger();
 
 namespace CustomDimensionHookList {
 LL_TYPE_STATIC_HOOK(
@@ -171,7 +159,12 @@ CustomDimensionManager::CustomDimensionManager() : impl(std::make_unique<Impl>()
     CustomDimensionConfig::loadConfigFile();
     if (!CustomDimensionConfig::getConfig().dimensionList.empty()) {
         for (auto& [name, info] : CustomDimensionConfig::getConfig().dimensionList) {
-            impl->customDimensionMap.emplace(name, Impl::DimensionInfo{info.dimId, *CompoundTag::fromSnbt(info.sNbt)});
+            auto nbtTag = CompoundTag::fromSnbt(info.sNbt);
+            if (!nbtTag) {
+                loggerMoreDimMag.error("Failed to parse NBT from config for dimension: {}, skipping", name);
+                continue;
+            }
+            impl->customDimensionMap.emplace(name, Impl::DimensionInfo{info.dimId, *nbtTag});
         }
         impl->mNewDimensionId += static_cast<int>(impl->customDimensionMap.size());
     }

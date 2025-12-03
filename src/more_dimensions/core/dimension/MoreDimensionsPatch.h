@@ -86,7 +86,22 @@ bool PatchFunction(HMODULE hModule, DWORD faddress_start, DWORD faddress_end, co
     patch.push_back((BYTE)((offset >> 16) & 0xFF));
     patch.push_back((BYTE)((offset >> 24) & 0xFF));
 
+    // Use RAII to ensure process handle is always closed
     HANDLE hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, GetCurrentProcessId());
+    if (hProcess == NULL || hProcess == INVALID_HANDLE_VALUE) {
+        std::cerr << "Failed to open process handle" << std::endl;
+        return false;
+    }
+
+    // Auto-close handle using RAII pattern
+    struct HandleCloser {
+        HANDLE handle;
+        ~HandleCloser() {
+            if (handle != NULL && handle != INVALID_HANDLE_VALUE) {
+                CloseHandle(handle);
+            }
+        }
+    } handleGuard{hProcess};
 
     // Write the patch to memory
     DWORD oldProtect;
@@ -99,7 +114,8 @@ bool PatchFunction(HMODULE hModule, DWORD faddress_start, DWORD faddress_end, co
     if (!WriteProcessMemory(hProcess, patchAddress, patch.data(), patch.size(), &bytesWritten)
         || bytesWritten != patch.size()) {
         std::cerr << "Failed to write to process memory" << std::endl;
-        CloseHandle(hProcess);
+        // Restore protection before returning
+        VirtualProtect(patchAddress, patch.size(), oldProtect, &oldProtect);
         return false;
     }
 

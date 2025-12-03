@@ -559,3 +559,6 @@ fabric.properties
 /.vscode/
 /bin/
 /vsxmake2022
+
+# Cursor
+/PROJECT_ANALYSIS.md

@@ -1,4 +1,4 @@
-#include "MoreDimenison.h"
+#include "MoreDimension.h"
 
 #include "ll/api/Versions.h"
 #include "ll/api/mod/RegisterHelper.h"
@@ -6,12 +6,12 @@
 
 namespace more_dimensions {
 
-MoreDimenison& MoreDimenison::getInstance() {
-    static MoreDimenison instance;
+MoreDimension& MoreDimension::getInstance() {
+    static MoreDimension instance;
     return instance;
 }
 
-bool MoreDimenison::load() {
+bool MoreDimension::load() {
     getSelf().getLogger().info("Loading...");
     if (ll::getLoaderVersion() < ll::data::Version{0, 8, 3}) {
         getSelf().getLogger().error(
@@ -26,16 +26,17 @@ bool MoreDimenison::load() {
     return true;
 }
 
-bool MoreDimenison::enable() {
+bool MoreDimension::enable() {
     getSelf().getLogger().info("Enabling...");
     return true;
 }
 
-bool MoreDimenison::disable() {
+bool MoreDimension::disable() {
     getSelf().getLogger().info("Disabling...");
     return true;
 }
 
 } // namespace more_dimensions
 
-LL_REGISTER_MOD(more_dimensions::MoreDimenison, more_dimensions::MoreDimenison::getInstance());
+LL_REGISTER_MOD(more_dimensions::MoreDimension, more_dimensions::MoreDimension::getInstance());
+

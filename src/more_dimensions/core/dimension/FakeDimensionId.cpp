@@ -1,7 +1,8 @@
 #include "FakeDimensionId.h"
 
-#include "more_dimensions//api/dimension/CustomDimensionManager.h"
-#include "more_dimensions/MoreDimenison.h"
+#include "more_dimensions/MoreDimension.h"
+#include "more_dimensions/api/dimension/CustomDimensionManager.h"
+
 
 #include "ll/api/memory/Hook.h"
 #include "ll/api/service/Bedrock.h"
@@ -66,7 +67,7 @@ MolangVariableMap::MolangVariableMap(MolangVariableMap const& rhs) {
 namespace more_dimensions {
 
 // static ll::Logger logger("FakeDimensionId");
-auto& logger = MoreDimenison::getInstance().getSelf().getLogger();
+auto& logger = MoreDimension::getInstance().getSelf().getLogger();
 
 static void sendEmptyChunk(const NetworkIdentifier& netId, int chunkX, int chunkZ, bool forceUpdate) {
     std::array<uchar, 4096> biome{};
@@ -478,6 +479,7 @@ void FakeDimensionId::changePacketDimension(Packet& packet) {
 }
 
 void FakeDimensionId::setNeedRemove(mce::UUID uuid, bool needRemove) {
+    std::lock_guard lockGuard{mMapMutex};
     if (mSettingMap.count(uuid)) {
         mSettingMap.at(uuid).needRemovePacket = needRemove;
     } else {
@@ -486,15 +488,16 @@ void FakeDimensionId::setNeedRemove(mce::UUID uuid, bool needRemove) {
 }
 
 bool FakeDimensionId::isNeedRemove(mce::UUID uuid) {
+    std::lock_guard lockGuard{mMapMutex};
     if (mSettingMap.count(uuid)) {
         return mSettingMap.at(uuid).needRemovePacket;
-    };
+    }
     return false;
 }
 
 void FakeDimensionId::onPlayerGoCustomDimension(mce::UUID uuid) {
+    std::lock_guard lockGuard{mMapMutex};
     if (!mSettingMap.count(uuid)) {
-        std::lock_guard lockGuard{mMapMutex};
         mSettingMap.emplace(uuid, CustomDimensionIdSetting{false});
     }
 }

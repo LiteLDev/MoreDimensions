@@ -1,10 +1,8 @@
 
 #include "CustomDimensionConfig.h"
 
-#include "mc/nbt/Tag.h"
-#include "more_dimensions/MoreDimenison.h"
-
-#include "snappy.h"
+#include "more_dimensions/MoreDimension.h"
+#include "more_dimensions/core/Utils.h"
 
 #include "ll/api/Config.h"
 #include "ll/api/service/Bedrock.h"
@@ -12,25 +10,15 @@
 #include "ll/api/utils/ErrorUtils.h"
 
 #include "mc/nbt/CompoundTag.h"
+#include "mc/nbt/Tag.h"
 #include "mc/server/PropertiesSettings.h"
+
 
 
 namespace more_dimensions::CustomDimensionConfig {
 
 // static ll::Logger            logger("CustomDimensionConfig");
-auto& logger = MoreDimenison::getInstance().getSelf().getLogger();
-
-std::string compress(std::string_view sv) {
-    std::string res;
-    snappy::Compress(sv.data(), sv.size(), &res);
-    return res;
-}
-
-std::string decompress(std::string_view sv) {
-    std::string res;
-    snappy::Uncompress(sv.data(), sv.size(), &res);
-    return res;
-}
+auto& logger = MoreDimension::getInstance().getSelf().getLogger();
 
 static std::filesystem::path dimensionConfigPath{u8"./worlds"};
 
@@ -51,9 +39,13 @@ bool loadConfigFile() {
                     [](Config& config, nlohmann::ordered_json& data) {
                         if (data["version"] < config.version) {
                             for (auto& item : data["dimensionList"]) {
-                                item["sNbt"] =
-                                    CompoundTag::fromBinaryNbt(decompress(ll::base64_utils::decode(item["base64Nbt"])))
-                                        ->toSnbt(SnbtFormat::Minimize);
+                                auto decompressed = utils::decompress(ll::base64_utils::decode(item["base64Nbt"]));
+                                auto nbtTag       = CompoundTag::fromBinaryNbt(decompressed);
+                                if (!nbtTag) {
+                                    logger.error("Failed to parse NBT from base64Nbt, skipping dimension");
+                                    continue;
+                                }
+                                item["sNbt"] = nbtTag->toSnbt(SnbtFormat::Minimize);
                                 item.erase("base64Nbt");
                             }
                         }
