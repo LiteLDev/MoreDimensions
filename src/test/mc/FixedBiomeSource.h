@@ -28,8 +28,7 @@ public:
 public:
     // prevent constructor by default
 
-    FixedBiomeSource(Biome const& biome) : mFixedBiome(biome){};
-
+    FixedBiomeSource(Biome const& biome) : mFixedBiome(biome) {};
 public:
     // virtual functions
     // NOLINTBEGIN
