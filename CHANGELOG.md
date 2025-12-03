@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.12.2] - 2025-12-03
+
+### Fixed
+
+- Fixed crash of tests [#21]
+
 ## [0.12.1] - 2025-12-01
 
 ### Changed
@@ -144,7 +150,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Release the first version
 
-[Unreleased]: https://github.com/LiteLDev/MoreDimensions/compare/v0.12.1...HEAD
+[#21]: https://github.com/LiteLDev/MoreDimensions/issues/21
+
+[Unreleased]: https://github.com/LiteLDev/MoreDimensions/compare/v0.12.2...HEAD
+[0.12.2]: https://github.com/LiteLDev/MoreDimensions/compare/v0.12.1...v0.12.2
 [0.12.1]: https://github.com/LiteLDev/MoreDimensions/compare/v0.12.0...v0.12.1
 [0.12.0]: https://github.com/LiteLDev/MoreDimensions/compare/v0.11.2...v0.12.0
 [0.11.2]: https://github.com/LiteLDev/MoreDimensions/compare/v0.11.1...v0.11.2
