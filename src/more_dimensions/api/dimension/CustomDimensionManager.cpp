@@ -155,6 +155,7 @@ using HookReg = ll::memory::HookRegistrar<
     VanillaDimensionsFromSerializedIntHookI,
     // VanillaDimensionsToSerializedIntHook,
     LevelStorageloadServerPlayerDataHook>;
+
 } // namespace CustomDimensionHookList
 
 struct CustomDimensionManager::Impl {
