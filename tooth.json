@@ -1,39 +1,60 @@
 {
-    "format_version": 3,
-    "format_uuid": "289f771f-2c9a-4d73-9f3f-8492495a924d",
-    "tooth": "github.com/LiteLDev/MoreDimensions",
-    "version": "0.12.2",
-    "info": {
-        "name": "MoreDimensions",
-        "description": "More than three dimensions on BDS!",
-        "tags": [
-            "platform:levilamina",
-            "library",
-            "type:mod"
-        ],
-        "avatar_url": ""
-    },
-    "variants": [
-        {
-            "platform": "win-x64",
-            "assets": [
-                {
-                    "type": "zip",
-                    "urls": [
-                        "https://{{tooth}}/releases/download/v{{version}}/more-dimensions-windows-x64-v{{version}}.zip"
-                    ],
-                    "dependencies": {
-                        "github.com/LiteLDev/LeviLamina": ">=1.7.6 <=1.8.0"
-                    },
-                    "placements": [
-                        {
-                            "type": "dir",
-                            "src": "more-dimensions/",
-                            "dest": "plugins/more-dimensions/"
-                        }
-                    ]
-                }
-            ]
-        }
+  "format_version": 3,
+  "format_uuid": "289f771f-2c9a-4d73-9f3f-8492495a924d",
+  "tooth": "github.com/LiteLDev/MoreDimensions",
+  "version": "0.13.0-rc.1",
+  "info": {
+    "name": "MoreDimensions",
+    "description": "More than three dimensions on BDS!",
+    "tags": [
+      "platform:levilamina",
+      "library",
+      "type:mod"
     ]
+  },
+  "variants": [
+    {
+      "platform": "win-x64",
+      "assets": [
+        {
+          "type": "zip",
+          "urls": [
+            "https://{{tooth}}/releases/download/v{{version}}/MoreDimensions-server-windows-x64.zip"
+          ],
+          "dependencies": {
+            "github.com/LiteLDev/LeviLamina": "1.8.0-rc.2"
+          },
+          "placements": [
+            {
+              "type": "dir",
+              "src": "more-dimensions/",
+              "dest": "plugins/more-dimensions/"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "label": "client",
+      "platform": "win-x64",
+      "assets": [
+        {
+          "type": "zip",
+          "urls": [
+            "https://{{tooth}}/releases/download/v{{version}}/MoreDimensions-client-windows-x64.zip"
+          ],
+          "dependencies": {
+            "github.com/LiteLDev/LeviLamina#client": "1.8.0-rc.2"
+          },
+          "placements": [
+            {
+              "type": "dir",
+              "src": "more-dimensions/",
+              "dest": "mods/more-dimensions/"
+            }
+          ]
+        }
+      ]
+    }
+  ]
 }

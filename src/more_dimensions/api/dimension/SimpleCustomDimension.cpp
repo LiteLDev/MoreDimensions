@@ -5,7 +5,6 @@
 #include "magic_enum.hpp"
 
 #include "ll/api/memory/Memory.h"
-#include "ll/api/service/Bedrock.h"
 
 #include "mc/common/Brightness.h"
 #include "mc/deps/core/math/Color.h"
@@ -14,19 +13,14 @@
 #include "mc/world/level/Level.h"
 #include "mc/world/level/LevelSeed64.h"
 #include "mc/world/level/biome/registry/BiomeRegistry.h"
-#include "mc/world/level/biome/source/BiomeSource.h"
 #include "mc/world/level/chunk/vanilla_level_chunk_upgrade/VanillaLevelChunkUpgrade.h"
 #include "mc/world/level/dimension/DimensionArguments.h"
-#include "mc/world/level/dimension/DimensionHeightRange.h"
 #include "mc/world/level/dimension/NetherBrightnessRamp.h"
 #include "mc/world/level/dimension/OverworldBrightnessRamp.h"
 #include "mc/world/level/dimension/VanillaDimensions.h"
 #include "mc/world/level/levelgen/flat/FlatWorldGenerator.h"
 #include "mc/world/level/levelgen/structure/EndCityFeature.h"
-#include "mc/world/level/levelgen/structure/StructureFeature.h"
 #include "mc/world/level/levelgen/structure/StructureFeatureRegistry.h"
-#include "mc/world/level/levelgen/structure/registry/StructureSetRegistry.h"
-#include "mc/world/level/levelgen/synth/SimplexNoise.h"
 #include "mc/world/level/levelgen/v1/NetherGenerator.h"
 #include "mc/world/level/levelgen/v1/OverworldGeneratorMultinoise.h"
 #include "mc/world/level/levelgen/v1/TheEndGenerator.h"
@@ -84,9 +78,9 @@ void netherAddStructureFeatures(
     );
 };
 
-void createEndCityFeature(StructureFeatureRegistry* _this, Dimension& dimension, uint& seed){
+void createEndCityFeature(StructureFeatureRegistry* _this, Dimension& dimension, uint& seed) {
 
-    HMODULE hModule       = GetModuleHandle(NULL);
+    HMODULE hModule          = GetModuleHandle(NULL);
     void*   endcitityAddress = (void*)((BYTE*)hModule + endcitityAddress_rva);
     ll::memory::addressCall<EndCityFeature&, StructureFeatureRegistry*, Dimension&, uint&>(
         endcitityAddress,

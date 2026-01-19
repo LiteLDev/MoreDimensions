@@ -1,8 +1,6 @@
-
 #include "CustomDimensionManager.h"
 
 #include "more_dimensions/MoreDimension.h"
-#include "more_dimensions/core/Utils.h"
 #include "more_dimensions/core/dimension/CustomDimensionConfig.h"
 #include "more_dimensions/core/dimension/FakeDimensionId.h"
 
@@ -10,12 +8,12 @@
 #include "ll/api/command/CommandRegistrar.h"
 #include "ll/api/memory/Hook.h"
 #include "ll/api/service/Bedrock.h"
-#include "ll/api/utils/Base64Utils.h"
 
 #include "mc/deps/core/math/Vec3.h"
 #include "mc/nbt/Tag.h"
 #include "mc/server/DedicatedServer.h"
 #include "mc/server/PropertiesSettings.h"
+#include "mc/server/ServerInstance.h"
 #include "mc/util/BidirectionalUnorderedMap.h"
 #include "mc/world/actor/player/Player.h"
 #include "mc/world/level/Level.h"
@@ -110,6 +108,25 @@ LL_TYPE_INSTANCE_HOOK(
 }
 
 // 由于这个的调用在维度注册之前，所以使用AUTO
+#ifdef LL_PLAT_C
+LL_AUTO_TYPE_INSTANCE_HOOK(
+    LevelInitializeHook,
+    HookPriority::Normal,
+    Level,
+    &Level::$initialize,
+    bool,
+    std::string const&   levelName,
+    LevelSettings const& levelSettings,
+    Experiments const&   experiments,
+    std::string const*   levelId,
+    std::optional<std::reference_wrapper<
+        std::unordered_map<std::string, std::unique_ptr<::BiomeJsonDocumentGlue::ResolvedBiomeData>>>>
+        biomeIdToResolvedData
+) {
+    mClientSideChunkGenEnabled = false;
+    return origin(levelName, levelSettings, experiments, levelId, biomeIdToResolvedData);
+}
+#else
 LL_AUTO_TYPE_INSTANCE_HOOK(
     PropertiesSettingsisClientSideGenEnabledHook,
     HookPriority::Normal,
@@ -122,6 +139,7 @@ LL_AUTO_TYPE_INSTANCE_HOOK(
     properties_modiy.mClientSideGenerationEnabled = false;
     return origin(properties_modiy);
 }
+#endif
 
 // 1.21.50.10 unnecessary
 // registry dimensoin when in ll, must reload Dimension::getWeakRef
@@ -136,9 +154,7 @@ using HookReg = ll::memory::HookRegistrar<
     VanillaDimensionsFromSerializedIntHook,
     VanillaDimensionsFromSerializedIntHookI,
     // VanillaDimensionsToSerializedIntHook,
-    LevelStorageloadServerPlayerDataHook,
-    PropertiesSettingsisClientSideGenEnabledHook>;
-
+    LevelStorageloadServerPlayerDataHook>;
 } // namespace CustomDimensionHookList
 
 struct CustomDimensionManager::Impl {
@@ -247,7 +263,7 @@ DimensionType CustomDimensionManager::addDimension(
 
     // add to command enum
 
-    ll::command::CommandRegistrar::getInstance().addEnumValues(
+    ll::command::CommandRegistrar::getInstance(false).addEnumValues(
         "Dimension",
         {
             {dimName, info.id}

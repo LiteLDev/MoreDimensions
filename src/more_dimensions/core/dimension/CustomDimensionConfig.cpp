@@ -1,4 +1,3 @@
-
 #include "CustomDimensionConfig.h"
 
 #include "more_dimensions/MoreDimension.h"
@@ -6,14 +5,13 @@
 
 #include "ll/api/Config.h"
 #include "ll/api/service/Bedrock.h"
+#include "ll/api/service/ServerInfo.h"
 #include "ll/api/utils/Base64Utils.h"
 #include "ll/api/utils/ErrorUtils.h"
 
 #include "mc/nbt/CompoundTag.h"
 #include "mc/nbt/Tag.h"
 #include "mc/server/PropertiesSettings.h"
-
-
 
 namespace more_dimensions::CustomDimensionConfig {
 
@@ -26,8 +24,13 @@ void setDimensionConfigPath() {
     if (!ll::service::getLevel()) {
         throw std::runtime_error("Level nullptr");
     }
+#ifdef LL_PLAT_C
+    dimensionConfigPath  = ll::getWorldPath().value();
+    dimensionConfigPath /= u8"dimension_config.json";
+#else
     dimensionConfigPath /= ll::string_utils::str2u8str(ll::service::getPropertiesSettings()->mLevelName);
     dimensionConfigPath /= u8"dimension_config.json";
+#endif
 }
 
 bool loadConfigFile() {

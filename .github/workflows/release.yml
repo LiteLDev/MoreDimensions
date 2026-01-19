@@ -6,10 +6,17 @@ on:
 jobs:
   build:
     runs-on: windows-latest
+    strategy:
+      matrix:
+        target_type:
+          - server
+          - client
     steps:
       - uses: actions/checkout@v6
 
       - uses: xmake-io/github-action-setup-xmake@v1
+        # with:
+        #   xmake-version: branch@master
 
       - uses: actions/cache@v5
         with:
@@ -23,14 +30,14 @@ jobs:
           xmake repo -u
 
       - run: |
-          xmake f -a x64 -m release -p windows -v -y
+          xmake f -a x64 -m release -p windows --target_type=${{ matrix.target_type }} -y
 
       - run: |
-          xmake -v -w -y
+          xmake -w -y
 
       - uses: actions/upload-artifact@v6
         with:
-          name: more-dimensions-windows-x64-${{ github.sha }}
+          name: ${{ github.event.repository.name }}-${{ github.sha }}-${{ matrix.target_type }}-windows-x64
           path: |
             bin/
 
@@ -55,23 +62,28 @@ jobs:
       - update-release-notes
     permissions:
       contents: write
+    strategy:
+      matrix:
+        target_type:
+          - server
+          - client
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
 
       - uses: actions/download-artifact@v7
         with:
-          name: more-dimensions-windows-x64-${{ github.sha }}
+          name: ${{ github.event.repository.name }}-${{ github.sha }}-${{ matrix.target_type }}-windows-x64
           path: artifact
 
       - run: |
-          cp CHANGELOG.md COPYING COPYING.LESSER README.md artifact/
+          cp CHANGELOG.md LICENSE README.md artifact/
 
       - run: |
-          zip -r ../more-dimensions-windows-x64-${{ github.ref_name }}.zip *
+          zip -r ../${{ github.event.repository.name }}-${{ matrix.target_type }}-windows-x64.zip *
         working-directory: artifact
 
       - uses: softprops/action-gh-release@v2
         with:
           files: |
-            more-dimensions-windows-x64-${{ github.ref_name }}.zip
+            ${{ github.event.repository.name }}-${{ matrix.target_type }}-windows-x64.zip
