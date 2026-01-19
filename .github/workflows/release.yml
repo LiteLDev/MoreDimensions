@@ -2,7 +2,7 @@ on:
   push:
     tags:
       - "v*.*.*"
-  
+
 jobs:
   build:
     runs-on: windows-latest
@@ -77,7 +77,7 @@ jobs:
           path: artifact
 
       - run: |
-          cp CHANGELOG.md LICENSE README.md artifact/
+          cp CHANGELOG.md COPYING COPYING.LESSER README.md artifact/
 
       - run: |
           zip -r ../${{ github.event.repository.name }}-${{ matrix.target_type }}-windows-x64.zip *
