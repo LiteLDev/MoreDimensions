@@ -13,7 +13,6 @@
 #include "mc/nbt/Tag.h"
 #include "mc/server/DedicatedServer.h"
 #include "mc/server/PropertiesSettings.h"
-#include "mc/server/ServerInstance.h"
 #include "mc/util/BidirectionalUnorderedMap.h"
 #include "mc/world/actor/player/Player.h"
 #include "mc/world/level/Level.h"

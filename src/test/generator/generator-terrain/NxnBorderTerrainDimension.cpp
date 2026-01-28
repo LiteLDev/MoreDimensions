@@ -10,11 +10,11 @@
 #include "mc/world/level/chunk/vanilla_level_chunk_upgrade/VanillaLevelChunkUpgrade.h"
 #include "mc/world/level/dimension/DimensionArguments.h"
 #include "mc/world/level/dimension/DimensionBrightnessRamp.h"
+#include "mc/world/level/dimension/IClientDimensionExtensions.h"
 #include "mc/world/level/dimension/OverworldBrightnessRamp.h"
 #include "mc/world/level/dimension/VanillaDimensions.h"
 #include "mc/world/level/levelgen/flat/FlatWorldGenerator.h"
 #include "mc/world/level/levelgen/structure/StructureFeatureRegistry.h"
-#include "mc/world/level/levelgen/structure/VillageFeature.h"
 #include "mc/world/level/levelgen/v2/ChunkGeneratorStructureState.h"
 #include "mc/world/level/storage/LevelData.h"
 
@@ -45,12 +45,12 @@ CompoundTag NxnBorderTerrainDimension::generateNewData(uint chunkLength) {
 
 std::unique_ptr<WorldGenerator> NxnBorderTerrainDimension::createGenerator(br::worldgen::StructureSetRegistry const&) {
 
-    std::unique_ptr<WorldGenerator> worldGenerator;
     auto                            seed      = mLevel.getSeed();
     auto&                           levelData = mLevel.getLevelData();
 
     // 实例化一个FlatWorldGenerator类
-    worldGenerator = std::make_unique<NxnBorderTerrainGenerator>(*this, seed, chunkLength, levelData.mFlatWorldOptions);
+    std::unique_ptr<WorldGenerator> worldGenerator =
+        std::make_unique<NxnBorderTerrainGenerator>(*this, seed, chunkLength, levelData.mFlatWorldOptions);
     // 此为必须，一些结构生成相关
     worldGenerator->mStructureFeatureRegistry->mGeneratorState =
         br::worldgen::ChunkGeneratorStructureState::createFlat(seed, worldGenerator->getBiomeSource(), {});

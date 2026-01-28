@@ -23,7 +23,7 @@
 
 // #include "mc/world/level/storage/Experiments.h"
 // #include "test/mc/StructureTemplateRegistrationContext.h"
-// #include "test/mc/WeightedStructureTemplateRegistration.h"
+// #include "mc/world/level/levelgen/structure/structurepools/WeightedStructureTemplateRegistration.h"
 
 // #include <initializer_list>
 #include <memory>
@@ -231,7 +231,7 @@ void CustomJigsawStructureElements::initialize(
 }
 
 void CustomJigsawStructure::initialize(
-    Bedrock::NotNullNonOwnerPtr<::StructureManager> manager,
+    Bedrock::NotNullNonOwnerPtr<::StructureManager> const& manager,
     FeatureRegistry&                                featureRegistry,
     JigsawStructureRegistry&                        registry,
     BaseGameVersion const&                          baseGameVersion,

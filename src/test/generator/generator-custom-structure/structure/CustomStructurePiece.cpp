@@ -1,19 +1,20 @@
 #include "CustomStructurePiece.h"
 
 #include "mc/util/Random.h"
-#include "mc/world/actor/ActorDefinitionIdentifier.h"
 #include "mc/world/level/BlockPos.h"
 #include "mc/world/level/block/VanillaBlockTypeIds.h"
 #include "mc/world/level/block/registry/BlockTypeRegistry.h"
 #include "mc/world/level/dimension/Dimension.h"
 #include "mc/world/level/levelgen/structure/BoundingBox.h"
+#include "mc/world/level/levelgen/structure/JigsawPlacement.h"
 #include "mc/world/level/levelgen/structure/registry/JigsawStructureRegistry.h"
 #include "mc/world/level/levelgen/structure/structurepools/StructurePoolElement.h"
+#include "mc/world/level/levelgen/structure/structurepools/StructureTemplatePool.h"
 #include "mc/world/level/levelgen/v1/AdjustmentEffect.h"
-#include "test/mc/JigsawPlacement.h"
-#include "test/mc/StructureTemplatePool.h"
 
 #include <memory>
+
+StructureTemplatePool::StructureTemplatePool() = default;
 
 namespace custom_structure {
 
@@ -51,7 +52,7 @@ void CustomStructurePiece::addPieces(
     BlockPos                                      position,
     std::vector<std::unique_ptr<StructurePiece>>& pieces,
     Random&                                       random,
-    JigsawStructureRegistry&                      pools,
+    JigsawStructureRegistry const&                pools,
     VanillaBiomeTypes                             biomeType,
     Dimension&                                    dimension
 ) {
@@ -70,7 +71,7 @@ void CustomStructurePiece::addPieces(
     JigsawPlacement place(15, 80, pieces, lambda, random, pools, dimension);
 
     auto index = random.nextInt(0, templates->mTemplates->size() - 1);
-    place.addPieces(*templates->mTemplates->at(index), position, Rotation(random.nextInt(4)), "", {});
+    place.addPieces(*templates->mTemplates->at(index), position, static_cast<Rotation>(random.nextInt(4)), "", {});
 }
 
 } // namespace custom_structure

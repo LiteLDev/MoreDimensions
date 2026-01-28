@@ -22,12 +22,9 @@
 #include "mc/network/packet/AddVolumeEntityPacket.h"
 #include "mc/network/packet/ChangeDimensionPacket.h"
 #include "mc/network/packet/DebugDrawerPacket.h"
-#include "mc/network/packet/InteractPacket.h"
-#include "mc/network/packet/InventoryTransactionPacket.h"
 #include "mc/network/packet/LevelChunkPacket.h"
 #include "mc/network/packet/PlayerActionPacket.h"
 #include "mc/network/packet/PlayerActionType.h"
-#include "mc/network/packet/PlayerAuthInputPacket.h"
 #include "mc/network/packet/RemoveVolumeEntityPacket.h"
 #include "mc/network/packet/ShapeDataPayload.h"
 #include "mc/network/packet/SpawnParticleEffectPacket.h"
@@ -36,7 +33,6 @@
 #include "mc/network/packet/SubChunkRequestPacket.h"
 #include "mc/network/packet/UpdateBlockPacket.h"
 #include "mc/server/ServerPlayer.h"
-#include "mc/util/MolangVariable.h"
 #include "mc/util/VarIntDataOutput.h"
 #include "mc/world/level/ChangeDimensionRequest.h"
 #include "mc/world/level/Level.h"
@@ -44,16 +40,7 @@
 #include "mc/world/level/SpawnSettings.h"
 #include "mc/world/level/dimension/VanillaDimensions.h"
 
-// From
-// https://github.com/OEOTYAN/BedrockServerClientInterface/blob/6f74e2d00e574ea24cdac76238d7d67310586eec/src/bsci/particle/ParticleSpawner.cpp#L41
-MolangVariableMap::MolangVariableMap(MolangVariableMap const& rhs) {
-    mMapFromVariableIndexToVariableArrayOffset = rhs.mMapFromVariableIndexToVariableArrayOffset;
-    mVariables                                 = {};
-    for (auto& ptr : *rhs.mVariables) {
-        mVariables->push_back(std::make_unique<MolangVariable>(*ptr));
-    }
-    mHasPublicVariables = rhs.mHasPublicVariables;
-}
+MolangScriptArg::MolangScriptArg() = default;
 
 // ChangeDimensionPacket.java
 // ClientboundMapItemDataPacket.java
@@ -79,7 +66,7 @@ static void sendEmptyChunk(const NetworkIdentifier& netId, int chunkX, int chunk
     for (int i = 1; i <= 8; i++) {
         varIntDataOutput.writeByte(255ui8);
     }
-    varIntDataOutput.mStream.writeByte(0, "Byte", 0); // write border blocks
+    varIntDataOutput.mStream.writeByte(0, "Byte", nullptr); // write border blocks
 
     levelChunkPacket.mPos->x         = chunkX;
     levelChunkPacket.mPos->z         = chunkZ;
@@ -102,8 +89,8 @@ static void sendEmptyChunk(const NetworkIdentifier& netId, int chunkX, int chunk
 }
 
 static void sendEmptyChunks(const NetworkIdentifier& netId, const Vec3& position, int radius, bool forceUpdate) {
-    int chunkX = (int)(position.x) >> 4;
-    int chunkZ = (int)(position.z) >> 4;
+    int chunkX = static_cast<int>(position.x) >> 4;
+    int chunkZ = static_cast<int>(position.z) >> 4;
     for (int x = -radius; x <= radius; x++) {
         for (int z = -radius; z <= radius; z++) {
             sendEmptyChunk(netId, chunkX + x, chunkZ + z, forceUpdate);
@@ -241,55 +228,53 @@ LL_TYPE_INSTANCE_HOOK(
     StartGamePacket,
     &StartGamePacket::$ctor,
     void*,
-    LevelSettings const&          levelSettings,
-    ActorUniqueID                 uniqueId,
+    LevelSettings const&          settings,
+    ActorUniqueID                 entityId,
     ActorRuntimeID                runtimeId,
-    ::GameType                    gameType,
-    bool                          unk,
+    GameType                      entityGameType,
+    bool                          enableItemStackNetManager,
     Vec3 const&                   pos,
-    Vec2 const&                   ros,
+    Vec2 const&                   rot,
     std::string const&            levelId,
     std::string const&            levelName,
-    ContentIdentity const&        contentIdentity,
-    std::string const&            unk1,
+    ContentIdentity const&        premiumTemplateContentIdentity,
+    std::string const&            multiplayerCorrelationId,
     BlockDefinitionGroup const&   blockDefinitionGroup,
-    bool                          unk2,
-    CompoundTag                   compoundTag,
-    PlayerMovementSettings const& moveSetting,
-    bool                          enableTickDeathSystems,
-    std::string const&            unk3,
-    mce::UUID const&              uuid,
-    uint64                        unk4,
-    int                           unk5,
-    uint64                        unk6
+    bool                          isTrial,
+    CompoundTag                   playerPropertyData,
+    PlayerMovementSettings const& movementSettings,
+    std::string const&            serverVersion,
+    mce::UUID const&              worldTemplateId,
+    uint64                        levelCurrentTime,
+    int                           enchantmentSeed,
+    uint64                        blockTypeRegistryChecksum
 ) {
-    if (levelSettings.getSpawnSettings().dimension->id >= 3) {
-        SpawnSettings spawnSettings(levelSettings.getSpawnSettings());
+    if (settings.getSpawnSettings().dimension->id >= 3) {
+        SpawnSettings spawnSettings(settings.getSpawnSettings());
         spawnSettings.dimension = FakeDimensionId::fakeDim;
-        const_cast<LevelSettings&>(levelSettings).setSpawnSettings(spawnSettings);
+        const_cast<LevelSettings&>(settings).setSpawnSettings(spawnSettings);
     }
     return origin(
-        levelSettings,
-        uniqueId,
+        settings,
+        entityId,
         runtimeId,
-        gameType,
-        unk,
+        entityGameType,
+        enableItemStackNetManager,
         pos,
-        ros,
+        rot,
         levelId,
         levelName,
-        contentIdentity,
-        unk1,
+        premiumTemplateContentIdentity,
+        multiplayerCorrelationId,
         blockDefinitionGroup,
-        unk2,
-        std::move(compoundTag),
-        moveSetting,
-        enableTickDeathSystems,
-        unk3,
-        uuid,
-        unk4,
-        unk5,
-        unk6
+        isTrial,
+        std::move(playerPropertyData),
+        movementSettings,
+        serverVersion,
+        worldTemplateId,
+        levelCurrentTime,
+        enchantmentSeed,
+        blockTypeRegistryChecksum
     );
 }
 
@@ -389,8 +374,7 @@ LL_TYPE_INSTANCE_HOOK(
             return origin(netId, packet);
         }
         fakeDimensionId.setNeedRemove(uuid, false);
-        auto moveComp = player->getEntityContext().tryGetComponent<ServerPlayerMovementComponent>();
-        if (moveComp) {
+        if (auto moveComp = player->getEntityContext().tryGetComponent<ServerPlayerMovementComponent>()) {
             moveComp->mServerHasMovementAuthority = false;
         }
         fakeDimensionId.onPlayerLeftCustomDimension(uuid, true);
@@ -454,8 +438,7 @@ FakeDimensionId& FakeDimensionId::getInstance() {
 }
 
 void FakeDimensionId::changePacketDimension(Packet& packet) {
-    auto packId = packet.getId();
-    switch (packId) {
+    switch (auto packId = packet.getId()) {
     case MinecraftPacketIds::RemoveVolumeEntityPacket: {
         auto& tempP          = (RemoveVolumeEntityPacket&)packet;
         tempP.mDimensionType = fakeDim;
@@ -480,7 +463,7 @@ void FakeDimensionId::changePacketDimension(Packet& packet) {
 
 void FakeDimensionId::setNeedRemove(mce::UUID uuid, bool needRemove) {
     std::lock_guard lockGuard{mMapMutex};
-    if (mSettingMap.count(uuid)) {
+    if (mSettingMap.contains(uuid)) {
         mSettingMap.at(uuid).needRemovePacket = needRemove;
     } else {
         mSettingMap.emplace(uuid, CustomDimensionIdSetting{needRemove});
@@ -489,7 +472,7 @@ void FakeDimensionId::setNeedRemove(mce::UUID uuid, bool needRemove) {
 
 bool FakeDimensionId::isNeedRemove(mce::UUID uuid) {
     std::lock_guard lockGuard{mMapMutex};
-    if (mSettingMap.count(uuid)) {
+    if (mSettingMap.contains(uuid)) {
         return mSettingMap.at(uuid).needRemovePacket;
     }
     return false;
@@ -497,14 +480,14 @@ bool FakeDimensionId::isNeedRemove(mce::UUID uuid) {
 
 void FakeDimensionId::onPlayerGoCustomDimension(mce::UUID uuid) {
     std::lock_guard lockGuard{mMapMutex};
-    if (!mSettingMap.count(uuid)) {
+    if (!mSettingMap.contains(uuid)) {
         mSettingMap.emplace(uuid, CustomDimensionIdSetting{false});
     }
 }
 
 void FakeDimensionId::onPlayerLeftCustomDimension(mce::UUID uuid, bool isRespawn) {
     std::lock_guard lockGuard{mMapMutex};
-    if (mSettingMap.count(uuid)) {
+    if (mSettingMap.contains(uuid)) {
         if (isRespawn) {
             mSettingMap.at(uuid).needRemovePacket = false;
         } else {

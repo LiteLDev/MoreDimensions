@@ -8,14 +8,13 @@
 #include "mc/world/level/BlockSource.h"
 #include "mc/world/level/DimensionConversionData.h"
 #include "mc/world/level/Level.h"
-#include "mc/world/level/LevelSeed64.h"
 #include "mc/world/level/chunk/vanilla_level_chunk_upgrade/VanillaLevelChunkUpgrade.h"
 #include "mc/world/level/dimension/DimensionArguments.h"
+#include "mc/world/level/dimension/IClientDimensionExtensions.h"
 #include "mc/world/level/dimension/OverworldBrightnessRamp.h"
 #include "mc/world/level/dimension/VanillaDimensions.h"
 #include "mc/world/level/levelgen/structure/StructureFeatureRegistry.h"
 #include "mc/world/level/levelgen/structure/VillageFeature.h"
-#include "mc/world/level/levelgen/structure/registry/StructureSetRegistry.h"
 #include "mc/world/level/levelgen/v2/ChunkGeneratorStructureState.h"
 #include "mc/world/level/storage/LevelData.h"
 
@@ -39,16 +38,16 @@ CompoundTag CustomStructureDimension::generateNewData() { return {}; }
 
 std::unique_ptr<WorldGenerator>
 CustomStructureDimension::createGenerator(br::worldgen::StructureSetRegistry const& structureSetRegistry) {
-    std::unique_ptr<WorldGenerator> worldGenerator;
     uint                            seed      = 2025;
     auto&                           levelData = mLevel.getLevelData();
 
     // 实例化我们写的Generator类
-    worldGenerator = std::make_unique<custom_structure_generator::CustomStructureGenerator>(
-        *this,
-        seed,
-        levelData.mFlatWorldOptions
-    );
+    std::unique_ptr<WorldGenerator> worldGenerator =
+        std::make_unique<custom_structure_generator::CustomStructureGenerator>(
+            *this,
+            seed,
+            levelData.mFlatWorldOptions
+        );
 
     // 这个就相当于在这个生成器里注册结构了
     // VillageFeature的第二第三个参数是村庄之间的最大间隔与最小间隔

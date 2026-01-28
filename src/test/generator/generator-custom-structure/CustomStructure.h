@@ -17,7 +17,7 @@ namespace CustomJigsawStructure {
 
 // 总注册初始化函数
 void initialize(
-    Bedrock::NotNullNonOwnerPtr<::StructureManager> manager,
+Bedrock::NotNullNonOwnerPtr<::StructureManager> const& manager,
     FeatureRegistry&                                featureRegistry,
     JigsawStructureRegistry&                        registry,
     BaseGameVersion const&                          baseGameVersion,

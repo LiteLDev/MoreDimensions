@@ -4,7 +4,6 @@
 
 #include "mc/deps/core/utility/AutomaticID.h"
 #include "mc/nbt/CompoundTag.h"
-#include "mc/world/level/GeneratorType.h"
 
 class Dimension;
 class DerivedDimensionArguments;

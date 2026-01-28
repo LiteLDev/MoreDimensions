@@ -7,17 +7,15 @@
 #include "mc/world/level/BlockSource.h"
 #include "mc/world/level/DimensionConversionData.h"
 #include "mc/world/level/Level.h"
-#include "mc/world/level/LevelSeed64.h"
 #include "mc/world/level/chunk/vanilla_level_chunk_upgrade/VanillaLevelChunkUpgrade.h"
 #include "mc/world/level/dimension/DimensionArguments.h"
+#include "mc/world/level/dimension/IClientDimensionExtensions.h"
 #include "mc/world/level/dimension/OverworldBrightnessRamp.h"
 #include "mc/world/level/dimension/VanillaDimensions.h"
 #include "mc/world/level/levelgen/structure/StructureFeatureRegistry.h"
 #include "mc/world/level/levelgen/structure/VillageFeature.h"
-#include "mc/world/level/levelgen/structure/registry/StructureSetRegistry.h"
 #include "mc/world/level/levelgen/v2/ChunkGeneratorStructureState.h"
 #include "mc/world/level/storage/LevelData.h"
-
 
 namespace flat_village_dimension {
 
@@ -35,12 +33,11 @@ CompoundTag FlatVillageDimension::generateNewData() { return {}; }
 
 std::unique_ptr<WorldGenerator>
 FlatVillageDimension::createGenerator(br::worldgen::StructureSetRegistry const& structureSetRegistry) {
-    std::unique_ptr<WorldGenerator> worldGenerator;
     uint                            seed      = 2024;
     auto&                           levelData = mLevel.getLevelData();
 
     // 实例化我们写的Generator类
-    worldGenerator =
+    std::unique_ptr<WorldGenerator> worldGenerator =
         std::make_unique<flat_village_generator::FlatVillageGenerator>(*this, seed, levelData.mFlatWorldOptions);
 
     // 此为必须，一些结构生成相关

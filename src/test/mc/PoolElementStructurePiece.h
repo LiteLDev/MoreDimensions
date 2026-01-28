@@ -1,6 +1,7 @@
 #pragma once
 
 #include "mc/_HeaderOutputPredefine.h"
+#include "mc/world/actor/ActorDefinitionIdentifier.h"
 
 // auto generated inclusion list
 #include "mc/util/Rotation.h"
@@ -62,16 +63,12 @@ public:
 public:
     // virtual functions
     // NOLINTBEGIN
-    // vIndex: 4
     virtual bool postProcess(::BlockSource& region, ::Random& random, ::BoundingBox const& chunkBB) /*override*/;
 
-    // vIndex: 5
     virtual void postProcessMobsAt(::BlockSource& region, ::Random& random, ::BoundingBox const& chunkBB) /*override*/;
 
-    // vIndex: 1
     virtual void moveBoundingBox(int dx, int dy, int dz) /*override*/;
 
-    // vIndex: 13
     virtual int generateHeightAtPosition(
         ::BlockPos const&,
         ::Dimension&,
@@ -79,19 +76,14 @@ public:
         ::std::unordered_map<::ChunkPos, ::std::unique_ptr<::std::vector<short>>>&
     ) const = 0;
 
-    // vIndex: 14
     virtual ::Block const* getSupportBlock(::BlockSource&, ::BlockPos const&, ::Block const&) const = 0;
 
-    // vIndex: 15
     virtual ::Block const& getBeardStabilizeBlock(::Block const&) const = 0;
 
-    // vIndex: 16
     virtual ::AdjustmentEffect getTerrainAdjustmentEffect() const = 0;
 
-    // vIndex: 17
     virtual bool _needsPostProcessing(::BlockSource& region);
 
-    // vIndex: 0
     virtual ~PoolElementStructurePiece() /*override*/ = default;
     // NOLINTEND
 

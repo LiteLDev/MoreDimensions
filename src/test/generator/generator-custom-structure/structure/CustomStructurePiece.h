@@ -4,8 +4,6 @@
 #include "mc/world/level/biome/components/vanilla/VanillaBiomeTypes.h"
 #include "test/mc/PoolElementStructurePiece.h"
 
-
-
 class JigsawStructureRegistry;
 class StructurePoolElement;
 struct JigsawJunction;
@@ -14,15 +12,18 @@ namespace custom_structure {
 
 class CustomStructurePiece : public PoolElementStructurePiece {
 public:
-    virtual int
-    generateHeightAtPosition(::BlockPos const&, ::Dimension&, ::BlockVolume&, ::std::unordered_map<::ChunkPos, ::std::unique_ptr<::std::vector<short>>>&)
-        const;
+    int generateHeightAtPosition(
+        ::BlockPos const&,
+        ::Dimension&,
+        ::BlockVolume&,
+        ::std::unordered_map<::ChunkPos, ::std::unique_ptr<::std::vector<short>>>&
+    ) const override;
 
-    virtual Block const* getSupportBlock(::BlockSource&, ::BlockPos const&, ::Block const&) const;
+    Block const* getSupportBlock(::BlockSource&, ::BlockPos const&, ::Block const&) const override;
 
-    virtual Block const& getBeardStabilizeBlock(::Block const&) const;
+    Block const& getBeardStabilizeBlock(::Block const&) const override;
 
-    virtual AdjustmentEffect getTerrainAdjustmentEffect() const;
+    AdjustmentEffect getTerrainAdjustmentEffect() const override;
 
     CustomStructurePiece(
         ::StructurePoolElement const& element,
@@ -38,7 +39,7 @@ public:
         BlockPos                                      position,
         std::vector<std::unique_ptr<StructurePiece>>& pieces,
         Random&                                       random,
-        JigsawStructureRegistry&                      pools,
+        JigsawStructureRegistry const&                pools,
         VanillaBiomeTypes                             biomeType,
         Dimension&                                    dimension
     );

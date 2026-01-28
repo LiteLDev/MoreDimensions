@@ -3,7 +3,6 @@
 #include "test/mc/FixedBiomeSource.h"
 
 #include "mc/deps/core/math/Random.h"
-#include "mc/platform/threading/Mutex.h"
 #include "mc/util/ThreadOwner.h"
 #include "mc/world/level/BlockSource.h"
 #include "mc/world/level/ChunkPos.h"

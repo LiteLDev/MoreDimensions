@@ -8,7 +8,7 @@ class CustomStructureFeature : public StructureFeature {
     int  mMaxSpacing; // 最大间距
     int  mMinSpacing; // 最小间距
 public:
-    virtual bool getNearestGeneratedFeature(
+    bool getNearestGeneratedFeature(
         ::Dimension&                           dimension,
         ::BiomeSource const&                   biomeSource,
         ::BlockPos const&                      origin,
@@ -16,13 +16,24 @@ public:
         ::IPreliminarySurfaceProvider const&   preliminarySurfaceLevel,
         bool                                   mustBeInNewChunks,
         ::std::optional<::HashedString> const& biomeTag
-    );
+    ) override;
 
-    virtual bool
-    isFeatureChunk(::BiomeSource const&, ::Random&, ::ChunkPos const&, uint, ::IPreliminarySurfaceProvider const&, ::Dimension const&);
+    bool isFeatureChunk(
+        ::BiomeSource const&,
+        ::Random&,
+        ::ChunkPos const&,
+        uint,
+        ::IPreliminarySurfaceProvider const&,
+        ::Dimension const&
+    ) override;
 
-    virtual ::std::unique_ptr<::StructureStart>
-    createStructureStart(::Dimension&, ::BiomeSource const&, ::Random&, ::ChunkPos const&, ::IPreliminarySurfaceProvider const&);
+    ::std::unique_ptr<::StructureStart> createStructureStart(
+        ::Dimension&,
+        ::BiomeSource const&,
+        ::Random&,
+        ::ChunkPos const&,
+        ::IPreliminarySurfaceProvider const&
+    ) override;
 
     CustomStructureFeature(uint seed, uint minSpacing, uint maxSpacing);
 };

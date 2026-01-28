@@ -15,6 +15,7 @@
 #include "mc/world/level/biome/registry/BiomeRegistry.h"
 #include "mc/world/level/chunk/vanilla_level_chunk_upgrade/VanillaLevelChunkUpgrade.h"
 #include "mc/world/level/dimension/DimensionArguments.h"
+#include "mc/world/level/dimension/IClientDimensionExtensions.h"
 #include "mc/world/level/dimension/NetherBrightnessRamp.h"
 #include "mc/world/level/dimension/OverworldBrightnessRamp.h"
 #include "mc/world/level/dimension/VanillaDimensions.h"
@@ -31,20 +32,16 @@
 
 #include "test/mc/FixedBiomeSource.h"
 
-
 #include <memory>
 #include <windows.h>
 
-
 namespace more_dimensions {
-
 
 namespace {
 using namespace ll::memory_literals;
 
-static auto* overworldAddress =
-    "`anonymous namespace'::unity_5c986e6b9d6571cc96912b0bfa0329e2::addStructureFeatures"_symp;
-static auto* netherAddress = "`anonymous namespace'::unity_3da1d4c9fa90b4b1becbca96840255a5::addStructureFeatures"_symp;
+static auto* overworldAddress = "`anonymous namespace'::OverworldDimensionAnon::addStructureFeatures"_symp;
+static auto* netherAddress    = "`anonymous namespace'::NetherDimensionAnon::addStructureFeatures"_symp;
 
 static DWORD endcitityAddress_rva = 0x0808E70;
 
@@ -80,8 +77,8 @@ void netherAddStructureFeatures(
 
 void createEndCityFeature(StructureFeatureRegistry* _this, Dimension& dimension, uint& seed) {
 
-    HMODULE hModule          = GetModuleHandle(NULL);
-    void*   endcitityAddress = (void*)((BYTE*)hModule + endcitityAddress_rva);
+    HMODULE hModule          = GetModuleHandle(nullptr);
+    void*   endcitityAddress = (void*)(reinterpret_cast<BYTE*>(hModule) + endcitityAddress_rva);
     ll::memory::addressCall<EndCityFeature&, StructureFeatureRegistry*, Dimension&, uint&>(
         endcitityAddress,
         _this,
@@ -100,7 +97,7 @@ SimpleCustomDimension::SimpleCustomDimension(std::string const& name, DimensionF
     mDefaultBrightness->sky = Brightness::MAX();
 
     // Parse generatorType with error handling
-    auto generatorTypeOpt = magic_enum::enum_cast<GeneratorType>((std::string_view)info.data["generatorType"]);
+    auto generatorTypeOpt = magic_enum::enum_cast<GeneratorType>(static_cast<std::string_view>(info.data["generatorType"]));
     if (!generatorTypeOpt.has_value()) {
         loggerMoreDim.error(
             "Invalid generatorType '{}' for dimension '{}', defaulting to Overworld",

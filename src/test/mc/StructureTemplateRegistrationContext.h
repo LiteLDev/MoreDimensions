@@ -27,17 +27,17 @@ public:
 
 public:
     StructureTemplateRegistrationContext(
-        Bedrock::NotNullNonOwnerPtr<::IStructureTemplateManager> manager,
-        JigsawStructureElementRegistry&                          structureRegistry,
-        FeatureRegistry&                                         featureRegistry,
-        BaseGameVersion                                          baseGameVersion,
-        Experiments const&                                       experiments
+        Bedrock::NotNullNonOwnerPtr<::IStructureTemplateManager> const& manager,
+        JigsawStructureElementRegistry&                                 structureRegistry,
+        FeatureRegistry&                                                featureRegistry,
+        BaseGameVersion                                                 baseGameVersion,
+        Experiments const&                                              experiments
     )
     : mManager(manager),
       mStructureRegistry(structureRegistry),
       mFeatureRegistry(featureRegistry),
       mBaseGameVersion(baseGameVersion),
-      mExperiments(experiments) {};
+      mExperiments(experiments) {}
 
 public:
     // prevent constructor by default
@@ -47,9 +47,9 @@ public:
 public:
     // member functions
     // NOLINTBEGIN
-    MCAPI StructureTemplateRegistrationContext(::StructureTemplateRegistrationContext const&);
-
     MCAPI StructureTemplateRegistrationContext(::StructureTemplateRegistrationContext&&);
+
+    MCAPI StructureTemplateRegistrationContext(::StructureTemplateRegistrationContext const&);
 
     MCAPI ~StructureTemplateRegistrationContext();
     // NOLINTEND
@@ -57,9 +57,9 @@ public:
 public:
     // constructor thunks
     // NOLINTBEGIN
-    MCAPI void* $ctor(::StructureTemplateRegistrationContext const&);
-
     MCAPI void* $ctor(::StructureTemplateRegistrationContext&&);
+
+    MCAPI void* $ctor(::StructureTemplateRegistrationContext const&);
     // NOLINTEND
 
 public:
