@@ -29,7 +29,7 @@ FlatVillageGenerator::FlatVillageGenerator(Dimension& dimension, uint seed, Json
     mBiomeSource = std::make_unique<FixedBiomeSource>(*mBiome);
 }
 
-bool FlatVillageGenerator::postProcess(ChunkViewSource& neighborhood) {
+bool FlatVillageGenerator::structurePostProcessChunk(ChunkViewSource& neighborhood) {
     ChunkPos chunkPos;
     chunkPos.x      = neighborhood.mArea->mBounds.mMin->x + 1;
     chunkPos.z      = neighborhood.mArea->mBounds.mMin->z + 1;
@@ -53,8 +53,8 @@ bool FlatVillageGenerator::postProcess(ChunkViewSource& neighborhood) {
     WorldGenerator::postProcessStructureFeatures(blockSource, random, chunkPosL->x, chunkPosL->z);
     // 处理其它单体结构，比如沉船，这里不是必须
     WorldGenerator::postProcessStructures(blockSource, random, chunkPosL->x, chunkPosL->z);
-    // 1.21.50.10 起，有更改，需添加以下调用
-    levelChunk->finalizePostProcessing();
+
+    WorldGenerator::addHardcodedSpawnAreas(*levelChunk);
     return true;
 }
 

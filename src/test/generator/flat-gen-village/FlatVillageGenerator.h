@@ -28,7 +28,7 @@ public:
     FlatVillageGenerator(Dimension& dimension, uint seed, Json::Value const& generationOptionsJSON);
 
     // 这里是处理结构放置相关的，包括地物，结构，地形
-    bool postProcess(ChunkViewSource& neighborhood);
+    bool structurePostProcessChunk(ChunkViewSource& neighborhood);
 
     // 这里是初始处理新的单区块的方块生成相关的，比如一些大量的方块（石头，泥土）
     void loadChunk(LevelChunk& levelchunk, bool forceImmediateReplacementDataLoad) override;
