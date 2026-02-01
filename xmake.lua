@@ -1,19 +1,16 @@
 add_rules("mode.debug", "mode.release")
 
-add_repositories("local-repo C:/Users/User/Desktop/ClientHeader/LeviLamina/build")
 add_repositories("liteldev-repo https://github.com/LiteLDev/xmake-repo.git")
 
--- if is_config("target_type", "server") then
---     add_requires("levilamina 1.3.0", {configs = {target_type = "server"}})
--- else
---     add_requires("levilamina 1.3.0", {configs = {target_type = "client"}})
--- end
-
-add_requires("levilamina")
+if is_config("target_type", "server") then
+    add_requires("levilamina 1.9.2", { configs = { target_type = "server" } })
+else
+    add_requires("levilamina 1.9.2", { configs = { target_type = "client" } })
+end
 
 add_requires("levibuildscript")
 add_requires("snappy 1.2.1")
-add_requires("preloader 1.15.3")
+add_requires("preloader 1.15.5")
 
 if not has_config("vs_runtime") then
     set_runtimes("MD")
@@ -50,12 +47,20 @@ target("more-dimensions")
         "src/(more_dimensions/api/**.h)",
         "src/(more_dimensions/core/Macros.h)"
     )
-    remove_files( -- remove when everything fine
-            "src/more_dimensions/core/dimension/FakeDimensionId.cpp")
     if has_config("tests") then
         add_files("src/test/TestCustomDimension.cpp",
-                  "src/test/generator/flat-gen-village/**.cpp",
-                  "src/test/generator/generator-terrain/**.cpp",
-                  "src/test/generator/generator-custom-structure/**.cpp"
-                  )
+                "src/test/generator/flat-gen-village/**.cpp",
+                "src/test/generator/generator-terrain/**.cpp",
+                "src/test/generator/generator-custom-structure/**.cpp")
+    end
+    if is_config("target_type", "server") then
+        add_defines("LL_PLAT_S")
+        --  add_includedirs("src-server")
+        --  add_files("src-server/**.cpp")
+    else
+        add_defines("LL_PLAT_C")
+        --  add_includedirs("src-client")
+        --  add_files("src-client/**.cpp")
+        remove_files(
+            "src/more_dimensions/core/dimension/FakeDimensionId.cpp")
     end

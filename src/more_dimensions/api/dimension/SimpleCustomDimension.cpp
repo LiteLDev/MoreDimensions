@@ -51,18 +51,9 @@ namespace more_dimensions {
 namespace {
 using namespace ll::memory_literals;
 
-DWORD overworld_addStructureFeatures_rva = 0x68ABFC0;
-DWORD nethrer_addStructureFeatures_rva = 0x68AAC20;
-
-// HMODULE hModule = GetModuleHandle(L"bedrock_server_mod.exe");
-HMODULE hModule = GetModuleHandle(L"Minecraft.Windows.exe");
-
-static void* overworldAddress = (void*)((BYTE*)hModule + overworld_addStructureFeatures_rva);
-static void* netherAddress = (void*)((BYTE*)hModule + nethrer_addStructureFeatures_rva);
-
-// static auto* overworldAddress =
-//     "`anonymous namespace'::unity_5c986e6b9d6571cc96912b0bfa0329e2::addStructureFeatures"_symp;
-// static auto* netherAddress = "`anonymous namespace'::unity_3da1d4c9fa90b4b1becbca96840255a5::addStructureFeatures"_symp;
+static auto* overworldAddress = "`anonymous namespace'::OverworldDimensionAnon::addStructureFeatures"_symp;
+static auto* netherAddress    = "`anonymous namespace'::NetherDimensionAnon::addStructureFeatures"_symp;
+static DWORD endcitityAddress_rva = 0x03A3490;
 
 void overworldAddStructureFeatures(
     StructureFeatureRegistry& registry,
@@ -91,6 +82,18 @@ void netherAddStructureFeatures(
         seed,
         baseGameVersion,
         experiments
+    );
+};
+
+void createEndCityFeature(StructureFeatureRegistry* _this, Dimension& dimension, uint& seed) {
+
+    HMODULE hModule          = GetModuleHandle(nullptr);
+    void*   endcitityAddress = (void*)(reinterpret_cast<BYTE*>(hModule) + endcitityAddress_rva);
+    ll::memory::addressCall<EndCityFeature&, StructureFeatureRegistry*, Dimension&, uint&>(
+        endcitityAddress,
+        _this,
+        dimension,
+        seed
     );
 };
 } // namespace

@@ -12,9 +12,47 @@
 #include "more_dimensions/api/dimension/SimpleCustomDimension.h"
 #include "ll/api/service/Bedrock.h"
 
+void registryTestDimensions(bool isClient){
+    // simplate dimension test
+    // vanilla overworld type dimension test
+    more_dimensions::CustomDimensionManager::getInstance().addDimension<more_dimensions::SimpleCustomDimension>(
+        "testNewDimension"
+    );
+
+    // vanilla flat type dimension test
+    more_dimensions::CustomDimensionManager::getInstance()
+        .addDimension<more_dimensions::SimpleCustomDimension>("testNewFlatDimension", 345, GeneratorType::Flat);
+
+    // vanilla nether type dimension test
+    more_dimensions::CustomDimensionManager::getInstance()
+        .addDimension<more_dimensions::SimpleCustomDimension>("testNewNetherDimension", 345, GeneratorType::Nether);
+
+    // vanilla the end type dimension test
+    more_dimensions::CustomDimensionManager::getInstance()
+        .addDimension<more_dimensions::SimpleCustomDimension>("testNewTheEndDimension", 345, GeneratorType::TheEnd);
+
+    // vanilla void dimension test
+    more_dimensions::CustomDimensionManager::getInstance()
+        .addDimension<more_dimensions::SimpleCustomDimension>("testNewVoidDimension", 345, GeneratorType::Void);
+
+    // custom diomension test
+    // flat type generator village dimension test
+    more_dimensions::CustomDimensionManager::getInstance()
+        .addDimension<flat_village_dimension::FlatVillageDimension>("testFlatVillage");
+
+    // flat type custom terrain dimension test
+    more_dimensions::CustomDimensionManager::getInstance()
+        .addDimension<nxn_border_terrain::NxnBorderTerrainDimension>("testFlatTerrain", 5);
+
+    // flat type custom structure dimension test
+    // more_dimensions::CustomDimensionManager::getInstance()
+    //     .addDimension<custom_structure_dimension::CustomStructureDimension>("testCustomStructure");
+}
+
+#ifdef LL_PLAT_C
+
 #include "ll/api/memory/Hook.h"
 
-auto& logger = more_dimensions::MoreDimenison::getInstance().getSelf().getLogger();
 LL_AUTO_STATIC_HOOK(
     RegisterDimensionFactory,
     ll::memory::HookPriority::Highest,
@@ -23,56 +61,23 @@ LL_AUTO_STATIC_HOOK(
     OwnerPtrFactory<::Dimension, ::ILevel&, ::Scheduler&>& dimensionFactory
 ) {
     origin(dimensionFactory);
-    // simplate dimension test
-    // vanilla overworld type dimension test
-    more_dimensions::CustomDimensionManager::getInstance().addDimension<more_dimensions::SimpleCustomDimension>(
-        "testNewDimension",
-        true
-    );
-
-    // vanilla flat type dimension test
-    more_dimensions::CustomDimensionManager::getInstance()
-        .addDimension<more_dimensions::SimpleCustomDimension>("testNewFlatDimension", true, 345, GeneratorType::Flat);
-
-    // vanilla nether type dimension test
-    more_dimensions::CustomDimensionManager::getInstance().addDimension<more_dimensions::SimpleCustomDimension>(
-        "testNewNetherDimension",
-        true,
-        345,
-        GeneratorType::Nether
-    );
-
-    // vanilla the end type dimension test
-    more_dimensions::CustomDimensionManager::getInstance().addDimension<more_dimensions::SimpleCustomDimension>(
-        "testNewTheEndDimension",
-        true,
-        345,
-        GeneratorType::TheEnd
-    );
-
-    // vanilla void dimension test
-    more_dimensions::CustomDimensionManager::getInstance()
-        .addDimension<more_dimensions::SimpleCustomDimension>("testNewVoidDimension",true, 345, GeneratorType::Void);
-
-    // custom diomension test
-    // flat type generator village dimension test
-    more_dimensions::CustomDimensionManager::getInstance().addDimension<flat_village_dimension::FlatVillageDimension>(
-        "testFlatVillage",
-        true
-    );
-
-    // flat type custom terrain dimension test
-    more_dimensions::CustomDimensionManager::getInstance()
-        .addDimension<nxn_border_terrain::NxnBorderTerrainDimension>("testFlatTerrain", true, 5);
-
-    // flat type custom structure dimension test
-    // more_dimensions::CustomDimensionManager::getInstance()
-    //     .addDimension<custom_structure_dimension::CustomStructureDimension>("testCustomStructure");
+    registryTestDimensions(true);
 };
 
+#else
 
-#include "mc/client/network/LegacyClientNetworkHandler.h"
-#include "mc/world/level/Level.h"
+static bool reg = [] {
+    using namespace ll::event;
+    EventBus::getInstance().emplaceListener<ServerStartedEvent>([](ServerStartedEvent&) {
+        registryTestDimensions(false);
+    });
+    return true;
+}();
+
+#endif
+
+// #include "mc/client/network/LegacyClientNetworkHandler.h"
+// #include "mc/world/level/Level.h"
 
 // LL_AUTO_TYPE_INSTANCE_HOOK(
 //     LegacyHandleHook,

@@ -14,6 +14,10 @@
 #include "ll/api/utils/Base64Utils.h"
 #include "ll/api/utils/StringUtils.h"
 
+#ifdef LL_PLAT_C
+#include "ll/api/service/TargetedBedrock.h"
+#endif
+
 #include "mc/deps/core/math/Vec3.h"
 #include "mc/server/DedicatedServer.h"
 #include "mc/server/PropertiesSettings.h"
@@ -185,7 +189,9 @@ CustomDimensionManager::CustomDimensionManager() : impl(std::make_unique<Impl>()
         }
         impl->mNewDimensionId += static_cast<int>(impl->customDimensionMap.size());
     }
-    // FakeDimensionId::getInstance();
+#ifdef LL_PLAT_S
+    FakeDimensionId::getInstance();
+#endif
     CustomDimensionHookList::HookReg::hook();
 };
 
@@ -202,7 +208,6 @@ DimensionType CustomDimensionManager::getDimensionIdFromName(std::string const& 
 
 DimensionType CustomDimensionManager::addDimension(
     std::string const&                  dimName,
-    bool                                isClient,
     std::function<DimensionFactoryT>    factory,
     std::function<CompoundTag()> const& data
 ) {
@@ -227,15 +232,9 @@ DimensionType CustomDimensionManager::addDimension(
     };
 
     // registry create dimension function
-    if (isClient && !ll::service::getMultiPlayerLevel()) {
-        ll::service::getLevel()->getDimensionFactory().mFactoryMap.emplace(
-            dimName,
-            [dimName, info, factory = std::move(factory)](ILevel& ilevel, Scheduler& scheduler) -> OwnerPtr<Dimension> {
-                loggerMoreDimMag.debug("Server Level Create dimension, name: {}, id: {}", dimName, info.id.id);
-                return factory(DimensionFactoryInfo{ilevel, scheduler, info.nbt, info.id});
-            }
-        );
-    } else {
+    // in client, will registry 2 times, server before client
+#ifdef LL_PLAT_C
+    if(ll::service::getMultiPlayerLevel()) {
         ll::service::getMultiPlayerLevel()->getDimensionFactory().mFactoryMap.emplace(
             dimName,
             [dimName, info, factory = std::move(factory)](ILevel& ilevel, Scheduler& scheduler) -> OwnerPtr<Dimension> {
@@ -245,7 +244,17 @@ DimensionType CustomDimensionManager::addDimension(
         );
         return info.id;
     }
+#endif
 
+    if (ll::service::getLevel()) {
+        ll::service::getLevel()->getDimensionFactory().mFactoryMap.emplace(
+            dimName,
+            [dimName, info, factory = std::move(factory)](ILevel& ilevel, Scheduler& scheduler) -> OwnerPtr<Dimension> {
+                loggerMoreDimMag.debug("Server Level Create dimension, name: {}, id: {}", dimName, info.id.id);
+                return factory(DimensionFactoryInfo{ilevel, scheduler, info.nbt, info.id});
+            }
+        );
+    }
     // modify default dimension map
     loggerMoreDimMag.debug("Add new dimension to DimensionMap");
     ll::memory::modify(VanillaDimensions::DimensionMap(), [&](auto& dimMap) {
