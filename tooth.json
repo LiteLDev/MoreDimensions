@@ -33,28 +33,6 @@
           ]
         }
       ]
-    },
-    {
-      "label": "client",
-      "platform": "win-x64",
-      "assets": [
-        {
-          "type": "zip",
-          "urls": [
-            "https://{{tooth}}/releases/download/v{{version}}/MoreDimensions-client-windows-x64.zip"
-          ],
-          "dependencies": {
-            "github.com/LiteLDev/LeviLamina#client": ">=1.9.2 <1.10.0"
-          },
-          "placements": [
-            {
-              "type": "dir",
-              "src": "more-dimensions/",
-              "dest": "mods/more-dimensions/"
-            }
-          ]
-        }
-      ]
     }
   ]
 }

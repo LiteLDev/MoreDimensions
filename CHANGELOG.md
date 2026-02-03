@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Supported LeviLamina 1.9.2(Client 1.21.132.1 and Server 1.21.132.3)
+- Supported LeviLamina 1.9.2(Server 1.21.132.3)
 - Resolved some warnings in code
 
 ## [0.13.0-rc.1] - 2026-01-20
