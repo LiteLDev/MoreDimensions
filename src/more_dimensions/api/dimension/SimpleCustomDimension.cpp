@@ -40,9 +40,9 @@ namespace more_dimensions {
 namespace {
 using namespace ll::memory_literals;
 
-static auto* overworldAddress = "`anonymous namespace'::OverworldDimensionAnon::addStructureFeatures"_symp;
-static auto* netherAddress    = "`anonymous namespace'::NetherDimensionAnon::addStructureFeatures"_symp;
-static DWORD endcitityAddress_rva = 0x03A3490;
+auto* overworldAddress   = "`anonymous namespace'::OverworldDimensionAnon::addStructureFeatures"_symp;
+auto* netherAddress      = "`anonymous namespace'::NetherDimensionAnon::addStructureFeatures"_symp;
+DWORD endcityAddress_rva = 0x03A3490;
 
 void overworldAddStructureFeatures(
     StructureFeatureRegistry& registry,
@@ -76,10 +76,10 @@ void netherAddStructureFeatures(
 
 void createEndCityFeature(StructureFeatureRegistry* _this, Dimension& dimension, uint& seed) {
 
-    HMODULE hModule          = GetModuleHandle(nullptr);
-    void*   endcitityAddress = (void*)(reinterpret_cast<BYTE*>(hModule) + endcitityAddress_rva);
+    HMODULE hModule        = GetModuleHandle(nullptr);
+    void*   endcityAddress = reinterpret_cast<BYTE*>(hModule) + endcityAddress_rva;
     ll::memory::addressCall<EndCityFeature&, StructureFeatureRegistry*, Dimension&, uint&>(
-        endcitityAddress,
+        endcityAddress,
         _this,
         dimension,
         seed
@@ -96,7 +96,8 @@ SimpleCustomDimension::SimpleCustomDimension(std::string const& name, DimensionF
     mDefaultBrightness->sky = Brightness::MAX();
 
     // Parse generatorType with error handling
-    auto generatorTypeOpt = magic_enum::enum_cast<GeneratorType>(static_cast<std::string_view>(info.data["generatorType"]));
+    auto generatorTypeOpt =
+        magic_enum::enum_cast<GeneratorType>(static_cast<std::string_view>(info.data["generatorType"]));
     if (!generatorTypeOpt.has_value()) {
         loggerMoreDim.error(
             "Invalid generatorType '{}' for dimension '{}', defaulting to Overworld",
