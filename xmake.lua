@@ -10,7 +10,7 @@ end
 
 add_requires("levibuildscript")
 add_requires("snappy 1.2.1")
-add_requires("preloader 1.15.5")
+add_requires("preloader 1.15.7")
 
 if not has_config("vs_runtime") then
     set_runtimes("MD")
