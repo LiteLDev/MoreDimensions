@@ -1,14 +1,14 @@
 #include "FlatVillageGenerator.h"
 
+#include "test/mc/FixedBiomeSource.h"
+
 #include "mc/deps/core/math/Random.h"
-#include "mc/platform/threading/Mutex.h"
 #include "mc/util/ThreadOwner.h"
 #include "mc/world/level/BlockSource.h"
 #include "mc/world/level/ChunkPos.h"
 #include "mc/world/level/Level.h"
+#include "mc/world/level/biome/Biome.h"
 #include "mc/world/level/biome/registry/BiomeRegistry.h"
-#include "mc/world/level/biome/registry/VanillaBiomeNames.h"
-#include "mc/world/level/biome/source/FixedBiomeSource.h"
 #include "mc/world/level/chunk/ChunkState.h"
 #include "mc/world/level/chunk/ChunkViewSource.h"
 #include "mc/world/level/chunk/LevelChunk.h"
@@ -25,20 +25,20 @@ FlatVillageGenerator::FlatVillageGenerator(Dimension& dimension, uint seed, Json
     random.mRandom->mObject.mSeed = seed;
     mSeed                         = seed;
 
-    mBiome       = mLevel->getBiomeRegistry().lookupByHash(VanillaBiomeNames::Plains());
+    mBiome       = mLevel->getBiomeRegistry().lookupByName("minecraft:plains");
     mBiomeSource = std::make_unique<FixedBiomeSource>(*mBiome);
 }
 
-bool FlatVillageGenerator::postProcess(ChunkViewSource& neighborhood) {
+bool FlatVillageGenerator::structurePostProcessChunk(ChunkViewSource& neighborhood) {
     ChunkPos chunkPos;
-    chunkPos.x      = neighborhood.mArea->mBounds.mMin->x;
-    chunkPos.z      = neighborhood.mArea->mBounds.mMin->z;
+    chunkPos.x      = neighborhood.mArea->mBounds.mMin->x + 1;
+    chunkPos.z      = neighborhood.mArea->mBounds.mMin->z + 1;
     auto levelChunk = neighborhood.getExistingChunk(chunkPos);
 
     auto seed = mSeed;
 
     // 必须，需要给区块上锁
-    auto lockChunk = levelChunk->mDimension.mPostProcessingManager->tryLock(levelChunk->mPosition, neighborhood);
+    auto lockChunk = levelChunk->mDimension.mPostProcessingManager->tryLock(levelChunk->mPosition, neighborhood, {});
 
     if (!lockChunk.has_value()) {
         return false;
@@ -53,21 +53,21 @@ bool FlatVillageGenerator::postProcess(ChunkViewSource& neighborhood) {
     WorldGenerator::postProcessStructureFeatures(blockSource, random, chunkPosL->x, chunkPosL->z);
     // 处理其它单体结构，比如沉船，这里不是必须
     WorldGenerator::postProcessStructures(blockSource, random, chunkPosL->x, chunkPosL->z);
-    // 1.21.50.10 起，有更改，需添加以下调用
-    levelChunk->finalizePostProcessing();
+
+    WorldGenerator::addHardcodedSpawnAreas(*levelChunk);
     return true;
 }
 
 void FlatVillageGenerator::loadChunk(LevelChunk& levelchunk, bool forceImmediateReplacementDataLoad) {
     auto chunkPos = levelchunk.mPosition;
 
-    auto            blockPos = BlockPos(chunkPos, 0);
+    auto            blockPos = BlockPos(chunkPos->x, 0, chunkPos->z);
     DividedPos2d<4> dividedPos2D;
     dividedPos2D.x = (blockPos.x >> 31) - ((blockPos.x >> 31) - blockPos.x) / 4;
     dividedPos2D.z = (blockPos.z >> 31) - ((blockPos.z >> 31) - blockPos.z) / 4;
 
     // 处理其它单体结构，比如沉船，这里不是必须
-    // WorldGenerator::preProcessStructures(getDimension(), chunkPos, getBiomeSource());
+    WorldGenerator::preProcessStructures(*mDimension, chunkPos, getBiomeSource());
     // 准备要放置的结构，如果是某个某个结构的区块，就会准备结构
     WorldGenerator::prepareStructureFeatureBlueprints(*mDimension, chunkPos, getBiomeSource(), *this);
 
@@ -76,10 +76,10 @@ void FlatVillageGenerator::loadChunk(LevelChunk& levelchunk, bool forceImmediate
 
     levelchunk.recomputeHeightMap(0);
     ChunkLocalNoiseCache chunkLocalNoiseCache(dividedPos2D, 8);
-    mBiomeSource->fillBiomes(levelchunk, chunkLocalNoiseCache);
+    mBiomeSource->fillBiomes(levelchunk, &chunkLocalNoiseCache);
     levelchunk.setSaved();
     auto loadState = ChunkState::Generating;
-    levelchunk.mLoadState->compare_exchange_weak(loadState, ChunkState::Generated);
+    levelchunk.mLoadState->compare_exchange_strong(loadState, ChunkState::Generated);
 }
 
 std::optional<short> FlatVillageGenerator::getPreliminarySurfaceLevel(DividedPos2d<4> worldPos) const {

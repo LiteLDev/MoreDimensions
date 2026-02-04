@@ -4,21 +4,16 @@
 
 #include "mc/deps/core/utility/AutomaticID.h"
 #include "mc/nbt/CompoundTag.h"
-#include "mc/world/level/GeneratorType.h"
-#include "mc/util/OwnerPtrFactory.h"
 
 class Dimension;
-class ILevel;
-class Scheduler;
-class Level;
+class DerivedDimensionArguments;
 
 namespace more_dimensions {
 
 struct DimensionFactoryInfo {
-    ILevel&            level;
-    Scheduler&         scheduler;
-    CompoundTag const& data;
-    DimensionType      dimId;
+    DerivedDimensionArguments& arguments;
+    CompoundTag const&         data;
+    DimensionType              dimId;
 };
 
 class CustomDimensionManager {

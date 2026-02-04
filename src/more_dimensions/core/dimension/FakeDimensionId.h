@@ -2,6 +2,7 @@
 
 #include "mc/client/renderer/rendergraph/Packet.h"
 #include "mc/deps/core/utility/AutomaticID.h"
+#include "mc/network/Packet.h"
 #include "mc/platform/UUID.h"
 
 

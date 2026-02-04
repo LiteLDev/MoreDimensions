@@ -7,6 +7,71 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.13.0] - 2026-02-03
+
+### Changed
+
+- Supported LeviLamina 1.9.2(Server 1.21.132.3)
+- Resolved some warnings in code
+
+## [0.13.0-rc.1] - 2026-01-20
+
+### Added
+
+- Added support for client
+
+### Changed
+
+- Adapt to LeviLamina 1.8.0-rc.2(Minecraft 1.21.124.2)
+
+## [0.12.2] - 2025-12-03
+
+### Fixed
+
+- Fixed crash of tests [#21]
+
+## [0.12.1] - 2025-12-01
+
+### Changed
+
+- Adapt to LeviLamina 1.7.6(BDS-1.21.124.2)
+
+## [0.12.0] - 2025-12-01
+
+### Changed
+
+- Adapt to LeviLamina 1.7.0(BDS-1.21.120.4)
+
+## [0.11.2] - 2025-11-02
+
+### Fixed
+
+- Fixed flat type generator village dimension test crash
+
+## [0.11.1] - 2025-10-16
+
+### Fixed
+
+- Fixed crash
+
+## [0.11.0] - 2025-10-10
+
+### Changed
+
+- Adapt to LeviLamina 1.6.0(BDS-1.21.111.1)
+
+## [0.10.1] - 2025-10-04
+
+### Changed
+
+- Adapt to LeviLamina 1.5.2(BDS-1.21.102.1)
+
+## [0.9.0] - 2025-07-17
+
+### Changed
+
+- Adapt to LeviLamina 1.4.1(BDS-1.21.93.1)
+
 ## [0.8.0] - 2025-06-11
 
 ### Changed
@@ -102,7 +167,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Release the first version
 
-[Unreleased]: https://github.com/LiteLDev/MoreDimensions/compare/v0.8.0...HEAD
+[#21]: https://github.com/LiteLDev/MoreDimensions/issues/21
+
+[Unreleased]: https://github.com/LiteLDev/MoreDimensions/compare/v0.13.0...HEAD
+[0.13.0]: https://github.com/LiteLDev/MoreDimensions/compare/v0.13.0-rc.1...v0.13.0
+[0.13.0-rc.1]: https://github.com/LiteLDev/MoreDimensions/compare/v0.12.2...v0.13.0-rc.1
+[0.12.2]: https://github.com/LiteLDev/MoreDimensions/compare/v0.12.1...v0.12.2
+[0.12.1]: https://github.com/LiteLDev/MoreDimensions/compare/v0.12.0...v0.12.1
+[0.12.0]: https://github.com/LiteLDev/MoreDimensions/compare/v0.11.2...v0.12.0
+[0.11.2]: https://github.com/LiteLDev/MoreDimensions/compare/v0.11.1...v0.11.2
+[0.11.1]: https://github.com/LiteLDev/MoreDimensions/compare/v0.11.0...v0.11.1
+[0.11.0]: https://github.com/LiteLDev/MoreDimensions/compare/v0.10.1...v0.11.0
+[0.10.1]: https://github.com/LiteLDev/MoreDimensions/compare/v0.9.0...v0.10.1
+[0.9.0]: https://github.com/LiteLDev/MoreDimensions/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/LiteLDev/MoreDimensions/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/LiteLDev/MoreDimensions/compare/v0.6.1...v0.7.0
 [0.6.1]: https://github.com/LiteLDev/MoreDimensions/compare/v0.6.0...v0.6.1

@@ -1,39 +1,38 @@
 {
-    "format_version": 3,
-    "format_uuid": "289f771f-2c9a-4d73-9f3f-8492495a924d",
-    "tooth": "github.com/LiteLDev/MoreDimensions",
-    "version": "0.8.0",
-    "info": {
-        "name": "MoreDimensions",
-        "description": "More than three dimensions on BDS!",
-        "tags": [
-            "platform:levilamina",
-            "library",
-            "type:mod"
-        ],
-        "avatar_url": ""
-    },
-    "variants": [
-        {
-            "platform": "win-x64",
-            "assets": [
-                {
-                    "type": "zip",
-                    "urls": [
-                        "https://{{tooth}}/releases/download/v{{version}}/more-dimensions-windows-x64-v{{version}}.zip"
-                    ],
-                    "dependencies": {
-                        "github.com/LiteLDev/LeviLamina": "1.3.*"
-                    },
-                    "placements": [
-                        {
-                            "type": "dir",
-                            "src": "more-dimensions/",
-                            "dest": "plugins/more-dimensions/"
-                        }
-                    ]
-                }
-            ]
-        }
+  "format_version": 3,
+  "format_uuid": "289f771f-2c9a-4d73-9f3f-8492495a924d",
+  "tooth": "github.com/LiteLDev/MoreDimensions",
+  "version": "0.13.0",
+  "info": {
+    "name": "MoreDimensions",
+    "description": "More than three dimensions on BDS!",
+    "tags": [
+      "platform:levilamina",
+      "library",
+      "type:mod"
     ]
+  },
+  "variants": [
+    {
+      "platform": "win-x64",
+      "assets": [
+        {
+          "type": "zip",
+          "urls": [
+            "https://{{tooth}}/releases/download/v{{version}}/MoreDimensions-server-windows-x64.zip"
+          ],
+          "dependencies": {
+            "github.com/LiteLDev/LeviLamina": ">=1.9.2 <1.10.0"
+          },
+          "placements": [
+            {
+              "type": "dir",
+              "src": "more-dimensions/",
+              "dest": "plugins/more-dimensions/"
+            }
+          ]
+        }
+      ]
+    }
+  ]
 }

@@ -1,37 +1,23 @@
-
 #include "CustomDimensionConfig.h"
 
-#include "mc/nbt/Tag.h"
-#include "more_dimensions/MoreDimenison.h"
-
-#include "snappy.h"
+#include "more_dimensions/MoreDimension.h"
+#include "more_dimensions/core/Utils.h"
 
 #include "ll/api/Config.h"
 #include "ll/api/service/Bedrock.h"
+#include "ll/api/service/ServerInfo.h"
 #include "ll/api/utils/Base64Utils.h"
 #include "ll/api/utils/ErrorUtils.h"
 
 #include "mc/nbt/CompoundTag.h"
+#include "mc/nbt/Tag.h"
 #include "mc/server/PropertiesSettings.h"
 #include "mc/world/level/storage/DBStorage.h"
-
 
 namespace more_dimensions::CustomDimensionConfig {
 
 // static ll::Logger            logger("CustomDimensionConfig");
-auto& logger = MoreDimenison::getInstance().getSelf().getLogger();
-
-std::string compress(std::string_view sv) {
-    std::string res;
-    snappy::Compress(sv.data(), sv.size(), &res);
-    return res;
-}
-
-std::string decompress(std::string_view sv) {
-    std::string res;
-    snappy::Uncompress(sv.data(), sv.size(), &res);
-    return res;
-}
+auto& logger = MoreDimension::getInstance().getSelf().getLogger();
 
 // static std::filesystem::path dimensionConfigPath{"C:/Users/Administrator/AppData/Local/Packages/Microsoft.MinecraftUWP_8wekyb3d8bbwe/AC/Levi/1.21.80.03"};
 static std::filesystem::path dimensionConfigPath;
@@ -46,8 +32,13 @@ void setDimensionConfigPath() {
     } else {
         logger.debug("DBStorafe is nullptr!");
     }
+#ifdef LL_PLAT_C
+    dimensionConfigPath  = ll::getWorldPath().value();
     dimensionConfigPath /= u8"dimension_config.json";
-    logger.debug("Config Path: {0}", dimensionConfigPath);
+#else
+    dimensionConfigPath /= ll::string_utils::str2u8str(ll::service::getPropertiesSettings()->mLevelName);
+    dimensionConfigPath /= u8"dimension_config.json";
+#endif
 }
 
 bool loadConfigFile() {
@@ -59,9 +50,13 @@ bool loadConfigFile() {
                     [](Config& config, nlohmann::ordered_json& data) {
                         if (data["version"] < config.version) {
                             for (auto& item : data["dimensionList"]) {
-                                item["sNbt"] =
-                                    CompoundTag::fromBinaryNbt(decompress(ll::base64_utils::decode(item["base64Nbt"])))
-                                        ->toSnbt(SnbtFormat::Minimize);
+                                auto decompressed = utils::decompress(ll::base64_utils::decode(item["base64Nbt"]));
+                                auto nbtTag       = CompoundTag::fromBinaryNbt(decompressed);
+                                if (!nbtTag) {
+                                    logger.error("Failed to parse NBT from base64Nbt, skipping dimension");
+                                    continue;
+                                }
+                                item["sNbt"] = nbtTag->toSnbt(SnbtFormat::Minimize);
                                 item.erase("base64Nbt");
                             }
                         }

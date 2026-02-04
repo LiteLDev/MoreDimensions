@@ -32,6 +32,6 @@ public:
         uint               chunkLength,
         Json::Value const& generationOptionsJSON
     );
-    void loadChunk(class LevelChunk& levelchunk, bool forceImmediateReplacementDataLoad);
+    void loadChunk(class LevelChunk& levelchunk, bool forceImmediateReplacementDataLoad) override;
 };
 } // namespace nxn_border_terrain

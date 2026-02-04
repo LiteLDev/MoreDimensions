@@ -4,6 +4,7 @@
 #include "more_dimensions/core/Macros.h"
 
 #include "mc/world/level/dimension/Dimension.h"
+#include "mc/world/level/GeneratorType.h"
 
 
 class ChunkSource;

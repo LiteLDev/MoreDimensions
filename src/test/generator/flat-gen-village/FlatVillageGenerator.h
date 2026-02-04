@@ -28,25 +28,25 @@ public:
     FlatVillageGenerator(Dimension& dimension, uint seed, Json::Value const& generationOptionsJSON);
 
     // 这里是处理结构放置相关的，包括地物，结构，地形
-    bool postProcess(ChunkViewSource& neighborhood);
+    bool structurePostProcessChunk(ChunkViewSource& neighborhood);
 
     // 这里是初始处理新的单区块的方块生成相关的，比如一些大量的方块（石头，泥土）
-    void loadChunk(LevelChunk& levelchunk, bool forceImmediateReplacementDataLoad);
+    void loadChunk(LevelChunk& levelchunk, bool forceImmediateReplacementDataLoad) override;
 
     // 判断某个点在哪个结构范围里
-    HashedString findStructureFeatureTypeAt(BlockPos const&);
+    HashedString findStructureFeatureTypeAt(BlockPos const&) override;
 
     // 判断某个点是否在某个结构范围里
-    bool isStructureFeatureTypeAt(BlockPos const&, ::HashedString) const;
+    bool isStructureFeatureTypeAt(BlockPos const&, ::HashedString) const override;
 
     // 这里是获取某个坐标的最高方块
-    std::optional<short> getPreliminarySurfaceLevel(DividedPos2d<4> worldPos) const;
+    std::optional<short> getPreliminarySurfaceLevel(DividedPos2d<4> worldPos) const override;
 
     // 如意，以一个坐标，在一定范围内查找某个类型的结构
-    bool findNearestStructureFeature(::HashedString, BlockPos const&, BlockPos&, bool, std::optional<HashedString>);
+    bool findNearestStructureFeature(::HashedString, BlockPos const&, BlockPos&, bool, std::optional<HashedString>) override;
 
     // 无需在意，照写就行
-    void garbageCollectBlueprints(buffer_span<ChunkPos>);
+    void garbageCollectBlueprints(buffer_span<ChunkPos>) override;
 
     // 处理地形
     void prepareHeights(BlockVolume& box, ChunkPos const& chunkPos, bool factorInBeardsAndShavers);
@@ -61,7 +61,7 @@ public:
     );
 
     // 可选，可以不写
-    BlockPos findSpawnPosition() const { return BlockPos{0, 16, 0}; };
+    BlockPos findSpawnPosition() const override { return BlockPos{0, 16, 0}; }
 };
 
 } // namespace flat_village_generator

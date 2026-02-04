@@ -1,7 +1,8 @@
 {
-    "name": "${modName}",
-    "entry": "${modFile}",
-    "type": "native",
-    "version": "${modVersion}",
-    "author": "LiteLDev"
+  "name": "${modName}",
+  "entry": "${modFile}",
+  "type": "native",
+  "version": "${modVersion}",
+  "platform": "${modPlatform}",
+  "author": "LiteLDev"
 }

@@ -5,16 +5,12 @@
 #include "NxnBorderTerrainGenerator.h"
 
 #include "mc/world/level/ChunkPos.h"
-#include "mc/world/level/biome/source/FixedBiomeSource.h"
-#include "mc/world/level/block/BedrockBlockNames.h"
 #include "mc/world/level/block/Block.h"
-#include "mc/world/level/block/BlockVolume.h"
 #include "mc/world/level/block/VanillaBlockTypeIds.h"
 #include "mc/world/level/block/registry/BlockTypeRegistry.h"
 #include "mc/world/level/chunk/LevelChunk.h"
 #include "mc/world/level/dimension/Dimension.h"
 #include "mc/world/level/levelgen/v1/ChunkLocalNoiseCache.h"
-
 
 
 namespace nxn_border_terrain {
@@ -28,8 +24,8 @@ NxnBorderTerrainGenerator::NxnBorderTerrainGenerator(
 : FlatWorldGenerator(dimension, seed, generationOptionsJSON) {
     chunk_n           = chunkLength;
     auto  height      = mPrototype->mHeight;
-    auto& roadBlock   = BlockTypeRegistry::getDefaultBlockState(VanillaBlockTypeIds::GrassPath());
-    auto& borderBlock = BlockTypeRegistry::getDefaultBlockState(VanillaBlockTypeIds::SmoothStoneSlab());
+    auto& roadBlock   = BlockTypeRegistry::get().getDefaultBlockState(VanillaBlockTypeIds::GrassPath());
+    auto& borderBlock = BlockTypeRegistry::get().getDefaultBlockState(VanillaBlockTypeIds::SmoothStoneSlab());
 
     east_side_b.mBlocks  = {east_side.data(), east_side.data() + east_side.size()};
     south_side_b.mBlocks = {south_side.data(), south_side.data() + south_side.size()};
@@ -133,7 +129,7 @@ void NxnBorderTerrainGenerator::loadChunk(LevelChunk& levelchunk, bool forceImme
     mBiomeSource = std::make_unique<FixedBiomeSource>(*mBiome);
     DividedPos2d<4>      dividedPos2D;
     ChunkLocalNoiseCache chunkLocalNoiseCache(dividedPos2D, 8);
-    mBiomeSource->fillBiomes(levelchunk, chunkLocalNoiseCache);
+    mBiomeSource->fillBiomes(levelchunk, &chunkLocalNoiseCache);
     levelchunk.setSaved();
     auto loadState = ChunkState::Generating;
     levelchunk.mLoadState->compare_exchange_weak(loadState, ChunkState::Generated);

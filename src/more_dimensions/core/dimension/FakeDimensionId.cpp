@@ -1,14 +1,14 @@
 #include "FakeDimensionId.h"
 
-#include "more_dimensions//api/dimension/CustomDimensionManager.h"
-#include "more_dimensions/MoreDimenison.h"
+#include "more_dimensions/MoreDimension.h"
+#include "more_dimensions/api/dimension/CustomDimensionManager.h"
+
 
 #include "ll/api/memory/Hook.h"
 #include "ll/api/service/Bedrock.h"
 
 #include "mc/deps/core/math/Vec3.h"
 #include "mc/deps/core/utility/BinaryStream.h"
-#include "mc/deps/ecs/gamerefs_entity/EntityContext.h"
 #include "mc/entity/components/IPlayerTickPolicy.h"
 #include "mc/entity/components/MovementPackets.h"
 #include "mc/entity/components/ServerPlayerMovementComponent.h"
@@ -21,31 +21,26 @@
 #include "mc/network/ServerNetworkHandler.h"
 #include "mc/network/packet/AddVolumeEntityPacket.h"
 #include "mc/network/packet/ChangeDimensionPacket.h"
-#include "mc/network/packet/InteractPacket.h"
-#include "mc/network/packet/InventoryTransactionPacket.h"
+#include "mc/network/packet/DebugDrawerPacket.h"
 #include "mc/network/packet/LevelChunkPacket.h"
 #include "mc/network/packet/PlayerActionPacket.h"
 #include "mc/network/packet/PlayerActionType.h"
-#include "mc/network/packet/PlayerAuthInputPacket.h"
 #include "mc/network/packet/RemoveVolumeEntityPacket.h"
+#include "mc/network/packet/ShapeDataPayload.h"
 #include "mc/network/packet/SpawnParticleEffectPacket.h"
 #include "mc/network/packet/StartGamePacket.h"
 #include "mc/network/packet/SubChunkPacket.h"
 #include "mc/network/packet/SubChunkRequestPacket.h"
 #include "mc/network/packet/UpdateBlockPacket.h"
 #include "mc/server/ServerPlayer.h"
-#include "mc/util/MolangVariableMap.h"
 #include "mc/util/VarIntDataOutput.h"
-#include "mc/world/actor/ActorDataIDs.h"
-#include "mc/world/actor/SynchedActorDataEntityWrapper.h"
 #include "mc/world/level/ChangeDimensionRequest.h"
-#include "mc/world/level/ChunkPos.h"
 #include "mc/world/level/Level.h"
 #include "mc/world/level/LoadingScreenIdManager.h"
 #include "mc/world/level/SpawnSettings.h"
 #include "mc/world/level/dimension/VanillaDimensions.h"
-#include "mc/world/level/levelSettings.h"
 
+MolangScriptArg::MolangScriptArg() = default;
 
 // ChangeDimensionPacket.java
 // ClientboundMapItemDataPacket.java
@@ -59,7 +54,7 @@
 namespace more_dimensions {
 
 // static ll::Logger logger("FakeDimensionId");
-auto& logger = MoreDimenison::getInstance().getSelf().getLogger();
+auto& logger = MoreDimension::getInstance().getSelf().getLogger();
 
 static void sendEmptyChunk(const NetworkIdentifier& netId, int chunkX, int chunkZ, bool forceUpdate) {
     std::array<uchar, 4096> biome{};
@@ -71,7 +66,7 @@ static void sendEmptyChunk(const NetworkIdentifier& netId, int chunkX, int chunk
     for (int i = 1; i <= 8; i++) {
         varIntDataOutput.writeByte(255ui8);
     }
-    varIntDataOutput.mStream.writeByte(0, "Byte", 0); // write border blocks
+    varIntDataOutput.mStream.writeByte(0, "Byte", nullptr); // write border blocks
 
     levelChunkPacket.mPos->x         = chunkX;
     levelChunkPacket.mPos->z         = chunkZ;
@@ -94,8 +89,8 @@ static void sendEmptyChunk(const NetworkIdentifier& netId, int chunkX, int chunk
 }
 
 static void sendEmptyChunks(const NetworkIdentifier& netId, const Vec3& position, int radius, bool forceUpdate) {
-    int chunkX = (int)(position.x) >> 4;
-    int chunkZ = (int)(position.z) >> 4;
+    int chunkX = static_cast<int>(position.x) >> 4;
+    int chunkZ = static_cast<int>(position.z) >> 4;
     for (int x = -radius; x <= radius; x++) {
         for (int z = -radius; z <= radius; z++) {
             sendEmptyChunk(netId, chunkX + x, chunkZ + z, forceUpdate);
@@ -233,53 +228,53 @@ LL_TYPE_INSTANCE_HOOK(
     StartGamePacket,
     &StartGamePacket::$ctor,
     void*,
-    LevelSettings const&          levelSettings,
-    ActorUniqueID                 uniqueId,
+    LevelSettings const&          settings,
+    ActorUniqueID                 entityId,
     ActorRuntimeID                runtimeId,
-    ::GameType                    gameType,
-    bool                          unk,
+    GameType                      entityGameType,
+    bool                          enableItemStackNetManager,
     Vec3 const&                   pos,
-    Vec2 const&                   ros,
+    Vec2 const&                   rot,
     std::string const&            levelId,
     std::string const&            levelName,
-    ContentIdentity const&        contentIdentity,
-    std::string const&            unk1,
+    ContentIdentity const&        premiumTemplateContentIdentity,
+    std::string const&            multiplayerCorrelationId,
     BlockDefinitionGroup const&   blockDefinitionGroup,
-    bool                          unk2,
-    CompoundTag                   compoundTag,
-    PlayerMovementSettings const& moveSetting,
-    std::string const&            unk3,
-    mce::UUID const&              uuid,
-    uint64                        unk4,
-    int                           unk5,
-    uint64                        unk6
+    bool                          isTrial,
+    CompoundTag                   playerPropertyData,
+    PlayerMovementSettings const& movementSettings,
+    std::string const&            serverVersion,
+    mce::UUID const&              worldTemplateId,
+    uint64                        levelCurrentTime,
+    int                           enchantmentSeed,
+    uint64                        blockTypeRegistryChecksum
 ) {
-    if (levelSettings.getSpawnSettings().dimension->id >= 3) {
-        SpawnSettings spawnSettings(levelSettings.getSpawnSettings());
+    if (settings.getSpawnSettings().dimension->id >= 3) {
+        SpawnSettings spawnSettings(settings.getSpawnSettings());
         spawnSettings.dimension = FakeDimensionId::fakeDim;
-        const_cast<LevelSettings&>(levelSettings).setSpawnSettings(spawnSettings);
+        const_cast<LevelSettings&>(settings).setSpawnSettings(spawnSettings);
     }
     return origin(
-        levelSettings,
-        uniqueId,
+        settings,
+        entityId,
         runtimeId,
-        gameType,
-        unk,
+        entityGameType,
+        enableItemStackNetManager,
         pos,
-        ros,
+        rot,
         levelId,
         levelName,
-        contentIdentity,
-        unk1,
+        premiumTemplateContentIdentity,
+        multiplayerCorrelationId,
         blockDefinitionGroup,
-        unk2,
-        std::move(compoundTag),
-        moveSetting,
-        unk3,
-        uuid,
-        unk4,
-        unk5,
-        unk6
+        isTrial,
+        std::move(playerPropertyData),
+        movementSettings,
+        serverVersion,
+        worldTemplateId,
+        levelCurrentTime,
+        enchantmentSeed,
+        blockTypeRegistryChecksum
     );
 }
 
@@ -332,15 +327,12 @@ LL_TYPE_INSTANCE_HOOK(
     SpawnParticleEffectPacket,
     &SpawnParticleEffectPacket::$ctor,
     void*,
-    Vec3 const&                      pos,
-    std::string const&               particle_name,
-    uchar                            dimId,
-    std::optional<MolangVariableMap> molang
+    ::SpawnParticleEffectPacketPayload payload
 ) {
-    if (dimId >= 3) {
-        dimId = FakeDimensionId::fakeDim.id;
+    if (mVanillaDimensionId >= 3) {
+        mVanillaDimensionId = FakeDimensionId::fakeDim.id;
     }
-    return origin(pos, particle_name, dimId, std::move(molang));
+    return origin(std::move(payload));
 }
 
 } // namespace sendpackethook
@@ -382,8 +374,7 @@ LL_TYPE_INSTANCE_HOOK(
             return origin(netId, packet);
         }
         fakeDimensionId.setNeedRemove(uuid, false);
-        auto moveComp = player->getEntityContext().tryGetComponent<ServerPlayerMovementComponent>();
-        if (moveComp) {
+        if (auto moveComp = player->getEntityContext().tryGetComponent<ServerPlayerMovementComponent>()) {
             moveComp->mServerHasMovementAuthority = false;
         }
         fakeDimensionId.onPlayerLeftCustomDimension(uuid, true);
@@ -410,8 +401,8 @@ LL_TYPE_INSTANCE_HOOK(
     };
     // issue #7
     auto loadingScreenIdManager = ll::memory::dAccess<LoadingScreenIdManager*>(&this->mLoadingScreenIdManager, 8);
-    auto screedId               = loadingScreenIdManager->mUnk7db596.as<uint>() + 1;
-    ++loadingScreenIdManager->mUnk7db596.as<uint>();
+    auto screedId               = loadingScreenIdManager->mLastLoadingScreenId + 1;
+    ++loadingScreenIdManager->mLastLoadingScreenId;
     // screedId.mValue.emplace(screedId.mValue.value() + 1);
 
     fakeChangeDimension(
@@ -447,8 +438,7 @@ FakeDimensionId& FakeDimensionId::getInstance() {
 }
 
 void FakeDimensionId::changePacketDimension(Packet& packet) {
-    auto packId = packet.getId();
-    switch (packId) {
+    switch (auto packId = packet.getId()) {
     case MinecraftPacketIds::RemoveVolumeEntityPacket: {
         auto& tempP          = (RemoveVolumeEntityPacket&)packet;
         tempP.mDimensionType = fakeDim;
@@ -459,13 +449,21 @@ void FakeDimensionId::changePacketDimension(Packet& packet) {
         tempP.mDimensionType = fakeDim;
         logger.debug("MinecraftPacketIds::AddVolumeEntityPacket: dimId change to {}", fakeDim.id);
     }
+    case MinecraftPacketIds::DebugDrawerPacket: {
+        auto& tempP = (DebugDrawerPacket&)packet;
+        for (auto& shape : *tempP.mShapes) {
+            shape.mDimensionId = fakeDim;
+        }
+        logger.debug("MinecraftPacketIds::DebugDrawerPacket: dimId change to {}", fakeDim.id);
+    }
     default:
         return;
     }
 }
 
 void FakeDimensionId::setNeedRemove(mce::UUID uuid, bool needRemove) {
-    if (mSettingMap.count(uuid)) {
+    std::lock_guard lockGuard{mMapMutex};
+    if (mSettingMap.contains(uuid)) {
         mSettingMap.at(uuid).needRemovePacket = needRemove;
     } else {
         mSettingMap.emplace(uuid, CustomDimensionIdSetting{needRemove});
@@ -473,22 +471,23 @@ void FakeDimensionId::setNeedRemove(mce::UUID uuid, bool needRemove) {
 }
 
 bool FakeDimensionId::isNeedRemove(mce::UUID uuid) {
-    if (mSettingMap.count(uuid)) {
+    std::lock_guard lockGuard{mMapMutex};
+    if (mSettingMap.contains(uuid)) {
         return mSettingMap.at(uuid).needRemovePacket;
-    };
+    }
     return false;
 }
 
 void FakeDimensionId::onPlayerGoCustomDimension(mce::UUID uuid) {
-    if (!mSettingMap.count(uuid)) {
-        std::lock_guard lockGuard{mMapMutex};
+    std::lock_guard lockGuard{mMapMutex};
+    if (!mSettingMap.contains(uuid)) {
         mSettingMap.emplace(uuid, CustomDimensionIdSetting{false});
     }
 }
 
 void FakeDimensionId::onPlayerLeftCustomDimension(mce::UUID uuid, bool isRespawn) {
     std::lock_guard lockGuard{mMapMutex};
-    if (mSettingMap.count(uuid)) {
+    if (mSettingMap.contains(uuid)) {
         if (isRespawn) {
             mSettingMap.at(uuid).needRemovePacket = false;
         } else {

@@ -3,13 +3,13 @@
 #include "test/generator/generator-custom-structure/structure/CustomStructurePiece.h"
 #include "test/generator/generator-custom-structure/structure/CustomStructureStart.h"
 
-
-#include "mc/deps/core/math/Random.h"
 #include "mc/deps/core/string/HashedString.h"
 #include "mc/util/Random.h"
+#include "mc/world/actor/ActorDefinitionIdentifier.h"
 #include "mc/world/level/ChunkPos.h"
 #include "mc/world/level/Level.h"
 #include "mc/world/level/biome/Biome.h"
+#include "mc/world/level/biome/GetBiomeOptions.h"
 #include "mc/world/level/biome/source/BiomeSource.h"
 #include "mc/world/level/dimension/Dimension.h"
 #include "mc/world/level/levelgen/structure/BoundingBox.h"
@@ -28,11 +28,31 @@ bool CustomStructureFeature::getNearestGeneratedFeature(
     bool                                   mustBeInNewChunks,
     ::std::optional<::HashedString> const& biomeTag
 ) {
-    return StructureFeature::findNearestFeaturePositionBySpacing(dimension, preliminarySurfaceLevel, *this, biomeTag, biomeSource, origin, pos, mMaxSpacing, mMinSpacing, 39281139, true, 0, mustBeInNewChunks);
+    return StructureFeature::findNearestFeaturePositionBySpacing(
+        dimension,
+        preliminarySurfaceLevel,
+        *this,
+        biomeTag,
+        biomeSource,
+        origin,
+        pos,
+        mMaxSpacing,
+        mMinSpacing,
+        39281139,
+        true,
+        0,
+        mustBeInNewChunks
+    );
 };
 
-bool CustomStructureFeature::
-    isFeatureChunk(::BiomeSource const&, ::Random& random, ::ChunkPos const& cpos, uint, ::IPreliminarySurfaceProvider const&, ::Dimension const&) {
+bool CustomStructureFeature::isFeatureChunk(
+    ::BiomeSource const&,
+    ::Random&         random,
+    ::ChunkPos const& cpos,
+    uint,
+    ::IPreliminarySurfaceProvider const&,
+    ::Dimension const&
+) {
     int  salt    = 39281139;
     uint newSeed = mSeed + salt + 0xF1565BD5 * (cpos.z / mMaxSpacing) - 0x66C60AF8 * (cpos.x / mMaxSpacing);
     random.mRandom->mObject.mHaveNextNextGaussian   = false;
@@ -54,20 +74,28 @@ bool CustomStructureFeature::
     auto random_int_x = (random.nextInt(able_spacing) + random.nextInt(able_spacing)) / 2;
     auto random_int_z = (random.nextInt(able_spacing) + random.nextInt(able_spacing)) / 2;
 
-    ChunkPos target_cpos(able_spacing * (cpos.x / able_spacing) + random_int_x, able_spacing * (cpos.z / able_spacing) + random_int_z);
+    ChunkPos target_cpos(
+        able_spacing * (cpos.x / able_spacing) + random_int_x,
+        able_spacing * (cpos.z / able_spacing) + random_int_z
+    );
     if (cpos != target_cpos) return false;
     return true;
 };
 
-std::unique_ptr<::StructureStart> CustomStructureFeature::
-    createStructureStart(::Dimension& dim, ::BiomeSource const& biomeSource, ::Random& random, ::ChunkPos const& cpos, ::IPreliminarySurfaceProvider const&) {
+std::unique_ptr<::StructureStart> CustomStructureFeature::createStructureStart(
+    ::Dimension&         dim,
+    ::BiomeSource const& biomeSource,
+    ::Random&            random,
+    ::ChunkPos const&    cpos,
+    ::IPreliminarySurfaceProvider const&
+) {
     auto start = std::make_unique<CustomStructureStart>();
     CustomStructurePiece::addPieces(
         {cpos.x * 16, 0, cpos.z * 16},
         start->pieces,
         random,
         dim.mLevel.getJigsawStructureRegistry(),
-        biomeSource.getBiome(cpos.x * 16, 1, cpos.z * 16)->getBiomeType(),
+        biomeSource._getBiome(GetBiomeOptions(BlockPos(cpos.x * 16, 1, cpos.z * 16), false))->getBiomeType(),
         dim
     );
     start->calculateBoundingBox();

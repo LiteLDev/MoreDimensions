@@ -1,24 +1,20 @@
-
 #include "CustomDimensionManager.h"
 
-#include "mc/nbt/Tag.h"
-#include "more_dimensions/MoreDimenison.h"
+#include "more_dimensions/MoreDimension.h"
 #include "more_dimensions/core/dimension/CustomDimensionConfig.h"
 #include "more_dimensions/core/dimension/FakeDimensionId.h"
 
-#include "snappy.h"
 
 #include "ll/api/command/CommandRegistrar.h"
 #include "ll/api/memory/Hook.h"
 #include "ll/api/service/Bedrock.h"
-#include "ll/api/utils/Base64Utils.h"
-#include "ll/api/utils/StringUtils.h"
 
 #ifdef LL_PLAT_C
 #include "ll/api/service/TargetedBedrock.h"
 #endif
 
 #include "mc/deps/core/math/Vec3.h"
+#include "mc/nbt/Tag.h"
 #include "mc/server/DedicatedServer.h"
 #include "mc/server/PropertiesSettings.h"
 #include "mc/server/module/VanillaGameModuleServer.h"
@@ -29,26 +25,10 @@
 #include "mc/world/level/dimension/VanillaDimensions.h"
 #include "mc/world/level/storage/LevelStorage.h"
 
-
-
-class Scheduler;
-
 namespace more_dimensions {
 
-std::string compress(std::string_view sv) {
-    std::string res;
-    snappy::Compress(sv.data(), sv.size(), &res);
-    return res;
-}
-
-std::string decompress(std::string_view sv) {
-    std::string res;
-    snappy::Uncompress(sv.data(), sv.size(), &res);
-    return res;
-}
-
 // static ll::Logger loggerMoreDimMag("CustomDimensionManager");
-auto& loggerMoreDimMag = MoreDimenison::getInstance().getSelf().getLogger();
+auto& loggerMoreDimMag = MoreDimension::getInstance().getSelf().getLogger();
 
 namespace CustomDimensionHookList {
 LL_TYPE_STATIC_HOOK(
@@ -87,13 +67,13 @@ LL_TYPE_STATIC_HOOK(
     HookPriority::Normal,
     VanillaDimensions,
     VanillaDimensions::fromSerializedInt,
-    DimensionType,
-    int dimId
+    ::Bedrock::Result<::DimensionType>,
+    ::Bedrock::Result<int>&& i
 ) {
-    if (!VanillaDimensions::DimensionMap().mLeft.contains(dimId)) {
+    if (!VanillaDimensions::DimensionMap().mLeft.contains(i.value())) {
         return VanillaDimensions::Undefined();
     }
-    return {dimId};
+    return {i};
 }
 
 // inline function use patch
@@ -185,7 +165,12 @@ CustomDimensionManager::CustomDimensionManager() : impl(std::make_unique<Impl>()
     CustomDimensionConfig::loadConfigFile();
     if (!CustomDimensionConfig::getConfig().dimensionList.empty()) {
         for (auto& [name, info] : CustomDimensionConfig::getConfig().dimensionList) {
-            impl->customDimensionMap.emplace(name, Impl::DimensionInfo{info.dimId, *CompoundTag::fromSnbt(info.sNbt)});
+            auto nbtTag = CompoundTag::fromSnbt(info.sNbt);
+            if (!nbtTag) {
+                loggerMoreDimMag.error("Failed to parse NBT from config for dimension: {}, skipping", name);
+                continue;
+            }
+            impl->customDimensionMap.emplace(name, Impl::DimensionInfo{info.dimId, *nbtTag});
         }
         impl->mNewDimensionId += static_cast<int>(impl->customDimensionMap.size());
     }
@@ -281,7 +266,7 @@ DimensionType CustomDimensionManager::addDimension(
     }
     // add to command enum
 
-    ll::command::CommandRegistrar::getInstance().addEnumValues(
+    ll::command::CommandRegistrar::getInstance(false).addEnumValues(
         "Dimension",
         {
             {dimName, info.id}

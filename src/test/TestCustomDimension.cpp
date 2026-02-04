@@ -12,7 +12,7 @@
 #include "more_dimensions/api/dimension/SimpleCustomDimension.h"
 #include "ll/api/service/Bedrock.h"
 
-void registryTestDimensions(bool isClient){
+void registryTestDimensions(){
     // simplate dimension test
     // vanilla overworld type dimension test
     more_dimensions::CustomDimensionManager::getInstance().addDimension<more_dimensions::SimpleCustomDimension>(
@@ -69,7 +69,7 @@ LL_AUTO_STATIC_HOOK(
 static bool reg = [] {
     using namespace ll::event;
     EventBus::getInstance().emplaceListener<ServerStartedEvent>([](ServerStartedEvent&) {
-        registryTestDimensions(false);
+        registryTestDimensions();
     });
     return true;
 }();
