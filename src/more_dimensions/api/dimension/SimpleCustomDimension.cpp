@@ -42,7 +42,11 @@ using namespace ll::memory_literals;
 
 auto* overworldAddress   = "`anonymous namespace'::OverworldDimensionAnon::addStructureFeatures"_symp;
 auto* netherAddress      = "`anonymous namespace'::NetherDimensionAnon::addStructureFeatures"_symp;
+#ifdef LL_PLAT_C
+DWORD endcityAddress_rva = 0x0;
+#else
 DWORD endcityAddress_rva = 0x03A3490;
+#endif
 
 void overworldAddStructureFeatures(
     StructureFeatureRegistry& registry,
@@ -194,7 +198,9 @@ SimpleCustomDimension::createGenerator(br::worldgen::StructureSetRegistry const&
                 worldGenerator->getBiomeSource(),
                 structureSetRegistry
             );
+#ifdef LL_PLAT_S
         createEndCityFeature(worldGenerator->mStructureFeatureRegistry.get(), *this, seed);
+#endif
         break;
     }
     case GeneratorType::Flat: {

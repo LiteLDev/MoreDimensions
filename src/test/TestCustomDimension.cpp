@@ -2,17 +2,11 @@
 // #include "test/generator/generator-custom-structure/dimension/CustomStructureDimension.h"
 #include "test/generator/generator-terrain/NxnBorderTerrainDimension.h"
 
-#include "ll/api/event/EventBus.h"
-// #include "ll/api/event/server/ServerStartedEvent.h"
-
-#include "mc/module/VanillaGameModuleClient.h"
-#include "mc/world/level/dimension/VanillaDimensionFactory.h"
-#include "more_dimensions/MoreDimenison.h"
+#include "more_dimensions/MoreDimension.h"
 #include "more_dimensions/api/dimension/CustomDimensionManager.h"
 #include "more_dimensions/api/dimension/SimpleCustomDimension.h"
-#include "ll/api/service/Bedrock.h"
 
-void registryTestDimensions(){
+void registryTestDimensions() {
     // simplate dimension test
     // vanilla overworld type dimension test
     more_dimensions::CustomDimensionManager::getInstance().addDimension<more_dimensions::SimpleCustomDimension>(
@@ -37,12 +31,15 @@ void registryTestDimensions(){
 
     // custom diomension test
     // flat type generator village dimension test
-    more_dimensions::CustomDimensionManager::getInstance()
-        .addDimension<flat_village_dimension::FlatVillageDimension>("testFlatVillage");
+    more_dimensions::CustomDimensionManager::getInstance().addDimension<flat_village_dimension::FlatVillageDimension>(
+        "testFlatVillage"
+    );
 
     // flat type custom terrain dimension test
-    more_dimensions::CustomDimensionManager::getInstance()
-        .addDimension<nxn_border_terrain::NxnBorderTerrainDimension>("testFlatTerrain", 5);
+    more_dimensions::CustomDimensionManager::getInstance().addDimension<nxn_border_terrain::NxnBorderTerrainDimension>(
+        "testFlatTerrain",
+        5
+    );
 
     // flat type custom structure dimension test
     // more_dimensions::CustomDimensionManager::getInstance()
@@ -51,26 +48,24 @@ void registryTestDimensions(){
 
 #ifdef LL_PLAT_C
 
-#include "ll/api/memory/Hook.h"
-
-LL_AUTO_STATIC_HOOK(
-    RegisterDimensionFactory,
-    ll::memory::HookPriority::Highest,
-    &VanillaDimensionFactory::registerDimensionTypes,
-    void,
-    OwnerPtrFactory<::Dimension, ::ILevel&, ::Scheduler&>& dimensionFactory
-) {
-    origin(dimensionFactory);
-    registryTestDimensions(true);
-};
-
-#else
+#include "ll/api/event/EventBus.h"
+#include "ll/api/event/client/ClientStartJoinLevelEvent.h"
+#include "ll/api/event/client/ClientJoinLevelEvent.h"
 
 static bool reg = [] {
     using namespace ll::event;
-    EventBus::getInstance().emplaceListener<ServerStartedEvent>([](ServerStartedEvent&) {
-        registryTestDimensions();
-    });
+    EventBus::getInstance().emplaceListener<ClientJoinLevelEvent>([](ClientJoinLevelEvent&) { registryTestDimensions(); });
+    return true;
+}();
+
+#else
+
+#include "ll/api/event/EventBus.h"
+#include "ll/api/event/server/ServerStartedEvent.h"
+
+static bool reg = [] {
+    using namespace ll::event;
+    EventBus::getInstance().emplaceListener<ServerStartedEvent>([](ServerStartedEvent&) { registryTestDimensions(); });
     return true;
 }();
 

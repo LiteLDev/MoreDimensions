@@ -111,24 +111,26 @@ LL_TYPE_INSTANCE_HOOK(
     return result;
 }
 
+#ifdef LL_PLAT_S
 // 由于这个的调用在维度注册之前，所以使用AUTO
-// LL_AUTO_TYPE_INSTANCE_HOOK(
-//     PropertiesSettingsisClientSideGenEnabledHook,
-//     HookPriority::Normal,
-//     DedicatedServer,
-//     &DedicatedServer::runDedicatedServerLoop,
-//     DedicatedServer::StartResult,
-//     Core::FilePathManager&              filePathManager,
-//     PropertiesSettings&                 properties,
-//     LevelSettings&                      settings,
-//     AllowListFile&                      userAllowList,
-//     std::unique_ptr<PermissionsFile>&   permissionsFile,
-//     Bedrock::ActivationArguments const& args,
-//     TestConfig&                         testConfig
-// ) {
-//     properties.mClientSideGenerationEnabled = false;
-//     return origin(filePathManager, properties, settings, userAllowList, permissionsFile, args, testConfig);
-// }
+LL_AUTO_TYPE_INSTANCE_HOOK(
+    PropertiesSettingsisClientSideGenEnabledHook,
+    HookPriority::Normal,
+    DedicatedServer,
+    &DedicatedServer::runDedicatedServerLoop,
+    DedicatedServer::StartResult,
+    Core::FilePathManager&              filePathManager,
+    PropertiesSettings&                 properties,
+    LevelSettings&                      settings,
+    AllowListFile&                      userAllowList,
+    std::unique_ptr<PermissionsFile>&   permissionsFile,
+    Bedrock::ActivationArguments const& args,
+    TestConfig&                         testConfig
+) {
+    properties.mClientSideGenerationEnabled = false;
+    return origin(filePathManager, properties, settings, userAllowList, permissionsFile, args, testConfig);
+}
+#endif
 
 // 1.21.50.10 unnecessary
 // registry dimensoin when in ll, must reload Dimension::getWeakRef
@@ -199,6 +201,17 @@ DimensionType CustomDimensionManager::addDimension(
     std::lock_guard     lock{impl->mMapMutex};
     Impl::DimensionInfo info;
     bool                newDim{};
+
+    if (!ll::service::getLevel()) {
+        loggerMoreDimMag.error("ServerLevel is nullptr!!! Registry dimension fail!!!");
+        return -1;
+    }
+#ifdef LL_PLAT_C
+    if (!ll::service::getMultiPlayerLevel()) {
+        loggerMoreDimMag.error("MultiPlayerLevel is nullptr!!! Registry dimension fail!!!");
+        return -1;
+    }
+#endif
     if (impl->customDimensionMap.contains(dimName)) {
         info = impl->customDimensionMap.at(dimName);
         loggerMoreDimMag.info(
@@ -218,28 +231,25 @@ DimensionType CustomDimensionManager::addDimension(
 
     // registry create dimension function
     // in client, will registry 2 times, server before client
+
+    ll::service::getLevel()->getDimensionFactory().mFactoryMap.emplace(
+        dimName,
+        [dimName, info, factory = std::move(factory)](DerivedDimensionArguments&& arguments) -> OwnerPtr<Dimension> {
+            loggerMoreDimMag.debug("Server Level Create dimension, name: {}, id: {}", dimName, info.id.id);
+            return factory(DimensionFactoryInfo{arguments, info.nbt, info.id});
+        }
+    );
+
 #ifdef LL_PLAT_C
-    if(ll::service::getMultiPlayerLevel()) {
-        ll::service::getMultiPlayerLevel()->getDimensionFactory().mFactoryMap.emplace(
-            dimName,
-            [dimName, info, factory = std::move(factory)](ILevel& ilevel, Scheduler& scheduler) -> OwnerPtr<Dimension> {
-                loggerMoreDimMag.debug("Client Level Create dimension, name: {}, id: {}", dimName, info.id.id);
-                return factory(DimensionFactoryInfo{ilevel, scheduler, info.nbt, info.id});
-            }
-        );
-        return info.id;
-    }
+    ll::service::getMultiPlayerLevel()->getDimensionFactory().mFactoryMap.emplace(
+        dimName,
+        [dimName, info, factory = std::move(factory)](DerivedDimensionArguments&& arguments) -> OwnerPtr<Dimension> {
+            loggerMoreDimMag.debug("Client Level Create dimension, name: {}, id: {}", dimName, info.id.id);
+            return factory(DimensionFactoryInfo{arguments, info.nbt, info.id});
+        }
+    );
 #endif
 
-    if (ll::service::getLevel()) {
-        ll::service::getLevel()->getDimensionFactory().mFactoryMap.emplace(
-            dimName,
-            [dimName, info, factory = std::move(factory)](ILevel& ilevel, Scheduler& scheduler) -> OwnerPtr<Dimension> {
-                loggerMoreDimMag.debug("Server Level Create dimension, name: {}, id: {}", dimName, info.id.id);
-                return factory(DimensionFactoryInfo{ilevel, scheduler, info.nbt, info.id});
-            }
-        );
-    }
     // modify default dimension map
     loggerMoreDimMag.debug("Add new dimension to DimensionMap");
     ll::memory::modify(VanillaDimensions::DimensionMap(), [&](auto& dimMap) {
@@ -265,7 +275,15 @@ DimensionType CustomDimensionManager::addDimension(
         CustomDimensionConfig::saveConfigFile();
     }
     // add to command enum
-
+#ifdef LL_PLAT_C
+    ll::command::CommandRegistrar::getInstance(true).addEnumValues(
+        "Dimension",
+        {
+            {dimName, info.id}
+    },
+        Bedrock::type_id<CommandRegistry, DimensionType>()
+    );
+#endif
     ll::command::CommandRegistrar::getInstance(false).addEnumValues(
         "Dimension",
         {
