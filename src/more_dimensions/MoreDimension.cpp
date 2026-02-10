@@ -4,8 +4,6 @@
 #include "ll/api/mod/RegisterHelper.h"
 #include "more_dimensions/core/dimension/MoreDimensionsPatch.h"
 
-#include <Windows.h>
-
 namespace more_dimensions {
 
 MoreDimension& MoreDimension::getInstance() {

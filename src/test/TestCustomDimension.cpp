@@ -1,3 +1,4 @@
+#include "ll/api/service/TargetedBedrock.h"
 #include "test/generator/flat-gen-village/FlatVillageDimension.h"
 // #include "test/generator/generator-custom-structure/dimension/CustomStructureDimension.h"
 #include "test/generator/generator-terrain/NxnBorderTerrainDimension.h"
@@ -6,44 +7,49 @@
 #include "more_dimensions/api/dimension/CustomDimensionManager.h"
 #include "more_dimensions/api/dimension/SimpleCustomDimension.h"
 
-void registryTestDimensions() {
+auto& logger = more_dimensions::MoreDimension::getInstance().getSelf().getLogger();
+
+void registryTestDimensions(bool isClientSide) {
     // simplate dimension test
     // vanilla overworld type dimension test
     more_dimensions::CustomDimensionManager::getInstance().addDimension<more_dimensions::SimpleCustomDimension>(
-        "testNewDimension"
+        "testNewDimension",
+        isClientSide
     );
 
     // vanilla flat type dimension test
     more_dimensions::CustomDimensionManager::getInstance()
-        .addDimension<more_dimensions::SimpleCustomDimension>("testNewFlatDimension", 345, GeneratorType::Flat);
+        .addDimension<more_dimensions::SimpleCustomDimension>("testNewFlatDimension", isClientSide, 345, GeneratorType::Flat);
 
     // vanilla nether type dimension test
     more_dimensions::CustomDimensionManager::getInstance()
-        .addDimension<more_dimensions::SimpleCustomDimension>("testNewNetherDimension", 345, GeneratorType::Nether);
+        .addDimension<more_dimensions::SimpleCustomDimension>("testNewNetherDimension", isClientSide, 345, GeneratorType::Nether);
 
     // vanilla the end type dimension test
     more_dimensions::CustomDimensionManager::getInstance()
-        .addDimension<more_dimensions::SimpleCustomDimension>("testNewTheEndDimension", 345, GeneratorType::TheEnd);
+        .addDimension<more_dimensions::SimpleCustomDimension>("testNewTheEndDimension", isClientSide, 345, GeneratorType::TheEnd);
 
     // vanilla void dimension test
     more_dimensions::CustomDimensionManager::getInstance()
-        .addDimension<more_dimensions::SimpleCustomDimension>("testNewVoidDimension", 345, GeneratorType::Void);
+        .addDimension<more_dimensions::SimpleCustomDimension>("testNewVoidDimension", isClientSide, 345, GeneratorType::Void);
 
     // custom diomension test
     // flat type generator village dimension test
     more_dimensions::CustomDimensionManager::getInstance().addDimension<flat_village_dimension::FlatVillageDimension>(
-        "testFlatVillage"
+        "testFlatVillage",
+        isClientSide
     );
 
     // flat type custom terrain dimension test
     more_dimensions::CustomDimensionManager::getInstance().addDimension<nxn_border_terrain::NxnBorderTerrainDimension>(
         "testFlatTerrain",
+        isClientSide,
         5
     );
 
     // flat type custom structure dimension test
     // more_dimensions::CustomDimensionManager::getInstance()
-    //     .addDimension<custom_structure_dimension::CustomStructureDimension>("testCustomStructure");
+    //     .addDimension<custom_structure_dimension::CustomStructureDimension>("testCustomStructure", isClientSide);
 }
 
 #ifdef LL_PLAT_C
@@ -51,10 +57,14 @@ void registryTestDimensions() {
 #include "ll/api/event/EventBus.h"
 #include "ll/api/event/client/ClientStartJoinLevelEvent.h"
 #include "ll/api/event/client/ClientJoinLevelEvent.h"
+#include "ll/api/memory/Hook.h"
+#include "mc/world/level/dimension/VanillaDimensionFactory.h"
+#include "mc/world/level/Level.h"
 
 static bool reg = [] {
     using namespace ll::event;
-    EventBus::getInstance().emplaceListener<ClientJoinLevelEvent>([](ClientJoinLevelEvent&) { registryTestDimensions(); });
+    // EventBus::getInstance().emplaceListener<ClientJoinLevelEvent>([](ClientJoinLevelEvent&) { registryTestDimensions(true); });
+    EventBus::getInstance().emplaceListener<ClientStartJoinLevelEvent>([](ClientStartJoinLevelEvent&) { registryTestDimensions(false); });
     return true;
 }();
 
@@ -99,17 +109,23 @@ static bool reg = [] {
 // #include "mc/world/level/DimensionManager.h"
 
 
-// LL_AUTO_TYPE_INSTANCE_HOOK(
-//     GetOrCreateDimension,
-//     HookPriority::Normal,
-//     DimensionManager,
-//     &DimensionManager::getOrCreateDimension,
-//     WeakRef<Dimension>,
-//     DimensionType dim
-// ) {
-//     std::cout << "getOrCreateDimension->" << dim.id << std::endl;
-//     return origin(dim);
-// };
+LL_AUTO_TYPE_INSTANCE_HOOK(
+    GetOrCreateDimension,
+    HookPriority::Normal,
+    Level,
+    &Level::$getOrCreateDimension,
+    WeakRef<Dimension>,
+    DimensionType dim
+) {
+    logger.debug("CLient->{}, getOrCreateDimension->{}", isClientSide(), dim.id);
+    auto result =  origin(dim);
+    if (result.expired()) {
+        logger.debug("Dimension creative fail!!! id:{}, registry dimensions", dim.id);
+        registryTestDimensions(isClientSide());
+        result = getOrCreateDimension(dim);
+    }
+    return result;
+};
 
 // #include "mc/server/commands/standard/TeleportCommand.h"
 // #include "mc/server/commands/standard/TeleportTarget.h"

@@ -29,6 +29,7 @@ public:
 protected:
     MORE_DIMENSIONS_API DimensionType addDimension(
         std::string const&                  dimName,
+        bool                                isClientSide,
         std::function<DimensionFactoryT>    factory,
         std::function<CompoundTag()> const& newData
     );
@@ -40,9 +41,10 @@ public:
     getDimensionIdFromName(std::string const& dimName);
 
     template <std::derived_from<Dimension> D, class... Args>
-    DimensionType addDimension(std::string const& dimName, Args&&... args) {
+    DimensionType addDimension(std::string const& dimName, bool isClientSide, Args&&... args) {
         return addDimension(
             dimName,
+            isClientSide,
             [dimName](more_dimensions::DimensionFactoryInfo const& info) -> std::shared_ptr<Dimension> {
                 return std::make_shared<D>(dimName, info);
             },

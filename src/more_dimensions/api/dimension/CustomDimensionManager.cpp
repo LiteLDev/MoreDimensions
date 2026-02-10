@@ -11,6 +11,11 @@
 
 #ifdef LL_PLAT_C
 #include "ll/api/service/TargetedBedrock.h"
+
+#include "mc/client/game/ClientInstance.h"
+#include "mc/client/network/LegacyClientNetworkHandler.h"
+#include "mc/world/Minecraft.h"
+#include "mc/world/GameSession.h"
 #endif
 
 #include "mc/deps/core/math/Vec3.h"
@@ -21,6 +26,7 @@
 #include "mc/util/BidirectionalUnorderedMap.h"
 #include "mc/world/actor/player/Player.h"
 #include "mc/world/level/Level.h"
+#include "mc/world/level/ILevel.h"
 #include "mc/world/level/dimension/Dimension.h"
 #include "mc/world/level/dimension/VanillaDimensions.h"
 #include "mc/world/level/storage/LevelStorage.h"
@@ -195,6 +201,7 @@ DimensionType CustomDimensionManager::getDimensionIdFromName(std::string const& 
 
 DimensionType CustomDimensionManager::addDimension(
     std::string const&                  dimName,
+    bool                                isClientSide,
     std::function<DimensionFactoryT>    factory,
     std::function<CompoundTag()> const& data
 ) {
@@ -202,14 +209,18 @@ DimensionType CustomDimensionManager::addDimension(
     Impl::DimensionInfo info;
     bool                newDim{};
 
-    if (!ll::service::getLevel()) {
+    if (!isClientSide && !ll::service::getLevel()) {
         loggerMoreDimMag.error("ServerLevel is nullptr!!! Registry dimension fail!!!");
         return -1;
     }
 #ifdef LL_PLAT_C
-    if (!ll::service::getMultiPlayerLevel()) {
-        loggerMoreDimMag.error("MultiPlayerLevel is nullptr!!! Registry dimension fail!!!");
-        return -1;
+    Level* multiPlayerLevel=nullptr;
+    if (isClientSide) {
+        multiPlayerLevel = reinterpret_cast<LegacyClientNetworkHandler*>(ll::service::getMinecraft(true)->mGameSession->mLegacyClientNetworkHandler.get())->mMultiPlayerLevel->mPointer->asLevel();
+        if (!multiPlayerLevel) {
+            loggerMoreDimMag.error("MultiPlayerLevel is nullptr!!! Registry dimension fail!!!");
+            return -1;
+        }
     }
 #endif
     if (impl->customDimensionMap.contains(dimName)) {
@@ -231,23 +242,29 @@ DimensionType CustomDimensionManager::addDimension(
 
     // registry create dimension function
     // in client, will registry 2 times, server before client
-
-    ll::service::getLevel()->getDimensionFactory().mFactoryMap.emplace(
-        dimName,
-        [dimName, info, factory = std::move(factory)](DerivedDimensionArguments&& arguments) -> OwnerPtr<Dimension> {
-            loggerMoreDimMag.debug("Server Level Create dimension, name: {}, id: {}", dimName, info.id.id);
-            return factory(DimensionFactoryInfo{arguments, info.nbt, info.id});
-        }
-    );
-
+    if (!isClientSide) {
+        ll::service::getLevel()->getDimensionFactory().mFactoryMap.emplace(
+            dimName,
+            [dimName, info, factory](DerivedDimensionArguments&& arguments) -> OwnerPtr<Dimension> {
+                loggerMoreDimMag.debug("Server Level Create dimension, name: {}, id: {}", dimName, info.id.id);
+                return factory(DimensionFactoryInfo{arguments, info.nbt, info.id});
+            }
+        );
+    }
 #ifdef LL_PLAT_C
-    ll::service::getMultiPlayerLevel()->getDimensionFactory().mFactoryMap.emplace(
-        dimName,
-        [dimName, info, factory = std::move(factory)](DerivedDimensionArguments&& arguments) -> OwnerPtr<Dimension> {
-            loggerMoreDimMag.debug("Client Level Create dimension, name: {}, id: {}", dimName, info.id.id);
-            return factory(DimensionFactoryInfo{arguments, info.nbt, info.id});
-        }
-    );
+    if (isClientSide) {
+        multiPlayerLevel->getDimensionFactory().mFactoryMap.emplace(
+            dimName,
+            [dimName, info, factory = std::move(factory)](DerivedDimensionArguments&& arguments) -> OwnerPtr<Dimension> {
+                loggerMoreDimMag.debug("Client Level Create dimension, name: {}, id: {}", dimName, info.id.id);
+                return factory(DimensionFactoryInfo{arguments, info.nbt, info.id});
+            }
+        );
+        if (isClientSide && !ll::service::getLevel())
+            loggerMoreDimMag.debug("Join Server, Not registry ServerLevel");
+        else 
+            return info.id;
+    }
 #endif
 
     // modify default dimension map
@@ -275,16 +292,7 @@ DimensionType CustomDimensionManager::addDimension(
         CustomDimensionConfig::saveConfigFile();
     }
     // add to command enum
-#ifdef LL_PLAT_C
-    ll::command::CommandRegistrar::getInstance(true).addEnumValues(
-        "Dimension",
-        {
-            {dimName, info.id}
-    },
-        Bedrock::type_id<CommandRegistry, DimensionType>()
-    );
-#endif
-    ll::command::CommandRegistrar::getInstance(false).addEnumValues(
+    ll::command::CommandRegistrar::getInstance(isClientSide).addEnumValues(
         "Dimension",
         {
             {dimName, info.id}
