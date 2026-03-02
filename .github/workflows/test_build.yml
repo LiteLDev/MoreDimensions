@@ -30,7 +30,7 @@ jobs:
       - run: |
           xmake -v -w -y
 
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
           name: more-dimensions-test-windows-x64-${{ github.sha }}
           path: |
