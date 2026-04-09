@@ -4,9 +4,8 @@
 
 #include "NxnBorderTerrainGenerator.h"
 
-#include "test/mc/FixedBiomeSource.h"
-
 #include "mc/world/level/ChunkPos.h"
+#include "mc/world/level/biome/source/FixedBiomeSource.h"
 #include "mc/world/level/block/Block.h"
 #include "mc/world/level/block/VanillaBlockTypeIds.h"
 #include "mc/world/level/block/registry/BlockTypeRegistry.h"

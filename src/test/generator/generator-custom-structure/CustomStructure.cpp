@@ -11,18 +11,17 @@
 #include "mc/world/level/levelgen/structure/registry/JigsawStructureRegistry.h"
 #include "mc/world/level/levelgen/structure/registry/StructurePools.h"
 #include "mc/world/level/levelgen/structure/structurepools/StructurePoolBlockPredicateAlwaysTrue.h"
+#include "mc/world/level/levelgen/structure/structurepools/StructurePoolBlockPredicateBlockMatchRandom.h"
+#include "mc/world/level/levelgen/structure/structurepools/StructurePoolBlockRule.h"
 #include "mc/world/level/levelgen/structure/structurepools/StructurePoolBlockTagPredicateBlockTagStringMatches.h"
 #include "mc/world/level/levelgen/structure/structurepools/StructurePoolBlockTagRule.h"
 #include "mc/world/level/levelgen/structure/structurepools/StructurePoolElement.h"
 #include "mc/world/level/levelgen/structure/structurepools/StructureTemplatePool.h"
 #include "mc/world/level/storage/Experiments.h"
 
-#include "test/mc/StructurePoolBlockPredicateBlockMatchRandom.h"
-#include "test/mc/StructurePoolBlockRule.h"
-
 
 // #include "mc/world/level/storage/Experiments.h"
-// #include "test/mc/StructureTemplateRegistrationContext.h"
+// #include "mc/world/level/levelgen/structure/structurepools/StructureTemplateRegistrationContext.h"
 // #include "mc/world/level/levelgen/structure/structurepools/WeightedStructureTemplateRegistration.h"
 
 // #include <initializer_list>
@@ -53,15 +52,21 @@ void CustomJigsawStructureBlockRules::initialize(JigsawStructureRegistry& regist
     auto blockRule_1 = std::make_unique<StructurePoolBlockRule>(
         std::move(sourceBlock_pro1),
         std::move(targetBlock),
+        nullptr,
         &mossyStoneBricks
     );
     auto blockRule_2 = std::make_unique<StructurePoolBlockRule>(
         std::move(sourceBlock_pro1),
         std::move(targetBlock),
+        nullptr,
         &crackedStoneBricks
     );
-    auto blockRule_3 =
-        std::make_unique<StructurePoolBlockRule>(std::move(sourceBlock_pro2), std::move(targetBlock), &cobblestone);
+    auto blockRule_3 = std::make_unique<StructurePoolBlockRule>(
+        std::move(sourceBlock_pro2),
+        std::move(targetBlock),
+        nullptr,
+        &cobblestone
+    );
 
 
     auto ruleList = std::make_unique<std::vector<std::unique_ptr<StructurePoolBlockRule>>>();
@@ -232,10 +237,10 @@ void CustomJigsawStructureElements::initialize(
 
 void CustomJigsawStructure::initialize(
     Bedrock::NotNullNonOwnerPtr<::StructureManager> const& manager,
-    FeatureRegistry&                                featureRegistry,
-    JigsawStructureRegistry&                        registry,
-    BaseGameVersion const&                          baseGameVersion,
-    Experiments const&                              experiments
+    FeatureRegistry&                                       featureRegistry,
+    JigsawStructureRegistry&                               registry,
+    BaseGameVersion const&                                 baseGameVersion,
+    Experiments const&                                     experiments
 ) {
     CustomJigsawStructureBlockRules::initialize(registry);
     CustomJigsawStructureBlockTagRules::initialize(registry);

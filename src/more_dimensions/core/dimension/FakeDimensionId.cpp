@@ -16,7 +16,6 @@
 #include "mc/legacy/ActorUniqueID.h"
 #include "mc/network//LoopbackPacketSender.h"
 #include "mc/network/MinecraftPacketIds.h"
-#include "mc/network/NetworkBlockPosition.h"
 #include "mc/network/NetworkIdentifierWithSubId.h"
 #include "mc/network/ServerNetworkHandler.h"
 #include "mc/network/packet/AddVolumeEntityPacket.h"
@@ -77,11 +76,8 @@ static void sendEmptyChunk(const NetworkIdentifier& netId, int chunkX, int chunk
     ll::service::getLevel()->getPacketSender()->sendToClient(netId, levelChunkPacket, SubClientId::PrimaryClient);
 
     if (forceUpdate) {
-        NetworkBlockPosition pos{
-            BlockPos{chunkX << 4, 80, chunkZ << 4}
-        };
         UpdateBlockPacket blockPacket;
-        blockPacket.mPos         = pos;
+        blockPacket.mPos         = BlockPos{chunkX << 4, 80, chunkZ << 4};
         blockPacket.mLayer       = 0;
         blockPacket.mUpdateFlags = 1;
         ll::service::getLevel()->getPacketSender()->sendToClient(netId, blockPacket, SubClientId::PrimaryClient);
@@ -129,11 +125,13 @@ LL_TYPE_INSTANCE_HOOK(
     LoopbackPacketSender,
     &LoopbackPacketSender::$sendToClient,
     void,
-    NetworkIdentifier const& netId,
-    Packet const&            packet,
-    ::SubClientId            subId
+    UserEntityIdentifierComponent const* userIdentifier,
+    Packet const&                        packet
 ) {
-    auto player = ll::service::getServerNetworkHandler()->_getServerPlayer(netId, subId);
+    auto player = ll::service::getServerNetworkHandler()->_getServerPlayer(
+        userIdentifier->mNetworkId,
+        userIdentifier->mClientSubId
+    );
     if (player && player->getDimensionId() >= 3 && packet.getId() != MinecraftPacketIds::ChangeDimension
         && packet.getId() != MinecraftPacketIds::PlayerAction
         && packet.getId() != MinecraftPacketIds::SpawnParticleEffect) {
@@ -151,7 +149,7 @@ LL_TYPE_INSTANCE_HOOK(
             modifPacket.mClientRequestSubChunkLimit = 11;
         }
     }
-    return origin(netId, packet, subId);
+    return origin(userIdentifier, packet);
 };
 
 LL_TYPE_INSTANCE_HOOK(
@@ -228,26 +226,28 @@ LL_TYPE_INSTANCE_HOOK(
     StartGamePacket,
     &StartGamePacket::$ctor,
     void*,
-    LevelSettings const&          settings,
-    ActorUniqueID                 entityId,
-    ActorRuntimeID                runtimeId,
-    GameType                      entityGameType,
-    bool                          enableItemStackNetManager,
-    Vec3 const&                   pos,
-    Vec2 const&                   rot,
-    std::string const&            levelId,
-    std::string const&            levelName,
-    ContentIdentity const&        premiumTemplateContentIdentity,
-    std::string const&            multiplayerCorrelationId,
-    BlockDefinitionGroup const&   blockDefinitionGroup,
-    bool                          isTrial,
-    CompoundTag                   playerPropertyData,
-    PlayerMovementSettings const& movementSettings,
-    std::string const&            serverVersion,
-    mce::UUID const&              worldTemplateId,
-    uint64                        levelCurrentTime,
-    int                           enchantmentSeed,
-    uint64                        blockTypeRegistryChecksum
+    LevelSettings const&                                                     settings,
+    ActorUniqueID                                                            entityId,
+    ActorRuntimeID                                                           runtimeId,
+    GameType                                                                 entityGameType,
+    bool                                                                     enableItemStackNetManager,
+    Vec3 const&                                                              pos,
+    Vec2 const&                                                              rot,
+    std::string const&                                                       levelId,
+    std::string const&                                                       levelName,
+    ContentIdentity const&                                                   premiumTemplateContentIdentity,
+    std::string const&                                                       multiplayerCorrelationId,
+    BlockDefinitionGroup const&                                              blockDefinitionGroup,
+    bool                                                                     isTrial,
+    CompoundTag                                                              playerPropertyData,
+    PlayerMovementSettings const&                                            movementSettings,
+    std::string const&                                                       serverVersion,
+    mce::UUID const&                                                         worldTemplateId,
+    std::optional<::ServerConfiguration::ServerConfigurationJoinInfo> const& serverJoinInfo,
+    Social::Events::ServerTelemetryData const&                               serverTelemetryData,
+    uint64                                                                   levelCurrentTime,
+    int                                                                      enchantmentSeed,
+    uint64                                                                   blockTypeRegistryChecksum
 ) {
     if (settings.getSpawnSettings().dimension->id >= 3) {
         SpawnSettings spawnSettings(settings.getSpawnSettings());
@@ -268,10 +268,12 @@ LL_TYPE_INSTANCE_HOOK(
         multiplayerCorrelationId,
         blockDefinitionGroup,
         isTrial,
-        std::move(playerPropertyData),
+        playerPropertyData,
         movementSettings,
         serverVersion,
         worldTemplateId,
+        serverJoinInfo,
+        serverTelemetryData,
         levelCurrentTime,
         enchantmentSeed,
         blockTypeRegistryChecksum

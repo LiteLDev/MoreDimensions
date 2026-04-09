@@ -10,7 +10,7 @@
 #include "ll/api/service/Bedrock.h"
 
 #include "mc/deps/core/math/Vec3.h"
-#include "mc/nbt/Tag.h"
+#include "mc/deps/nbt/Tag.h"
 #include "mc/server/DedicatedServer.h"
 #include "mc/server/PropertiesSettings.h"
 #include "mc/util/BidirectionalUnorderedMap.h"

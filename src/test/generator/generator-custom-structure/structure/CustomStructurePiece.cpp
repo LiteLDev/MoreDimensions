@@ -1,6 +1,7 @@
 #include "CustomStructurePiece.h"
 
 #include "mc/util/Random.h"
+#include "mc/world/actor/ActorDefinitionIdentifier.h"
 #include "mc/world/level/BlockPos.h"
 #include "mc/world/level/block/VanillaBlockTypeIds.h"
 #include "mc/world/level/block/registry/BlockTypeRegistry.h"

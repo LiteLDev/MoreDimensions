@@ -1,7 +1,5 @@
 #include "FlatVillageGenerator.h"
 
-#include "test/mc/FixedBiomeSource.h"
-
 #include "mc/deps/core/math/Random.h"
 #include "mc/util/ThreadOwner.h"
 #include "mc/world/level/BlockSource.h"
@@ -9,6 +7,7 @@
 #include "mc/world/level/Level.h"
 #include "mc/world/level/biome/Biome.h"
 #include "mc/world/level/biome/registry/BiomeRegistry.h"
+#include "mc/world/level/biome/source/FixedBiomeSource.h"
 #include "mc/world/level/chunk/ChunkState.h"
 #include "mc/world/level/chunk/ChunkViewSource.h"
 #include "mc/world/level/chunk/LevelChunk.h"

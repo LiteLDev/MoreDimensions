@@ -13,6 +13,7 @@
 #include "mc/world/level/Level.h"
 #include "mc/world/level/LevelSeed64.h"
 #include "mc/world/level/biome/registry/BiomeRegistry.h"
+#include "mc/world/level/biome/source/FixedBiomeSource.h"
 #include "mc/world/level/chunk/vanilla_level_chunk_upgrade/VanillaLevelChunkUpgrade.h"
 #include "mc/world/level/dimension/DimensionArguments.h"
 #include "mc/world/level/dimension/IClientDimensionExtensions.h"
@@ -30,8 +31,6 @@
 #include "mc/world/level/storage/Experiments.h"
 #include "mc/world/level/storage/LevelData.h"
 
-#include "test/mc/FixedBiomeSource.h"
-
 #include <memory>
 #include <windows.h>
 
@@ -40,9 +39,10 @@ namespace more_dimensions {
 namespace {
 using namespace ll::memory_literals;
 
-auto* overworldAddress   = "`anonymous namespace'::OverworldDimensionAnon::addStructureFeatures"_symp;
-auto* netherAddress      = "`anonymous namespace'::NetherDimensionAnon::addStructureFeatures"_symp;
-DWORD endcityAddress_rva = 0x03A3490;
+auto* overworldAddress = "`anonymous namespace'::OverworldDimensionAnon::addStructureFeatures"_symp;
+auto* netherAddress    = "`anonymous namespace'::NetherDimensionAnon::addStructureFeatures"_symp;
+auto* endcityAddress =
+    "??$addStructureFeature@VEndCityFeature@@AEAVDimension@@AEAI@StructureFeatureRegistry@@QEAAAEAVEndCityFeature@@AEAVDimension@@AEAI@Z"_symp;
 
 void overworldAddStructureFeatures(
     StructureFeatureRegistry& registry,
@@ -75,9 +75,6 @@ void netherAddStructureFeatures(
 };
 
 void createEndCityFeature(StructureFeatureRegistry* _this, Dimension& dimension, uint& seed) {
-
-    HMODULE hModule        = GetModuleHandle(nullptr);
-    void*   endcityAddress = reinterpret_cast<BYTE*>(hModule) + endcityAddress_rva;
     ll::memory::addressCall<EndCityFeature&, StructureFeatureRegistry*, Dimension&, uint&>(
         endcityAddress,
         _this,

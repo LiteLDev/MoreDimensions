@@ -9,8 +9,8 @@
 #include "ll/api/utils/Base64Utils.h"
 #include "ll/api/utils/ErrorUtils.h"
 
-#include "mc/nbt/CompoundTag.h"
-#include "mc/nbt/Tag.h"
+#include "mc/deps/nbt/CompoundTag.h"
+#include "mc/deps/nbt/Tag.h"
 #include "mc/server/PropertiesSettings.h"
 
 namespace more_dimensions::CustomDimensionConfig {

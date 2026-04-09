@@ -3,7 +3,7 @@
 #include "more_dimensions/core/Macros.h"
 
 #include "mc/deps/core/utility/AutomaticID.h"
-#include "mc/nbt/CompoundTag.h"
+#include "mc/deps/nbt/CompoundTag.h"
 
 class Dimension;
 class DerivedDimensionArguments;

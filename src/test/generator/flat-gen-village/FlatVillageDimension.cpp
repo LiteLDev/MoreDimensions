@@ -47,7 +47,7 @@ FlatVillageDimension::createGenerator(br::worldgen::StructureSetRegistry const& 
     // 这个就相当于在这个生成器里注册结构了
     // VillageFeature的第二第三个参数是村庄之间的最大间隔与最小间隔
     worldGenerator->mStructureFeatureRegistry->mStructureFeatures->emplace_back(
-        std::make_unique<VillageFeature>(seed, 34, 8)
+        std::make_unique<VillageFeature>(seed, 34, 8, getBiomeRegistry())
     );
 
     return std::move(worldGenerator);

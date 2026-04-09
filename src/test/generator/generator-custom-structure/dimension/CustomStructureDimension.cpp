@@ -38,8 +38,8 @@ CompoundTag CustomStructureDimension::generateNewData() { return {}; }
 
 std::unique_ptr<WorldGenerator>
 CustomStructureDimension::createGenerator(br::worldgen::StructureSetRegistry const& structureSetRegistry) {
-    uint                            seed      = 2025;
-    auto&                           levelData = mLevel.getLevelData();
+    uint  seed      = 2025;
+    auto& levelData = mLevel.getLevelData();
 
     // 实例化我们写的Generator类
     std::unique_ptr<WorldGenerator> worldGenerator =
@@ -52,7 +52,7 @@ CustomStructureDimension::createGenerator(br::worldgen::StructureSetRegistry con
     // 这个就相当于在这个生成器里注册结构了
     // VillageFeature的第二第三个参数是村庄之间的最大间隔与最小间隔
     worldGenerator->mStructureFeatureRegistry->mStructureFeatures->emplace_back(
-        std::make_unique<VillageFeature>(seed, 34, 8)
+        std::make_unique<VillageFeature>(seed, 34, 8, getBiomeRegistry())
     );
     worldGenerator->mStructureFeatureRegistry->mStructureFeatures->emplace_back(
         std::make_unique<custom_structure::CustomStructureFeature>(seed, 8, 34)
