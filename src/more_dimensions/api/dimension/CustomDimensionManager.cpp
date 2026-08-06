@@ -2,193 +2,55 @@
 
 #include "more_dimensions/MoreDimension.h"
 #include "more_dimensions/core/dimension/CustomDimensionConfig.h"
-#include "more_dimensions/core/dimension/FakeDimensionId.h"
-
 
 #include "ll/api/command/CommandRegistrar.h"
 #include "ll/api/memory/Hook.h"
 #include "ll/api/service/Bedrock.h"
 
-#include "mc/deps/core/math/Vec3.h"
-#include "mc/deps/nbt/Tag.h"
-#include "mc/server/DedicatedServer.h"
-#include "mc/server/PropertiesSettings.h"
-#include "mc/util/BidirectionalUnorderedMap.h"
-#include "mc/world/actor/player/Player.h"
+#include "mc/world/level/DimensionManager.h"
 #include "mc/world/level/Level.h"
 #include "mc/world/level/dimension/Dimension.h"
 #include "mc/world/level/dimension/VanillaDimensions.h"
-#include "mc/world/level/storage/LevelStorage.h"
 
 namespace more_dimensions {
 
-// static ll::Logger loggerMoreDimMag("CustomDimensionManager");
 auto& loggerMoreDimMag = MoreDimension::getInstance().getSelf().getLogger();
 
-namespace CustomDimensionHookList {
-LL_TYPE_STATIC_HOOK(
-    VanillaDimensionsConverHook,
-    HookPriority::Normal,
-    VanillaDimensions,
-    VanillaDimensions::convertPointBetweenDimensions,
-    bool,
-    Vec3 const&                    oldPos,
-    Vec3&                          toPos,
-    DimensionType                  oldDim,
-    DimensionType                  toDim,
-    DimensionConversionData const& data
-) {
-    if (oldDim <= 2 && toDim <= 2) return origin(oldPos, toPos, oldDim, toDim, data);
-    toPos = oldPos;
-    return true;
-};
-
-LL_TYPE_STATIC_HOOK(
-    VanillaDimensionsFromSerializedIntHook,
-    HookPriority::Normal,
-    VanillaDimensions,
-    VanillaDimensions::fromSerializedInt,
-    Bedrock::Result<DimensionType>,
-    Bedrock::Result<int>&& dim
-) {
-    if (!VanillaDimensions::DimensionMap().mLeft.contains(*dim)) {
-        return VanillaDimensions::Undefined();
-    }
-    return *dim;
-};
-
-LL_TYPE_STATIC_HOOK(
-    VanillaDimensionsFromSerializedIntHookI,
-    HookPriority::Normal,
-    VanillaDimensions,
-    VanillaDimensions::fromSerializedInt,
-    ::Bedrock::Result<::DimensionType>,
-    ::Bedrock::Result<int>&& i
-) {
-    if (!VanillaDimensions::DimensionMap().mLeft.contains(i.value())) {
-        return VanillaDimensions::Undefined();
-    }
-    return {i};
-}
-
-// inline function use patch
-// -->PropertiesSettingsisClientSideGenEnabledHook
-//
-// LL_TYPE_STATIC_HOOK(
-//     VanillaDimensionsToSerializedIntHook,
-//     HookPriority::Normal,
-//     VanillaDimensions,
-//     VanillaDimensions::toSerializedInt,
-//     int,
-//     DimensionType const& dim
-// ) {
-//     if (dim <= 2) return origin(dim);
-//     return dim.id;
-// }
-
-// 当玩家加入服务器时，生成时的维度不存在，并且维度id不是Undefined时，把玩家放到主世界
 LL_TYPE_INSTANCE_HOOK(
-    LevelStorageloadServerPlayerDataHook,
-    HookPriority::Normal,
-    LevelStorage,
-    &LevelStorage::loadServerPlayerData,
-    std::unique_ptr<class CompoundTag>,
-    Player const& client,
-    bool          isXboxLive
-) {
-
-    auto result = origin(client, isXboxLive);
-    if (!result) return result;
-    auto spawnDimension = result->at("DimensionId");
-    if (!VanillaDimensions::DimensionMap().mLeft.contains(AutomaticID<Dimension, int>(spawnDimension))) {
-        result->at("Pos")[1] = FloatTag{0x7fff};
-    }
-    return result;
-}
-
-// 由于这个的调用在维度注册之前，所以使用AUTO
-#ifdef LL_PLAT_C
-LL_AUTO_TYPE_INSTANCE_HOOK(
-    LevelInitializeHook,
-    HookPriority::Normal,
-    Level,
-    &Level::$initialize,
-    bool,
-    std::string const&   levelName,
-    LevelSettings const& levelSettings,
-    Experiments const&   experiments,
-    std::string const*   levelId,
-    std::optional<std::reference_wrapper<
-        std::unordered_map<std::string, std::unique_ptr<::BiomeJsonDocumentGlue::ResolvedBiomeData>>>>
-        biomeIdToResolvedData
-) {
-    mClientSideChunkGenEnabled = false;
-    return origin(levelName, levelSettings, experiments, levelId, biomeIdToResolvedData);
-}
-#else
-LL_AUTO_TYPE_INSTANCE_HOOK(
-    PropertiesSettingsisClientSideGenEnabledHook,
-    HookPriority::Normal,
-    DedicatedServer,
-    &DedicatedServer::initializeHttp,
+    CheckCustomDimensionId,
+    ll::memory::HookPriority::Normal,
+    DimensionManager,
+    &DimensionManager::serverLoadDimensionNameIdStoreTable,
     void,
-    PropertiesSettings const& properties
-) {
-    auto& properties_modiy                        = const_cast<PropertiesSettings&>(properties);
-    properties_modiy.mClientSideGenerationEnabled = false;
-    return origin(properties_modiy);
+    LevelStorage const& levelStorage
+){
+    origin(levelStorage);
 }
-#endif
-
-// 1.21.50.10 unnecessary
-// registry dimensoin when in ll, must reload Dimension::getWeakRef
-// LL_TYPE_INSTANCE_HOOK(DimensionGetWeakRefHook, HookPriority::Normal, Dimension, &Dimension::getWeakRef,
-// WeakRef<Dimension>) {
-//     if (getDimensionId().id > 2 && getDimensionId() != VanillaDimensions::Undefined()) return weak_from_this();
-//     return origin();
-// };
-
-using HookReg = ll::memory::HookRegistrar<
-    VanillaDimensionsConverHook,
-    VanillaDimensionsFromSerializedIntHook,
-    VanillaDimensionsFromSerializedIntHookI,
-    // VanillaDimensionsToSerializedIntHook,
-    LevelStorageloadServerPlayerDataHook>;
-
-} // namespace CustomDimensionHookList
 
 struct CustomDimensionManager::Impl {
-    std::atomic<int> mNewDimensionId{3};
-    std::mutex       mMapMutex;
+    std::mutex mMapMutex;
 
     struct DimensionInfo {
-        DimensionType id;
-        CompoundTag   nbt;
+        CompoundTag nbt;
     };
     std::unordered_map<std::string, DimensionInfo> customDimensionMap;
-    std::unordered_set<std::string>                registeredDimension;
 };
 
 CustomDimensionManager::CustomDimensionManager() : impl(std::make_unique<Impl>()) {
     std::lock_guard lock{impl->mMapMutex};
     CustomDimensionConfig::setDimensionConfigPath();
     CustomDimensionConfig::loadConfigFile();
-    if (!CustomDimensionConfig::getConfig().dimensionList.empty()) {
-        for (auto& [name, info] : CustomDimensionConfig::getConfig().dimensionList) {
-            auto nbtTag = CompoundTag::fromSnbt(info.sNbt);
-            if (!nbtTag) {
-                loggerMoreDimMag.error("Failed to parse NBT from config for dimension: {}, skipping", name);
-                continue;
-            }
-            impl->customDimensionMap.emplace(name, Impl::DimensionInfo{info.dimId, *nbtTag});
+    for (auto& [name, info] : CustomDimensionConfig::getConfig().dimensionList) {
+        auto nbtTag = CompoundTag::fromSnbt(info.sNbt);
+        if (!nbtTag) {
+            loggerMoreDimMag.error("Failed to parse NBT from config for dimension: {}, skipping", name);
+            continue;
         }
-        impl->mNewDimensionId += static_cast<int>(impl->customDimensionMap.size());
+        impl->customDimensionMap.emplace(name, Impl::DimensionInfo{*nbtTag});
     }
-    FakeDimensionId::getInstance();
-    CustomDimensionHookList::HookReg::hook();
-};
+}
 
-CustomDimensionManager::~CustomDimensionManager() { CustomDimensionHookList::HookReg::unhook(); }
+CustomDimensionManager::~CustomDimensionManager() = default;
 
 CustomDimensionManager& CustomDimensionManager::getInstance() {
     static CustomDimensionManager instance{};
@@ -204,73 +66,61 @@ DimensionType CustomDimensionManager::addDimension(
     std::function<DimensionFactoryT>    factory,
     std::function<CompoundTag()> const& data
 ) {
-    std::lock_guard     lock{impl->mMapMutex};
+    std::lock_guard lock{impl->mMapMutex};
+    auto           level = ll::service::getLevel();
+    if (!level) {
+        throw std::runtime_error("Level is nullptr, cannot registry new dimension " + dimName);
+    }
+
     Impl::DimensionInfo info;
-    bool                newDim{};
+    bool                newDim = false;
     if (impl->customDimensionMap.contains(dimName)) {
         info = impl->customDimensionMap.at(dimName);
         loggerMoreDimMag.info(
-            "The dimension already registry. use old id, name: {}, id: {}, \ndata: {}",
+            "The dimension already has persisted data. name: {}, \ndata: {}",
             dimName,
-            info.id.id,
             info.nbt.toSnbt()
         );
     } else {
-        // Assign new id
-        info.id  = impl->mNewDimensionId++;
         info.nbt = data();
         newDim   = true;
-        loggerMoreDimMag
-            .info("registry new dimension, name: {}, id: {}, \ndata: {}", dimName, info.id.id, info.nbt.toSnbt());
-    };
-
-    // registry create dimension function
-    if (!ll::service::getLevel()) {
-        throw std::runtime_error("Level is nullptr, cannot registry new dimension " + dimName);
+        loggerMoreDimMag.info("registry new dimension data, name: {}, \ndata: {}", dimName, info.nbt.toSnbt());
     }
-    ll::service::getLevel()->getDimensionFactory().mFactoryMap.emplace(
+
+    auto& dimensionManager = level->getDimensionManager();
+    auto  dimId = dimensionManager.serverRegisterCustomDimension(dimName).value_or(dimensionManager.getDimensionId(dimName));
+    if (dimId == VanillaDimensions::Undefined()) {
+        throw std::runtime_error("Failed to registry new dimension " + dimName);
+    }
+
+    level->getDimensionFactory().mFactoryMap.insert_or_assign(
         dimName,
-        [dimName, info, factory = std::move(factory)](DerivedDimensionArguments&& arguments) -> OwnerPtr<Dimension> {
-            loggerMoreDimMag.debug("Create dimension, name: {}, id: {}", dimName, info.id.id);
-            return factory(DimensionFactoryInfo{arguments, info.nbt, info.id});
+        [dimName, info, dimId, factory = std::move(factory)](
+            DerivedDimensionArguments&& arguments
+        ) -> OwnerPtr<Dimension> {
+            loggerMoreDimMag.debug("Create dimension, name: {}, id: {}", dimName, static_cast<int>(dimId));
+            return factory(DimensionFactoryInfo{arguments, info.nbt, dimId});
         }
     );
+    loggerMoreDimMag.info("registry dimension, name: {}, id: {}", dimName, static_cast<int>(dimId));
 
-    // modify default dimension map
-    loggerMoreDimMag.debug("Add new dimension to DimensionMap");
-    ll::memory::modify(VanillaDimensions::DimensionMap(), [&](auto& dimMap) {
-        loggerMoreDimMag.debug("Add new dimension: name->{}, id->{} to DimensionMap", dimName, info.id.id);
-        dimMap.insert_or_assign(dimName, info.id);
-    });
-
-    // modify default Undefined dimension id
-    ll::memory::modify(VanillaDimensions::Undefined(), [&](auto& uid) {
-        uid.id = impl->mNewDimensionId;
-        loggerMoreDimMag.debug("Set VanillaDimensions::Undefined to {}", uid.id);
-        loggerMoreDimMag.debug("Now VanillaDimensions::Undefined is {}", VanillaDimensions::Undefined().id);
-    });
-
-    // config
-    impl->registeredDimension.emplace(dimName);
     if (newDim) {
         impl->customDimensionMap.emplace(dimName, info);
         CustomDimensionConfig::getConfig().dimensionList.emplace(
             dimName,
-            CustomDimensionConfig::Config::Info{info.id, info.nbt.toSnbt(SnbtFormat::Minimize)}
+            CustomDimensionConfig::Config::Info{info.nbt.toSnbt(SnbtFormat::Minimize)}
         );
         CustomDimensionConfig::saveConfigFile();
     }
 
-    // add to command enum
-
     ll::command::CommandRegistrar::getInstance(false).addEnumValues(
         "Dimension",
         {
-            {dimName, info.id}
+            {dimName, dimId}
     },
         Bedrock::type_id<CommandRegistry, DimensionType>()
     );
 
-    return info.id;
+    return dimId;
 }
 } // namespace more_dimensions

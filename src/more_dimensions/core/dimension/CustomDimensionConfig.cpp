@@ -42,14 +42,17 @@ bool loadConfigFile() {
                     [](Config& config, nlohmann::ordered_json& data) {
                         if (data["version"] < config.version) {
                             for (auto& item : data["dimensionList"]) {
-                                auto decompressed = utils::decompress(ll::base64_utils::decode(item["base64Nbt"]));
-                                auto nbtTag       = CompoundTag::fromBinaryNbt(decompressed);
-                                if (!nbtTag) {
-                                    logger.error("Failed to parse NBT from base64Nbt, skipping dimension");
-                                    continue;
+                                if (item.contains("base64Nbt")) {
+                                    auto decompressed =
+                                        utils::decompress(ll::base64_utils::decode(item["base64Nbt"]));
+                                    auto nbtTag = CompoundTag::fromBinaryNbt(decompressed);
+                                    if (!nbtTag) {
+                                        logger.error("Failed to parse NBT from base64Nbt, skipping dimension");
+                                        continue;
+                                    }
+                                    item["sNbt"] = nbtTag->toSnbt(SnbtFormat::Minimize);
+                                    item.erase("base64Nbt");
                                 }
-                                item["sNbt"] = nbtTag->toSnbt(SnbtFormat::Minimize);
-                                item.erase("base64Nbt");
                             }
                         }
                         data.erase("version");

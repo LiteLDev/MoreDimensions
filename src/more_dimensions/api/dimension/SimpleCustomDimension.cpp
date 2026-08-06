@@ -26,8 +26,9 @@
 #include "mc/world/level/levelgen/v1/NetherGenerator.h"
 #include "mc/world/level/levelgen/v1/OverworldGeneratorMultinoise.h"
 #include "mc/world/level/levelgen/v1/TheEndGenerator.h"
-#include "mc/world/level/levelgen/v1/VoidGenerator.h"
+#include "mc/world/level/levelgen/VoidGenerator.h"
 #include "mc/world/level/levelgen/v2/ChunkGeneratorStructureState.h"
+#include "mc/world/level/dimension/DimensionHeightRange.h"
 #include "mc/world/level/storage/Experiments.h"
 #include "mc/world/level/storage/LevelData.h"
 
@@ -88,7 +89,7 @@ void createEndCityFeature(StructureFeatureRegistry* _this, Dimension& dimension,
 auto& loggerMoreDim = MoreDimension::getInstance().getSelf().getLogger();
 
 SimpleCustomDimension::SimpleCustomDimension(std::string const& name, DimensionFactoryInfo const& info)
-: Dimension(DimensionArguments(std::move(info.arguments), info.dimId, {-64, 320}, name)) {
+: Dimension(DimensionArguments(std::move(info.arguments), info.dimId, DimensionHeightRange(-64, 320), name)) {
     loggerMoreDim.debug("{} dimension name:{}", __FUNCTION__, name);
     mDefaultBrightness->sky = Brightness::MAX();
 
