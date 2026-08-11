@@ -1,53 +1,90 @@
+#include "ll/api/service/Bedrock.h"
 #include "test/generator/flat-gen-village/FlatVillageDimension.h"
-#include "test/generator/generator-custom-structure/dimension/CustomStructureDimension.h"
+// #include "test/generator/generator-custom-structure/dimension/CustomStructureDimension.h"
 #include "test/generator/generator-terrain/NxnBorderTerrainDimension.h"
 
 #include "ll/api/event/EventBus.h"
-#include "ll/api/event/server/ServerStartedEvent.h"
+#include "ll/api/event/command/ServerCommandRegisterEvent.h"
+#include "ll/api/memory/Hook.h"
 
 #include "more_dimensions/api/dimension/CustomDimensionManager.h"
-#include "more_dimensions/api/dimension/SimpleCustomDimension.h"
 
-static bool reg = [] {
-    using namespace ll::event;
-    EventBus::getInstance().emplaceListener<ServerStartedEvent>([](ServerStartedEvent&) {
-        // simplate dimension test
-        // vanilla overworld type dimension test
-        more_dimensions::CustomDimensionManager::getInstance().addDimension<more_dimensions::SimpleCustomDimension>(
-            "testNewDimension"
-        );
+#include "mc/world/level/DimensionManager.h"
+#include "mc/world/level/Level.h"
+#include "mc/world/events/ServerInstanceEventCoordinator.h"
 
-        // vanilla flat type dimension test
-        more_dimensions::CustomDimensionManager::getInstance()
-            .addDimension<more_dimensions::SimpleCustomDimension>("testNewFlatDimension", 345, GeneratorType::Flat);
+void registryTestDimension() {
+    // simplate dimension test
+    // vanilla overworld type dimension test
+    more_dimensions::CustomDimensionManager::getInstance().addSimpleDimension("test:testNewDimension");
 
-        // vanilla nether type dimension test
-        more_dimensions::CustomDimensionManager::getInstance()
-            .addDimension<more_dimensions::SimpleCustomDimension>("testNewNetherDimension", 345, GeneratorType::Nether);
+    // vanilla flat type dimension test
+    more_dimensions::CustomDimensionManager::getInstance()
+        .addSimpleDimension("test:testNewFlatDimension", 345, GeneratorType::Flat);
 
-        // vanilla the end type dimension test
-        more_dimensions::CustomDimensionManager::getInstance()
-            .addDimension<more_dimensions::SimpleCustomDimension>("testNewTheEndDimension", 345, GeneratorType::TheEnd);
+    // vanilla nether type dimension test
+    more_dimensions::CustomDimensionManager::getInstance()
+        .addSimpleDimension("test:testNewNetherDimension", 345, GeneratorType::Nether);
 
-        // vanilla void dimension test
-        more_dimensions::CustomDimensionManager::getInstance()
-            .addDimension<more_dimensions::SimpleCustomDimension>("testNewVoidDimension", 345, GeneratorType::Void);
+    // vanilla the end type dimension test
+    more_dimensions::CustomDimensionManager::getInstance()
+        .addSimpleDimension("test:testNewTheEndDimension", 345, GeneratorType::TheEnd);
 
-        // custom diomension test
-        // flat type generator village dimension test
-        more_dimensions::CustomDimensionManager::getInstance()
-            .addDimension<flat_village_dimension::FlatVillageDimension>("testFlatVillage");
+    // vanilla void dimension test
+    more_dimensions::CustomDimensionManager::getInstance()
+        .addSimpleDimension("test:testNewVoidDimension", 345, GeneratorType::Void);
 
-        // flat type custom terrain dimension test
-        more_dimensions::CustomDimensionManager::getInstance()
-            .addDimension<nxn_border_terrain::NxnBorderTerrainDimension>("testFlatTerrain", 5);
+    // custom diomension test
+    // flat type generator village dimension test
+    // more_dimensions::CustomDimensionManager::getInstance().addDimension<flat_village_dimension::FlatVillageDimension>(
+    //     "test:testFlatVillage"
+    // );
 
-        // flat type custom structure dimension test
-        // more_dimensions::CustomDimensionManager::getInstance()
-        //     .addDimension<custom_structure_dimension::CustomStructureDimension>("testCustomStructure");
-    });
-    return true;
-}();
+    // flat type custom terrain dimension test
+    // more_dimensions::CustomDimensionManager::getInstance().addDimension<nxn_border_terrain::NxnBorderTerrainDimension>(
+    //     "test:testFlatTerrain",
+    //     5
+    // );
+
+    // flat type custom structure dimension test
+    // more_dimensions::CustomDimensionManager::getInstance()
+    //     .addDimension<custom_structure_dimension::CustomStructureDimension>("test:testCustomStructure");
+}
+
+LL_AUTO_TYPE_INSTANCE_HOOK(
+    CheckCustomDimensionId,
+    ll::memory::HookPriority::Normal,
+    ServerInstanceEventCoordinator,
+    &ServerInstanceEventCoordinator::sendServerInitializeEnd,
+    void,
+    ServerInstance& ins
+) {
+    origin(ins);
+    registryTestDimension();
+}
+
+// LL_AUTO_TYPE_INSTANCE_HOOK(
+//     test2,
+//     ll::memory::HookPriority::Normal,
+//     Level,
+//     &Level::$initialize,
+//     bool,
+//     ::std::string const&   levelName,
+//         ::LevelSettings const& levelSettings,
+//         ::Experiments const&   experiments,
+//         ::std::string const*   levelId,
+//         ::std::optional<::std::reference_wrapper<
+//             ::std::unordered_map<::std::string, ::std::unique_ptr<::BiomeJsonDocumentGlueResolvedBiomeData>>>>
+//             biomeIdToResolvedData
+// ) {
+//     ll::service::getLevel() = this;
+//     printf("level get");
+//     if(!ll::service::getLevel()){
+//         printf("level still nullptr");
+//     }
+//     return origin(levelName, levelSettings, experiments, levelId, biomeIdToResolvedData);
+
+// }
 
 
 // #include "ll/api/memory/Hook.h"

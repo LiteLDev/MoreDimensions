@@ -40,49 +40,49 @@ namespace more_dimensions {
 namespace {
 using namespace ll::memory_literals;
 
-auto* overworldAddress = "`anonymous namespace'::OverworldDimensionAnon::addStructureFeatures"_symp;
-auto* netherAddress    = "`anonymous namespace'::NetherDimensionAnon::addStructureFeatures"_symp;
-auto* endcityAddress =
-    "??$addStructureFeature@VEndCityFeature@@AEAVDimension@@AEAI@StructureFeatureRegistry@@QEAAAEAVEndCityFeature@@AEAVDimension@@AEAI@Z"_symp;
+// auto* overworldAddress = "`anonymous namespace'::OverworldDimensionAnon::addStructureFeatures"_symp;
+// auto* netherAddress    = "`anonymous namespace'::NetherDimensionAnon::addStructureFeatures"_symp;
+// auto* endcityAddress =
+//     "??$addStructureFeature@VEndCityFeature@@AEAVDimension@@AEAI@StructureFeatureRegistry@@QEAAAEAVEndCityFeature@@AEAVDimension@@AEAI@Z"_symp;
 
-void overworldAddStructureFeatures(
-    StructureFeatureRegistry& registry,
-    uint                      seed,
-    bool                      isLegacy,
-    BaseGameVersion const&    baseGameVersion
-) {
-    ll::memory::addressCall<void*, StructureFeatureRegistry&, uint, bool, BaseGameVersion const&>(
-        overworldAddress,
-        registry,
-        seed,
-        isLegacy,
-        baseGameVersion
-    );
-};
+// void overworldAddStructureFeatures(
+//     StructureFeatureRegistry& registry,
+//     uint                      seed,
+//     bool                      isLegacy,
+//     BaseGameVersion const&    baseGameVersion
+// ) {
+//     ll::memory::addressCall<void*, StructureFeatureRegistry&, uint, bool, BaseGameVersion const&>(
+//         overworldAddress,
+//         registry,
+//         seed,
+//         isLegacy,
+//         baseGameVersion
+//     );
+// };
 
-void netherAddStructureFeatures(
-    StructureFeatureRegistry& registry,
-    uint                      seed,
-    BaseGameVersion const&    baseGameVersion,
-    Experiments const&        experiments
-) {
-    ll::memory::addressCall<void*, StructureFeatureRegistry&, uint, BaseGameVersion const&, Experiments const&>(
-        netherAddress,
-        registry,
-        seed,
-        baseGameVersion,
-        experiments
-    );
-};
+// void netherAddStructureFeatures(
+//     StructureFeatureRegistry& registry,
+//     uint                      seed,
+//     BaseGameVersion const&    baseGameVersion,
+//     Experiments const&        experiments
+// ) {
+//     ll::memory::addressCall<void*, StructureFeatureRegistry&, uint, BaseGameVersion const&, Experiments const&>(
+//         netherAddress,
+//         registry,
+//         seed,
+//         baseGameVersion,
+//         experiments
+//     );
+// };
 
-void createEndCityFeature(StructureFeatureRegistry* _this, Dimension& dimension, uint& seed) {
-    ll::memory::addressCall<EndCityFeature&, StructureFeatureRegistry*, Dimension&, uint&>(
-        endcityAddress,
-        _this,
-        dimension,
-        seed
-    );
-};
+// void createEndCityFeature(StructureFeatureRegistry* _this, Dimension& dimension, uint& seed) {
+//     ll::memory::addressCall<EndCityFeature&, StructureFeatureRegistry*, Dimension&, uint&>(
+//         endcityAddress,
+//         _this,
+//         dimension,
+//         seed
+//     );
+// };
 } // namespace
 
 // static ll::Logger loggerMoreDim("SimpleCustomDim");
@@ -160,12 +160,12 @@ SimpleCustomDimension::createGenerator(br::worldgen::StructureSetRegistry const&
                 worldGenerator->getBiomeSource(),
                 structureSetRegistry
             );
-        overworldAddStructureFeatures(
-            *worldGenerator->mStructureFeatureRegistry,
-            seed,
-            false,
-            levelData.getBaseGameVersion()
-        );
+        // overworldAddStructureFeatures(
+        //     *worldGenerator->mStructureFeatureRegistry,
+        //     seed,
+        //     false,
+        //     levelData.getBaseGameVersion()
+        // );
         break;
     }
     case GeneratorType::Nether: {
@@ -176,12 +176,12 @@ SimpleCustomDimension::createGenerator(br::worldgen::StructureSetRegistry const&
                 worldGenerator->getBiomeSource(),
                 structureSetRegistry
             );
-        netherAddStructureFeatures(
-            *worldGenerator->mStructureFeatureRegistry,
-            seed,
-            levelData.getBaseGameVersion(),
-            static_cast<Experiments&>(levelData.mExperiments.get())
-        );
+        // netherAddStructureFeatures(
+        //     *worldGenerator->mStructureFeatureRegistry,
+        //     seed,
+        //     levelData.getBaseGameVersion(),
+        //     static_cast<Experiments&>(levelData.mExperiments.get())
+        // );
         break;
     }
     case GeneratorType::TheEnd: {
@@ -192,7 +192,7 @@ SimpleCustomDimension::createGenerator(br::worldgen::StructureSetRegistry const&
                 worldGenerator->getBiomeSource(),
                 structureSetRegistry
             );
-        createEndCityFeature(worldGenerator->mStructureFeatureRegistry.get(), *this, seed);
+        // createEndCityFeature(worldGenerator->mStructureFeatureRegistry.get(), *this, seed);
         break;
     }
     case GeneratorType::Flat: {

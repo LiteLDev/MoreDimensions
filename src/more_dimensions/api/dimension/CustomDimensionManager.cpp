@@ -1,6 +1,7 @@
 #include "CustomDimensionManager.h"
 
 #include "more_dimensions/MoreDimension.h"
+#include "more_dimensions/api/dimension/SimpleCustomDimension.h"
 #include "more_dimensions/core/dimension/CustomDimensionConfig.h"
 
 #include "ll/api/command/CommandRegistrar.h"
@@ -12,20 +13,11 @@
 #include "mc/world/level/dimension/Dimension.h"
 #include "mc/world/level/dimension/VanillaDimensions.h"
 
+#include <optional>
+
 namespace more_dimensions {
 
 auto& loggerMoreDimMag = MoreDimension::getInstance().getSelf().getLogger();
-
-LL_TYPE_INSTANCE_HOOK(
-    CheckCustomDimensionId,
-    ll::memory::HookPriority::Normal,
-    DimensionManager,
-    &DimensionManager::serverLoadDimensionNameIdStoreTable,
-    void,
-    LevelStorage const& levelStorage
-){
-    origin(levelStorage);
-}
 
 struct CustomDimensionManager::Impl {
     std::mutex mMapMutex;
@@ -57,8 +49,42 @@ CustomDimensionManager& CustomDimensionManager::getInstance() {
     return instance;
 }
 
+namespace {
+std::optional<std::string> normalizeDimensionName(std::string const& dimName) {
+    auto lowered = dimName;
+    for (char& c : lowered) {
+        if (c >= 'A' && c <= 'Z') {
+            c = static_cast<char>(c - 'A' + 'a');
+        }
+    }
+    auto sep = lowered.find(':');
+    if (sep == std::string::npos || lowered.find(':', sep + 1) != std::string::npos || sep == 0
+        || sep + 1 == lowered.size()) {
+        return std::nullopt;
+    }
+    auto namespaceName = std::string_view(lowered).substr(0, sep);
+    auto name          = std::string_view(lowered).substr(sep + 1);
+    if (namespaceName == "minecraft") {
+        return std::nullopt;
+    }
+    if (namespaceName.find_first_of(" \t\n\r") != std::string_view::npos
+        || name.find_first_of(" \t\n\r") != std::string_view::npos) {
+        return std::nullopt;
+    }
+    return lowered;
+}
+} // namespace
+
 DimensionType CustomDimensionManager::getDimensionIdFromName(std::string const& dimName) {
     return VanillaDimensions::fromString(dimName);
+}
+
+DimensionType CustomDimensionManager::addSimpleDimension(
+    std::string const& dimName,
+    uint               seed,
+    GeneratorType      generatorType
+) {
+    return addDimension<SimpleCustomDimension>(dimName, seed, generatorType);
 }
 
 DimensionType CustomDimensionManager::addDimension(
@@ -72,10 +98,19 @@ DimensionType CustomDimensionManager::addDimension(
         throw std::runtime_error("Level is nullptr, cannot registry new dimension " + dimName);
     }
 
+    auto normalizedName = normalizeDimensionName(dimName);
+    if (!normalizedName) {
+        loggerMoreDimMag.error(
+            "Invalid dimension name: {}, must be in namespace:name format and must not use the minecraft namespace",
+            dimName
+        );
+        throw std::runtime_error("Invalid dimension name: " + dimName);
+    }
+
     Impl::DimensionInfo info;
     bool                newDim = false;
-    if (impl->customDimensionMap.contains(dimName)) {
-        info = impl->customDimensionMap.at(dimName);
+    if (impl->customDimensionMap.contains(*normalizedName)) {
+        info = impl->customDimensionMap.at(*normalizedName);
         loggerMoreDimMag.info(
             "The dimension already has persisted data. name: {}, \ndata: {}",
             dimName,
@@ -105,10 +140,10 @@ DimensionType CustomDimensionManager::addDimension(
     loggerMoreDimMag.info("registry dimension, name: {}, id: {}", dimName, static_cast<int>(dimId));
 
     if (newDim) {
-        impl->customDimensionMap.emplace(dimName, info);
+        impl->customDimensionMap.emplace(*normalizedName, info);
         CustomDimensionConfig::getConfig().dimensionList.emplace(
-            dimName,
-            CustomDimensionConfig::Config::Info{info.nbt.toSnbt(SnbtFormat::Minimize)}
+            *normalizedName,
+            CustomDimensionConfig::Config::Info{.dimId = dimId.value(), .sNbt = info.nbt.toSnbt(SnbtFormat::Minimize)}
         );
         CustomDimensionConfig::saveConfigFile();
     }

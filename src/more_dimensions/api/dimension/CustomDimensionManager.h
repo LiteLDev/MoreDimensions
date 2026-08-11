@@ -3,6 +3,7 @@
 #include "more_dimensions/core/Macros.h"
 
 #include "mc/deps/nbt/CompoundTag.h"
+#include "mc/world/level/GeneratorType.h"
 #include "mc/world/level/dimension/DimensionType.h"
 
 class Dimension;
@@ -39,6 +40,22 @@ public:
     [[deprecated("please use VanillaDimensions::fromString")]] MORE_DIMENSIONS_API static DimensionType
     getDimensionIdFromName(std::string const& dimName);
 
+    /**
+     *
+     * @brief Register a custom dimension implemented by a user-defined Dimension subclass.
+     * @details The template type D must derive from Dimension and provide a constructor
+     * D(std::string const&, more_dimensions::DimensionFactoryInfo const&) plus a static
+     * generateNewData(Args&&...) method that returns the persisted dimension data as a CompoundTag.
+     * The dimension name must be in namespace:name format and must not use the minecraft namespace.
+     * @tparam D The Dimension subclass to create when the dimension is instantiated.
+     * @tparam Args Argument types forwarded to D::generateNewData(...).
+     * @param dimName Dimension name, unique identifier; the same string cannot be used for different dimensions.
+     * @param args Arguments forwarded to D::generateNewData(...) to build the persisted dimension data.
+     * @return The registered DimensionType (dimension id) of the new custom dimension.
+     * @note Requires ll::service::getLevel() to be available, otherwise std::runtime_error is thrown.
+     * @note If you want to use SimpleCustomDimension, please use CustomDimensionManager::addSimpleDimension.
+     * @throw std::runtime_error If the level is unavailable or the dimension name is invalid.
+     */
     template <std::derived_from<Dimension> D, class... Args>
     DimensionType addDimension(std::string const& dimName, Args&&... args) {
         return addDimension(
@@ -49,48 +66,22 @@ public:
             [&] { return D::generateNewData(std::forward<Args>(args)...); }
         );
     }
+
+    /**
+     *
+     * @brief Creating a custom dimension using SimpleCustomDimension
+     * @details This is a sample dimension created using MoreDimension's Simple. If you need more configuration, please
+     * refer to SimpleCustomDimension to create a Dimension class to create dimensions.
+     * @param dimName Dimension name, Unique identifier; the same string cannot be used for different dimensions.
+     * @param seed Dimension seed, only work for terrain generation, not for structure generation, such as
+     * villages.
+     * @param generatorType Generator type, using vanilla generators.
+     */
+    MORE_DIMENSIONS_API DimensionType addSimpleDimension(
+        std::string const& dimName,
+        uint               seed          = 123,
+        GeneratorType      generatorType = GeneratorType::Overworld
+    );
 };
-
-// Dimension need to test virtual tables
-
-/* Dimension related virtual tables
- *
- *                                    ∕-- IDimension
- * OverworldDimension --∖           ∕-- LevelListener --- BlockSourceListener
- * NetherDimension    --- Dimension --- SavedData
- * TheEndDimension    --∕           ∖-- Bedrock::EnableNonOwnerReferences
- *                                    ∖-- std::enable_shared_from_this<Dimension>
- *
- */
-
-/* WorldGenerator related virtual tables
- *
- *                          FlatWorldGenerator  --∖
- *                          NetherGenerator      --∖
- * OverworldGenerator2d --- OverworldGenerator2d --- WorldGenerator --- ChunkSource ---
- * Bedrock::EnableNonOwnerReferences TheEndGenerator      --∕                ∖-- IPreliminarySurfaceProvider
- *                          VoidGenerator       --∕
- *
- */
-
-/* DimensionBrightnessRamp related virtual tables
- *
- * NetherBrightnessRamp   --∖
- * OverworldBrightnessRamp --- DimensionBrightnessRamp
- *
- */
-
-/* BlockSource related virtual tables
- *
- * BlockSource --- IBlockSource --- IConstBlockSource
- *             ∖-- std::enable_shared_from_this<BlockSource>
- *
- */
-
-/* BiomeSource related virtual tables
- *
- * FixedBiomeSource --- BiomeSource
- *
- */
 
 } // namespace more_dimensions
