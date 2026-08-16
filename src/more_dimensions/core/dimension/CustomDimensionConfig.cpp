@@ -7,6 +7,7 @@
 #include "ll/api/service/Bedrock.h"
 #include "ll/api/service/ServerInfo.h"
 #include "ll/api/utils/Base64Utils.h"
+#include "ll/api/utils/StringUtils.h"
 #include "ll/api/utils/ErrorUtils.h"
 
 #include "mc/deps/nbt/CompoundTag.h"

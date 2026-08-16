@@ -7,19 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.15.0] - 2026-08-16
+## [0.14.1] - 2026-08-16
+
+### Fix
+
+- fix 'CustomDimensionConfig' build error
+
+## [0.14.0] - 2026-08-16
 
 ### Changed
 
 - Use script api registry custom dimension
 - Add [`addSimpleDimension`](https://github.com/LiteLDev/MoreDimensions/blob/v0.14.0/src/more_dimensions/api/dimension/CustomDimensionManager.h#L80) api
 - Remove the export of `SimpleCustomDimension`.
-
-## [0.14.0] - 2026-04-09
-
-### Changed
-
-- Supported LeviLamina >=26.10.3
 
 ## [0.13.0] - 2026-02-03
 
