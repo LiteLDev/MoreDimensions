@@ -5,7 +5,7 @@
   "version": "0.14.0",
   "info": {
     "name": "MoreDimensions",
-    "description": "More than three dimensions on BDS!",
+    "description": "More than three dimensions on Minecraft!",
     "tags": [
       "platform:levilamina",
       "library",
@@ -22,7 +22,7 @@
             "https://{{tooth}}/releases/download/v{{version}}/MoreDimensions-server-windows-x64.zip"
           ],
           "dependencies": {
-            "github.com/LiteLDev/LeviLamina": ">=26.10.3 <26.11.0"
+            "github.com/LiteLDev/LeviLamina": ">=26.20.4 <26.30.0"
           },
           "placements": [
             {

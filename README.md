@@ -1,6 +1,6 @@
 # MoreDimensions
 
-More than three dimensions on BDS!
+More than three dimensions on Minecraft!!!(use script api, and **Support Native Custom Generator!!!**)
 
 **Note: This mod only provides API. If you only install this mod, the dimensions will not be created.**
 
