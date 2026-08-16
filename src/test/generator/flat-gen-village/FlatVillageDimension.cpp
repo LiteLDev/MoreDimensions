@@ -20,10 +20,10 @@
 namespace flat_village_dimension {
 
 FlatVillageDimension::FlatVillageDimension(std::string const& name, more_dimensions::DimensionFactoryInfo const& info)
-: Dimension(DimensionArguments(std::move(info.arguments), info.dimId, {-64, 320}, name)) {
+: Dimension(DimensionArguments(std::move(info.arguments), info.dimId, {-512, 512}, name)) {
     // 这里说明下，在DimensionFactoryInfo里面more-dimensions会提供维度id，请不要使用固定维度id，避免id冲突导致维度注册出现异常
     mDefaultBrightness->sky  = Brightness::MAX();
-    mSeaLevel                = -61;
+    mSeaLevel                = -508;
     mHasWeather              = true;
     mDimensionBrightnessRamp = std::make_unique<OverworldBrightnessRamp>();
     mDimensionBrightnessRamp->buildBrightnessRamp();

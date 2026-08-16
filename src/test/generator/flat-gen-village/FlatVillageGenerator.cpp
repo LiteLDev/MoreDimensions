@@ -1,5 +1,7 @@
 #include "FlatVillageGenerator.h"
 
+#include "ll/api/memory/Memory.h"
+
 #include "mc/deps/core/math/Random.h"
 #include "mc/util/ThreadOwner.h"
 #include "mc/world/level/BlockSource.h"
@@ -30,8 +32,9 @@ FlatVillageGenerator::FlatVillageGenerator(Dimension& dimension, uint seed, Json
 
 bool FlatVillageGenerator::structurePostProcessChunk(ChunkViewSource& neighborhood) {
     ChunkPos chunkPos;
-    chunkPos.x      = neighborhood.mArea->mBounds.mMin->x + 1;
-    chunkPos.z      = neighborhood.mArea->mBounds.mMin->z + 1;
+    using namespace ll::memory;
+    chunkPos.x      = dAccess<Bounds>(&neighborhood.mArea, 0xC8).mMin->x + 1;
+    chunkPos.z      = dAccess<Bounds>(&neighborhood.mArea, 0xC8).mMin->z + 1;
     auto levelChunk = neighborhood.getExistingChunk(chunkPos);
 
     auto seed = mSeed;
@@ -83,7 +86,7 @@ void FlatVillageGenerator::loadChunk(LevelChunk& levelchunk, bool forceImmediate
 
 std::optional<short> FlatVillageGenerator::getPreliminarySurfaceLevel(DividedPos2d<4> worldPos) const {
     // 超平坦的高度都是一样的，直接返回固定值即可
-    return -61;
+    return -508;
 }
 
 void FlatVillageGenerator::prepareAndComputeHeights(

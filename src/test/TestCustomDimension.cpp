@@ -12,39 +12,40 @@
 #include "mc/world/level/DimensionManager.h"
 #include "mc/world/level/Level.h"
 #include "mc/world/events/ServerInstanceEventCoordinator.h"
+#include "mc/network/packet/DimensionDataPacket.h"
 
 void registryTestDimension() {
     // simplate dimension test
     // vanilla overworld type dimension test
-    more_dimensions::CustomDimensionManager::getInstance().addSimpleDimension("test:testNewDimension");
+    more_dimensions::CustomDimensionManager::getInstance().addSimpleDimension("custom_dim:new_overworld_type");
 
     // vanilla flat type dimension test
     more_dimensions::CustomDimensionManager::getInstance()
-        .addSimpleDimension("test:testNewFlatDimension", 345, GeneratorType::Flat);
+        .addSimpleDimension("custom_dim:new_flat_type", 345, GeneratorType::Flat);
 
     // vanilla nether type dimension test
     more_dimensions::CustomDimensionManager::getInstance()
-        .addSimpleDimension("test:testNewNetherDimension", 345, GeneratorType::Nether);
+        .addSimpleDimension("custom_dim:new_nether_type", 345, GeneratorType::Nether);
 
     // vanilla the end type dimension test
     more_dimensions::CustomDimensionManager::getInstance()
-        .addSimpleDimension("test:testNewTheEndDimension", 345, GeneratorType::TheEnd);
+        .addSimpleDimension("custom_dim:new_theend_type", 345, GeneratorType::TheEnd);
 
     // vanilla void dimension test
     more_dimensions::CustomDimensionManager::getInstance()
-        .addSimpleDimension("test:testNewVoidDimension", 345, GeneratorType::Void);
+        .addSimpleDimension("custom_dim:new_void_type", 345, GeneratorType::Void);
 
     // custom diomension test
     // flat type generator village dimension test
-    // more_dimensions::CustomDimensionManager::getInstance().addDimension<flat_village_dimension::FlatVillageDimension>(
-    //     "test:testFlatVillage"
-    // );
+    more_dimensions::CustomDimensionManager::getInstance().addDimension<flat_village_dimension::FlatVillageDimension>(
+        "custom_dim:new_flat_village_type"
+    );
 
     // flat type custom terrain dimension test
-    // more_dimensions::CustomDimensionManager::getInstance().addDimension<nxn_border_terrain::NxnBorderTerrainDimension>(
-    //     "test:testFlatTerrain",
-    //     5
-    // );
+    more_dimensions::CustomDimensionManager::getInstance().addDimension<nxn_border_terrain::NxnBorderTerrainDimension>(
+        "custom_dim:new_flat_custom_terrain",
+        5
+    );
 
     // flat type custom structure dimension test
     // more_dimensions::CustomDimensionManager::getInstance()
@@ -63,149 +64,16 @@ LL_AUTO_TYPE_INSTANCE_HOOK(
     registryTestDimension();
 }
 
-// LL_AUTO_TYPE_INSTANCE_HOOK(
-//     test2,
-//     ll::memory::HookPriority::Normal,
-//     Level,
-//     &Level::$initialize,
-//     bool,
-//     ::std::string const&   levelName,
-//         ::LevelSettings const& levelSettings,
-//         ::Experiments const&   experiments,
-//         ::std::string const*   levelId,
-//         ::std::optional<::std::reference_wrapper<
-//             ::std::unordered_map<::std::string, ::std::unique_ptr<::BiomeJsonDocumentGlueResolvedBiomeData>>>>
-//             biomeIdToResolvedData
-// ) {
-//     ll::service::getLevel() = this;
-//     printf("level get");
-//     if(!ll::service::getLevel()){
-//         printf("level still nullptr");
-//     }
-//     return origin(levelName, levelSettings, experiments, levelId, biomeIdToResolvedData);
-
-// }
-
-
-// #include "ll/api/memory/Hook.h"
-// #include "mc/world/level/DimensionManager.h"
-
-
-// LL_AUTO_TYPE_INSTANCE_HOOK(
-//     GetOrCreateDimension,
-//     HookPriority::Normal,
-//     DimensionManager,
-//     &DimensionManager::getOrCreateDimension,
-//     WeakRef<Dimension>,
-//     DimensionType dim
-// ) {
-//     std::cout << "getOrCreateDimension->" << dim.id << std::endl;
-//     return origin(dim);
-// };
-
-// #include "mc/server/commands/standard/TeleportCommand.h"
-// #include "mc/server/commands/standard/TeleportTarget.h"
-// #include "mc/util/rotation_command_utils/RotationData.h"
-// #include "mc/world/level/dimension/VanillaDimensions.h"
-// LL_AUTO_TYPE_STATIC_HOOK(
-//     TeleportCommandTest,
-//     HookPriority::Normal,
-//     TeleportCommand,
-//     &TeleportCommand::computeTarget,
-//     TeleportTarget,
-//     ::Actor&                                                     victim,
-//     ::Vec3                                                       destination,
-//     ::Vec3*                                                      facePosition,
-//     ::DimensionType                                              destinationDimension,
-//     ::std::optional<::RotationCommandUtils::RotationData> const& rotationData,
-//     int                                                          commandVersion
-// ) {
-//     for(auto& item:VanillaDimensions::DimensionMap().mLeft) {
-//         std::cout<<"Dimension name: "<<item.second<<" Id: "<<item.first<<std::endl;
-//     }
-//     for(auto& item:VanillaDimensions::DimensionMap().mRight) {
-//         std::cout<<"Dimension name: "<<item.first<<" Id: "<<item.second<<std::endl;
-//     }
-//     std::cout << "computeTarget->" << destinationDimension << std::endl;
-//     return origin(victim, destination, facePosition, destinationDimension, rotationData, commandVersion);
-// };
-
-//
-// LL_AUTO_TYPE_INSTANCE_HOOK(
-//     DimensonFactory123,
-//     HookPriority::Normal,
-//     DimensionFactory,
-//     "?create@DimensionFactory@@UEBA?AV?$OwnerPtr@VDimension@@@@AEBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z",
-//     OwnerPtr<Dimension>,
-//     std::string const &name) {
-//     std::cout<<"Dimension creative->"<<name<<std::endl;;
-//     return origin(name);
-// };
-//
-// #include "ll/api/command/CommandHandle.h"
-// #include "ll/api/command/CommandRegistrar.h"
-// #include "mc/server/commands/CommandOutput.h"
-// #include "mc/server/commands/ServerCommands.h"
-// #include "ll/api/service/Bedrock.h"
-// #include "mc/world/level/Level.h"
-// #include "mc/world/level/dimension/DimensionFactory.h"
-// #include "mc/world/level/dimension/VanillaDimensions.h"
-//
-// #include "mc/world/events/ServerInstanceEventCoordinator.h"
-//
-// struct ParamTest {
-//     int      p1;
-// };
-//
-// LL_AUTO_TYPE_INSTANCE_HOOK(
-//     registerBuiltinCommands,
-//     ll::memory::HookPriority::Normal,
-//     ServerInstanceEventCoordinator,
-//     &ServerInstanceEventCoordinator::sendServerThreadStarted,
-//     void,
-//     ::ServerInstance& ins
-//) {
-//     origin(ins);
-//
-//     auto&       cmd    = ll::command::CommandRegistrar::getInstance().getOrCreateCommand("t", "test tttttt");
-//     static auto lambda = [](CommandOrigin const&, CommandOutput& output, ParamTest const& param) {
-//         output.success("p1: {}", param.p1);
-//         auto dim = ll::service::getLevel()->getOrCreateDimension(param.p1);
-//         if (dim.expired()) {
-//             std::cout<<"他宝贝的，销毁了"<<std::endl;
-//         } else {
-//             auto dim_ptr = dim.lock();
-//             std::cout<<"这是正常的:"<<dim_ptr->mName<<std::endl;
-//         }
-//         auto& dimM = ll::service::getLevel()->getDimensionManager();
-//         for (auto& item: dimM.mDimensions) {
-//             std::cout<<"Dimension have->" <<item.first.id<<std::endl;
-//         };
-//         for (auto item: VanillaDimensions::DimensionMap.mLeft) {
-//             std::cout<< "Dimension Factory->"<<item.first<<",name:"<<item.second<<std::endl;
-//             std::cout<< "Dimension Factory->"<<item.first<<",get
-//             name:"<<VanillaDimensions::toString(item.first)<<std::endl;
-//         }
-//     };
-//     cmd.overload<ParamTest>()
-//         .required("p1")
-//         .execute(lambda);
-// }
-
-// #include "mc/world/level/LoadingScreenIdManager.h"
-// #include "ll/api/memory/Hook.h"
-
-// LL_AUTO_TYPE_INSTANCE_HOOK(
-//     ScreenIdHookTest,
-//     ll::memory::HookPriority::Normal,
-//     LoadingScreenIdManager,
-//     &LoadingScreenIdManager::getNextLoadingScreenId,
-//     NewType<::std::optional<uint>>) {
-//     auto result =  origin();
-//     if (result.mValue.has_value()){
-//         std::cout<<"Test screedId: "<<result.mValue.value()<<std::endl;
-//     }else {
-//         std::cout<<"Test screedId: Null"<<std::endl;
-//     }
-//     return result;
-// }
+LL_AUTO_TYPE_INSTANCE_HOOK(
+    CheckCustomDimensionReg,
+    ll::memory::HookPriority::Normal,
+    DimensionDataPacket,
+    &DimensionDataPacket::$ctor,
+    void*,
+    DimensionDefinitionGroup const& dimensionDefinitionGroup
+) {
+    for (const auto& item: *dimensionDefinitionGroup.mDimensionDefinitions) {
+        std::cout<<"name: "<<item.first << "Type: "<<item.second.mDimensionType->value()<<std::endl;
+    }
+    return origin(dimensionDefinitionGroup);
+}

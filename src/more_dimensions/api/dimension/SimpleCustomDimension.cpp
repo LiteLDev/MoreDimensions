@@ -89,7 +89,7 @@ using namespace ll::memory_literals;
 auto& loggerMoreDim = MoreDimension::getInstance().getSelf().getLogger();
 
 SimpleCustomDimension::SimpleCustomDimension(std::string const& name, DimensionFactoryInfo const& info)
-: Dimension(DimensionArguments(std::move(info.arguments), info.dimId, DimensionHeightRange(-64, 320), name)) {
+: Dimension(DimensionArguments(std::move(info.arguments), info.dimId, DimensionHeightRange(-512, 512), name)) {
     loggerMoreDim.debug("{} dimension name:{}", __FUNCTION__, name);
     mDefaultBrightness->sky = Brightness::MAX();
 
