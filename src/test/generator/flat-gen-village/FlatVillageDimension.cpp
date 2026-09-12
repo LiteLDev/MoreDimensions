@@ -7,6 +7,8 @@
 #include "mc/world/level/BlockSource.h"
 #include "mc/world/level/DimensionConversionData.h"
 #include "mc/world/level/Level.h"
+#include "mc/world/level/biome/BiomeIdType.h"
+#include "mc/world/level/biome/source/FixedBiomeSource.h"
 #include "mc/world/level/chunk/vanilla_level_chunk_upgrade/VanillaLevelChunkUpgrade.h"
 #include "mc/world/level/dimension/DimensionArguments.h"
 #include "mc/world/level/dimension/IClientDimensionExtensions.h"
@@ -20,7 +22,7 @@
 namespace flat_village_dimension {
 
 FlatVillageDimension::FlatVillageDimension(std::string const& name, more_dimensions::DimensionFactoryInfo const& info)
-: Dimension(DimensionArguments(std::move(info.arguments), info.dimId, {-512, 512}, name)) {
+: Dimension(DimensionArguments(std::move(info.arguments), info.dimId, DimensionHeightRange{-512, 512}, name)) {
     // 这里说明下，在DimensionFactoryInfo里面more-dimensions会提供维度id，请不要使用固定维度id，避免id冲突导致维度注册出现异常
     mDefaultBrightness->sky  = Brightness::MAX();
     mSeaLevel                = -508;
@@ -33,8 +35,8 @@ CompoundTag FlatVillageDimension::generateNewData() { return {}; }
 
 std::unique_ptr<WorldGenerator>
 FlatVillageDimension::createGenerator(br::worldgen::StructureSetRegistry const& structureSetRegistry) {
-    uint                            seed      = 2024;
-    auto&                           levelData = mLevel.getLevelData();
+    uint  seed      = 2024;
+    auto& levelData = mLevel.getLevelData();
 
     // 实例化我们写的Generator类
     std::unique_ptr<WorldGenerator> worldGenerator =

@@ -1,7 +1,3 @@
-//
-// Created by User on 2024/2/22.
-//
-
 #include "NxnBorderTerrainGenerator.h"
 
 #include "mc/world/level/ChunkPos.h"
@@ -12,7 +8,6 @@
 #include "mc/world/level/chunk/LevelChunk.h"
 #include "mc/world/level/dimension/Dimension.h"
 #include "mc/world/level/levelgen/v1/ChunkLocalNoiseCache.h"
-
 
 namespace nxn_border_terrain {
 

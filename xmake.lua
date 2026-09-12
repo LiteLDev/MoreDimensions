@@ -2,11 +2,7 @@ add_rules("mode.debug", "mode.release")
 
 add_repositories("liteldev-repo https://github.com/LiteLDev/xmake-repo.git")
 
-if is_config("target_type", "server") then
-    add_requires("levilamina 26.20.*", { configs = { target_type = "server" } })
-else
-    add_requires("levilamina 26.20.*", { configs = { target_type = "client" } })
-end
+add_requires("levilamina 26.20.*", {configs = {target_type = get_config("target_type")}})
 
 add_requires("levibuildscript")
 add_requires("preloader 1.15.7")
@@ -29,10 +25,26 @@ option_end()
 target("more-dimensions")
     add_rules("@levibuildscript/linkrule")
     add_rules("@levibuildscript/modpacker")
-    add_cxflags( "/EHa", "/utf-8", "/W4", "/w44265", "/w44289", "/w44296", "/w45263", "/w44738", "/w45204")
-    add_defines("NOMINMAX", "UNICODE", "MORE_DIMENSIONS_EXPORTS")
+     if is_plat("windows") then
+        add_defines("NOMINMAX", "UNICODE", "MORE_DIMENSIONS_EXPORTS")
+        set_exceptions("none") -- To avoid conflicts with /EHa.
+        add_cxflags( "/EHa", "/utf-8", "/W4", "/w44265", "/w44289", "/w44296", "/w45263", "/w44738", "/w45204")
+        add_cxflags(
+            "/EHs",
+            "-Wno-microsoft-cast",
+            "-Wno-invalid-offsetof",
+            "-Wno-c++2b-extensions",
+            "-Wno-microsoft-include",
+            "-Wno-overloaded-virtual",
+            "-Wno-ignored-qualifiers",
+            "-Wno-missing-field-initializers",
+            "-Wno-potentially-evaluated-expression",
+            "-Wno-pragma-system-header-outside-header",
+            {tools = {"clang_cl"}}
+        )
+        set_toolchains("clang-cl")
+    end
     add_packages("levilamina", "snappy", "preloader")
-    set_exceptions("none")
     set_kind("shared")
     set_languages("c++20")
     set_symbols("debug")

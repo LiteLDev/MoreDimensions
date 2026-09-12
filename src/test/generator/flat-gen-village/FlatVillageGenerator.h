@@ -8,7 +8,6 @@
 #include "mc/world/level/block/BlockVolume.h"
 #include "mc/world/level/levelgen/flat/FlatWorldGenerator.h"
 
-
 #include <vector>
 
 class ChunkViewSource;
@@ -43,7 +42,8 @@ public:
     std::optional<short> getPreliminarySurfaceLevel(DividedPos2d<4> worldPos) const override;
 
     // 如意，以一个坐标，在一定范围内查找某个类型的结构
-    bool findNearestStructureFeature(::HashedString, BlockPos const&, BlockPos&, bool, std::optional<HashedString>) override;
+    bool
+    findNearestStructureFeature(::HashedString, BlockPos const&, BlockPos&, bool, std::optional<HashedString>) override;
 
     // 无需在意，照写就行
     void garbageCollectBlueprints(buffer_span<ChunkPos>) override;
