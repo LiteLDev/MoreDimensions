@@ -19,13 +19,18 @@
 #include "mc/world/level/levelgen/v2/ChunkGeneratorStructureState.h"
 #include "mc/world/level/storage/LevelData.h"
 
+
 namespace flat_village_dimension {
 
 FlatVillageDimension::FlatVillageDimension(std::string const& name, more_dimensions::DimensionFactoryInfo const& info)
-: Dimension(DimensionArguments(std::move(info.arguments), info.dimId, DimensionHeightRange{-512, 512}, name)) {
-    // 这里说明下，在DimensionFactoryInfo里面more-dimensions会提供维度id，请不要使用固定维度id，避免id冲突导致维度注册出现异常
+: Dimension(DimensionArguments(std::move(info.arguments), info.dimId, DimensionHeightRange{-64, 320}, name)) {
+    // Note: DimensionFactoryInfo carries the dimension id provided by more-dimensions. Do not
+    // hardcode a dimension id, otherwise id collisions will break dimension registration.
+    // The height range must match the dimension definition registered in CustomDimensionManager
+    // (see the default there), otherwise the client interprets the chunks with a different range.
+    // FlatWorldGenerator anchors its layers at mHeightRange.mMin, hence the overworld range.
     mDefaultBrightness->sky  = Brightness::MAX();
-    mSeaLevel                = -508;
+    mSeaLevel                = -61;
     mHasWeather              = true;
     mDimensionBrightnessRamp = std::make_unique<OverworldBrightnessRamp>();
     mDimensionBrightnessRamp->buildBrightnessRamp();
@@ -38,16 +43,16 @@ FlatVillageDimension::createGenerator(br::worldgen::StructureSetRegistry const& 
     uint  seed      = 2024;
     auto& levelData = mLevel.getLevelData();
 
-    // 实例化我们写的Generator类
+    // Instantiate the generator class we wrote
     std::unique_ptr<WorldGenerator> worldGenerator =
         std::make_unique<flat_village_generator::FlatVillageGenerator>(*this, seed, levelData.mFlatWorldOptions);
 
-    // 此为必须，一些结构生成相关
+    // Required, related to structure generation
     worldGenerator->mStructureFeatureRegistry->mGeneratorState =
         br::worldgen::ChunkGeneratorStructureState::createFlat(seed, worldGenerator->getBiomeSource(), {});
 
-    // 这个就相当于在这个生成器里注册结构了
-    // VillageFeature的第二第三个参数是村庄之间的最大间隔与最小间隔
+    // This is effectively how structures get registered in this generator.
+    // VillageFeature's 2nd and 3rd parameters are the max/min spacing between villages
     worldGenerator->mStructureFeatureRegistry->mStructureFeatures->emplace_back(
         std::make_unique<VillageFeature>(seed, 34, 8, getBiomeRegistry())
     );
@@ -56,13 +61,13 @@ FlatVillageDimension::createGenerator(br::worldgen::StructureSetRegistry const& 
 }
 
 void FlatVillageDimension::upgradeLevelChunk(ChunkSource& cs, LevelChunk& lc, LevelChunk& generatedChunk) {
-    auto blockSource = BlockSource(static_cast<Level&>(mLevel), *this, cs, false, true, false);
+    auto blockSource = BlockSource(static_cast<Level&>(mLevel), *this, cs, false, true, false, true);
     VanillaLevelChunkUpgrade::_upgradeLevelChunkViaMetaData(lc, generatedChunk, blockSource);
     VanillaLevelChunkUpgrade::_upgradeLevelChunkLegacy(lc, blockSource);
 }
 
 void FlatVillageDimension::fixWallChunk(ChunkSource& cs, LevelChunk& lc) {
-    auto blockSource = BlockSource(static_cast<Level&>(mLevel), *this, cs, false, true, false);
+    auto blockSource = BlockSource(static_cast<Level&>(mLevel), *this, cs, false, true, false, true);
     VanillaLevelChunkUpgrade::fixWallChunk(lc, blockSource);
 }
 

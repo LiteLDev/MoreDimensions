@@ -9,7 +9,7 @@ namespace nxn_border_terrain {
 
 class NxnBorderTerrainGenerator : public FlatWorldGenerator {
 public:
-    uint                      chunk_n      = 4; // n * n的区块
+    uint                      chunk_n      = 4; // n * n chunks
     std::vector<Block const*> east_side    = mPrototypeBlocks;
     std::vector<Block const*> south_side   = mPrototypeBlocks;
     std::vector<Block const*> west_side    = mPrototypeBlocks;

@@ -12,6 +12,7 @@
 #include "mc/world/level/DimensionConversionData.h"
 #include "mc/world/level/Level.h"
 #include "mc/world/level/LevelSeed64.h"
+#include "mc/world/level/biome/BiomeIdType.h"
 #include "mc/world/level/biome/registry/BiomeRegistry.h"
 #include "mc/world/level/biome/source/FixedBiomeSource.h"
 #include "mc/world/level/chunk/vanilla_level_chunk_upgrade/VanillaLevelChunkUpgrade.h"
@@ -25,9 +26,14 @@
 #include "mc/world/level/levelgen/flat/FlatWorldGenerator.h"
 #include "mc/world/level/levelgen/structure/EndCityFeature.h"
 #include "mc/world/level/levelgen/structure/StructureFeatureRegistry.h"
+#include "mc/world/level/levelgen/synth/SimplexNoise.h"
+#include "mc/world/level/levelgen/v1/Cavifier.h"
+#include "mc/world/level/levelgen/v1/ChunkBlender.h"
+#include "mc/world/level/levelgen/v1/ChunkBlenderFactory.h"
 #include "mc/world/level/levelgen/v1/NetherGenerator.h"
 #include "mc/world/level/levelgen/v1/OverworldGeneratorMultinoise.h"
 #include "mc/world/level/levelgen/v1/TheEndGenerator.h"
+#include "mc/world/level/levelgen/v1/chunk_blender_util/AttenuationData.h"
 #include "mc/world/level/levelgen/v2/ChunkGeneratorStructureState.h"
 #include "mc/world/level/storage/Experiments.h"
 #include "mc/world/level/storage/LevelData.h"
@@ -83,28 +89,49 @@ using namespace ll::memory_literals;
 //         seed
 //     );
 // };
+/// @brief Parses the generator type out of the persisted data; returns nullopt if it cannot be parsed
+std::optional<GeneratorType> parseGeneratorType(CompoundTag const& data) {
+    if (!data.contains("generatorType")) {
+        return std::nullopt;
+    }
+    return magic_enum::enum_cast<GeneratorType>(static_cast<std::string_view>(data["generatorType"]));
+}
 } // namespace
 
 // static ll::Logger loggerMoreDim("SimpleCustomDim");
 auto& loggerMoreDim = MoreDimension::getInstance().getSelf().getLogger();
 
+DimensionHeightRange SimpleCustomDimension::heightRangeFor(GeneratorType generatorType) {
+    switch (generatorType) {
+    case GeneratorType::Nether:
+        return DimensionHeightRange{0, 128};
+    case GeneratorType::TheEnd:
+        return DimensionHeightRange{0, 256};
+    default: // Overworld / Flat / Void
+        return DimensionHeightRange{-64, 320};
+    }
+}
+
 SimpleCustomDimension::SimpleCustomDimension(std::string const& name, DimensionFactoryInfo const& info)
-: Dimension(DimensionArguments(std::move(info.arguments), info.dimId, DimensionHeightRange(-512, 512), name)) {
+: Dimension(DimensionArguments(
+      std::move(info.arguments),
+      info.dimId,
+      heightRangeFor(parseGeneratorType(info.data).value_or(GeneratorType::Overworld)),
+      name
+  )) {
     loggerMoreDim.debug("{} dimension name:{}", __FUNCTION__, name);
     mDefaultBrightness->sky = Brightness::MAX();
 
     // Parse generatorType with error handling
-    auto generatorTypeOpt =
-        magic_enum::enum_cast<GeneratorType>(static_cast<std::string_view>(info.data["generatorType"]));
-    if (!generatorTypeOpt.has_value()) {
+    if (auto generatorTypeOpt = parseGeneratorType(info.data)) {
+        generatorType = *generatorTypeOpt;
+    } else {
         loggerMoreDim.error(
             "Invalid generatorType '{}' for dimension '{}', defaulting to Overworld",
             std::string{info.data["generatorType"]},
             name
         );
         generatorType = GeneratorType::Overworld;
-    } else {
-        generatorType = *generatorTypeOpt;
     }
 
     seed = info.data["seed"];
@@ -133,6 +160,12 @@ CompoundTag SimpleCustomDimension::generateNewData(uint seed, GeneratorType gene
     CompoundTag result;
     result["seed"]          = seed;
     result["generatorType"] = magic_enum::enum_name(generatorType);
+    // Persist the height range too: CustomDimensionManager builds the dimension definition that
+    // gets sent to clients from it, and both sides have to agree, otherwise the client interprets
+    // the chunks using the wrong range.
+    auto range                     = heightRangeFor(generatorType);
+    result["dimensionMinY"]        = static_cast<int>(range.mMin);
+    result["dimensionHeightRange"] = static_cast<int>(range.mMax - range.mMin);
     return result;
 }
 
@@ -202,7 +235,7 @@ SimpleCustomDimension::createGenerator(br::worldgen::StructureSetRegistry const&
         break;
     }
     default: {
-        auto generator          = std::make_unique<VoidGenerator>(*this);
+        auto generator          = std::make_unique<VoidGenerator>(*this, BiomeIdType(0));
         generator->mBiome       = level.getBiomeRegistry().lookupByName("minecraft:ocean");
         generator->mBiomeSource = std::make_unique<FixedBiomeSource>(*generator->mBiome);
         worldGenerator          = std::move(generator);
@@ -216,14 +249,14 @@ SimpleCustomDimension::createGenerator(br::worldgen::StructureSetRegistry const&
 
 void SimpleCustomDimension::upgradeLevelChunk(ChunkSource& cs, LevelChunk& lc, LevelChunk& generatedChunk) {
     loggerMoreDim.debug(__FUNCTION__);
-    auto blockSource = BlockSource(static_cast<Level&>(mLevel), *this, cs, false, true, false);
+    auto blockSource = BlockSource(static_cast<Level&>(mLevel), *this, cs, false, true, false, true);
     VanillaLevelChunkUpgrade::_upgradeLevelChunkViaMetaData(lc, generatedChunk, blockSource);
     VanillaLevelChunkUpgrade::_upgradeLevelChunkLegacy(lc, blockSource);
 }
 
 void SimpleCustomDimension::fixWallChunk(ChunkSource& cs, LevelChunk& lc) {
     loggerMoreDim.debug(__FUNCTION__);
-    auto blockSource = BlockSource(static_cast<Level&>(mLevel), *this, cs, false, true, false);
+    auto blockSource = BlockSource(static_cast<Level&>(mLevel), *this, cs, false, true, false, true);
     VanillaLevelChunkUpgrade::fixWallChunk(lc, blockSource);
 }
 

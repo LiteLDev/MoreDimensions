@@ -1,6 +1,6 @@
 #include "FlatVillageGenerator.h"
 
-#include "ll/api/memory/Memory.h"
+#include "more_dimensions/core/Utils.h"
 
 #include "mc/deps/core/math/Random.h"
 #include "mc/util/ThreadOwner.h"
@@ -17,12 +17,14 @@
 #include "mc/world/level/dimension/Dimension.h"
 #include "mc/world/level/levelgen/v1/ChunkLocalNoiseCache.h"
 
+#include <shared_mutex>
 
 namespace flat_village_generator {
 
 FlatVillageGenerator::FlatVillageGenerator(Dimension& dimension, uint seed, Json::Value const& generationOptionsJSON)
 : FlatWorldGenerator(dimension, seed, generationOptionsJSON) {
-    // 值得注意的是，我们是继承的FlatWorldGenerator，后续也会使用其内部成员，所以我们需要调用FlatWorldGenerator的构造
+    // Note: we derive from FlatWorldGenerator and use its internal members later on, so its
+    // constructor has to be called
     random.mRandom->mObject.mSeed = seed;
     mSeed                         = seed;
 
@@ -32,28 +34,35 @@ FlatVillageGenerator::FlatVillageGenerator(Dimension& dimension, uint seed, Json
 
 bool FlatVillageGenerator::structurePostProcessChunk(ChunkViewSource& neighborhood) {
     ChunkPos chunkPos;
-    using namespace ll::memory;
-    chunkPos.x      = dAccess<Bounds>(&neighborhood.mArea, 0xC8).mMin->x + 1;
-    chunkPos.z      = dAccess<Bounds>(&neighborhood.mArea, 0xC8).mMin->z + 1;
+    {
+        // Since 26.51 GridArea's bounds live inside a SharedLockbox; vanilla takes a shared lock too
+        std::shared_lock lock(neighborhood.mArea->mChunkDataBox.mMutex);
+        auto const&      bounds = neighborhood.mArea->mChunkDataBox.mContent.mBounds;
+        chunkPos.x              = bounds.mMin->x + 1;
+        chunkPos.z              = bounds.mMin->z + 1;
+    }
     auto levelChunk = neighborhood.getExistingChunk(chunkPos);
 
     auto seed = mSeed;
 
-    // 必须，需要给区块上锁
-    auto lockChunk = levelChunk->mDimension.mPostProcessingManager->tryLock(levelChunk->mPosition, neighborhood, {});
+    // Required: the chunk has to be locked
+    auto lockChunk = levelChunk->mDimension.mPostProcessingManager->tryLock(levelChunk->mPosition, neighborhood);
 
     if (!lockChunk.has_value()) {
         return false;
     }
-    BlockSource blockSource(*mLevel, *neighborhood.mDimension, neighborhood, false, true, true);
+    BlockSource blockSource(*mLevel, *neighborhood.mDimension, neighborhood, false, true, true, false);
     auto        chunkPosL         = levelChunk->mPosition;
     random.mRandom->mObject.mSeed = seed;
     auto one                      = 2 * (random.nextInt() / 2) + 1;
     auto two                      = 2 * (random.nextInt() / 2) + 1;
-    random.mRandom->mObject.mSeed = seed ^ (chunkPosL->x * one + chunkPosL->z * two);
-    // 放置结构体，如果包含有某个结构的区块，就会放置loadChunk准备的结构
-    WorldGenerator::postProcessStructureFeatures(blockSource, random, chunkPosL->x, chunkPosL->z);
-    // 处理其它单体结构，比如沉船，这里不是必须
+    auto structureSeed            = seed ^ (chunkPosL->x * one + chunkPosL->z * two);
+    random.mRandom->mObject.mSeed = structureSeed;
+    // Place structures: if this chunk contains one, the structures prepared by loadChunk get placed
+    // Since 26.51 postProcessStructureFeatures takes an extra seed parameter; vanilla passes exactly
+    // this structure seed
+    WorldGenerator::postProcessStructureFeatures(blockSource, random, structureSeed, chunkPosL->x, chunkPosL->z);
+    // Handle other standalone structures such as shipwrecks; not required here
     WorldGenerator::postProcessStructures(blockSource, random, chunkPosL->x, chunkPosL->z);
 
     WorldGenerator::addHardcodedSpawnAreas(*levelChunk);
@@ -68,25 +77,26 @@ void FlatVillageGenerator::loadChunk(LevelChunk& levelchunk, bool forceImmediate
     dividedPos2D.x = (blockPos.x >> 31) - ((blockPos.x >> 31) - blockPos.x) / 4;
     dividedPos2D.z = (blockPos.z >> 31) - ((blockPos.z >> 31) - blockPos.z) / 4;
 
-    // 处理其它单体结构，比如沉船，这里不是必须
+    // Handle other standalone structures such as shipwrecks; not required here
     WorldGenerator::preProcessStructures(*mDimension, chunkPos, getBiomeSource());
-    // 准备要放置的结构，如果是某个某个结构的区块，就会准备结构
+    // Prepare the structures to be placed; if this chunk belongs to one of them, it gets prepared
     WorldGenerator::prepareStructureFeatureBlueprints(*mDimension, chunkPos, getBiomeSource(), *this);
 
-    // 这里并没有放置结构，只有单纯基本地形
+    // Nothing is placed here, only the basic terrain
     levelchunk.setBlockVolume(mPrototype, 0);
 
     levelchunk.recomputeHeightMap(0);
     ChunkLocalNoiseCache chunkLocalNoiseCache(dividedPos2D, 8);
     mBiomeSource->fillBiomes(levelchunk, &chunkLocalNoiseCache);
-    levelchunk.setSaved();
+    more_dimensions::utils::markChunkAsSaved(levelchunk);
     auto loadState = ChunkState::Generating;
     levelchunk.mLoadState->compare_exchange_strong(loadState, ChunkState::Generated);
 }
 
 std::optional<short> FlatVillageGenerator::getPreliminarySurfaceLevel(DividedPos2d<4> worldPos) const {
-    // 超平坦的高度都是一样的，直接返回固定值即可
-    return -508;
+    // A flat world has the same height everywhere, so just return a fixed value.
+    // Must stay consistent with the dimension's sea level (see FlatVillageDimension's ctor).
+    return -61;
 }
 
 void FlatVillageGenerator::prepareAndComputeHeights(
@@ -101,7 +111,8 @@ void FlatVillageGenerator::prepareAndComputeHeights(
 }
 
 void FlatVillageGenerator::prepareHeights(BlockVolume& box, ChunkPos const& chunkPos, bool factorInBeardsAndShavers) {
-    // 在其它类型世界里，这里是需要对box进行处理，生成地形，超平坦没有这个需要，所以直接赋值即可
+    // In other world types the box would be processed here to generate terrain; a flat world does
+    // not need that, so just assign it
     box = mPrototype;
 };
 

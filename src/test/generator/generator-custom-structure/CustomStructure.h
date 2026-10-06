@@ -15,30 +15,30 @@ namespace custom_structure {
 
 namespace CustomJigsawStructure {
 
-// 总注册初始化函数
+// Overall registration/initialization function
 void initialize(
-Bedrock::NotNullNonOwnerPtr<::StructureManager> const& manager,
-    FeatureRegistry&                                featureRegistry,
-    JigsawStructureRegistry&                        registry,
-    BaseGameVersion const&                          baseGameVersion,
-    Experiments const&                              experiments
+    Bedrock::NotNullNonOwnerPtr<::StructureManager> const& manager,
+    FeatureRegistry&                                       featureRegistry,
+    JigsawStructureRegistry&                               registry,
+    BaseGameVersion const&                                 baseGameVersion,
+    Experiments const&                                     experiments
 );
 
 } // namespace CustomJigsawStructure
 
 namespace CustomJigsawStructureBlockRules {
 
-    // registry block rules
+// registry block rules
 void initialize(JigsawStructureRegistry& registry);
 
-}
+} // namespace CustomJigsawStructureBlockRules
 
 namespace CustomJigsawStructureBlockTagRules {
 
-    // registry block tag rules
+// registry block tag rules
 void initialize(JigsawStructureRegistry& registry);
 
-}
+} // namespace CustomJigsawStructureBlockTagRules
 
 namespace CustomJigsawStructureElements {
 

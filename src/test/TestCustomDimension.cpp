@@ -5,14 +5,14 @@
 
 #include "ll/api/event/EventBus.h"
 #include "ll/api/event/command/ServerCommandRegisterEvent.h"
+#include "ll/api/event/server/ServerStartedEvent.h"
 #include "ll/api/memory/Hook.h"
 
 #include "more_dimensions/api/dimension/CustomDimensionManager.h"
 
+#include "mc/network/packet/DimensionDataPacketPayload.h"
 #include "mc/world/level/DimensionManager.h"
 #include "mc/world/level/Level.h"
-#include "mc/world/events/ServerInstanceEventCoordinator.h"
-#include "mc/network/packet/DimensionDataPacket.h"
 
 void registryTestDimension() {
     // simplate dimension test
@@ -52,28 +52,28 @@ void registryTestDimension() {
     //     .addDimension<custom_structure_dimension::CustomStructureDimension>("test:testCustomStructure");
 }
 
-LL_AUTO_TYPE_INSTANCE_HOOK(
-    CheckCustomDimensionId,
-    ll::memory::HookPriority::Normal,
-    ServerInstanceEventCoordinator,
-    &ServerInstanceEventCoordinator::sendServerInitializeEnd,
-    void,
-    ServerInstance& ins
-) {
-    origin(ins);
-    registryTestDimension();
-}
+// Since 26.51 levilamina's headers no longer declare
+// ServerInstanceEventCoordinator::sendServerInitializeEnd (the function still exists in the
+// binary, but without the declaration there is no member function pointer to hook), so use
+// LeviLamina's own ServerStartedEvent instead; it fires at an equivalent point.
+static auto _registryTestDimensionListener =
+    ll::event::EventBus::getInstance().emplaceListener<ll::event::ServerStartedEvent>(
+        [](ll::event::ServerStartedEvent&) { registryTestDimension(); }
+    );
 
+// In 26.51 DimensionDataPacket::$ctor became two overloads, () and (DimensionDataPacketPayload),
+// so no member function pointer can be deduced. Hook the layer where the dimension data is
+// actually moved in instead: the DimensionDataPacketPayload constructor.
 LL_AUTO_TYPE_INSTANCE_HOOK(
     CheckCustomDimensionReg,
     ll::memory::HookPriority::Normal,
-    DimensionDataPacket,
-    &DimensionDataPacket::$ctor,
+    DimensionDataPacketPayload,
+    &DimensionDataPacketPayload::$ctor,
     void*,
-    DimensionDefinitionGroup const& dimensionDefinitionGroup
+    DimensionDefinitionGroup&& dimensionDefinitionGroup
 ) {
-    for (const auto& item: *dimensionDefinitionGroup.mDimensionDefinitions) {
-        std::cout<<"name: "<<item.first << "Type: "<<item.second.mDimensionType->value()<<std::endl;
+    for (const auto& item : *dimensionDefinitionGroup.mDimensionDefinitions) {
+        std::cout << "name: " << item.first << "Type: " << item.second.mDimensionType->mValue << std::endl;
     }
-    return origin(dimensionDefinitionGroup);
+    return origin(std::move(dimensionDefinitionGroup));
 }

@@ -2,7 +2,7 @@ add_rules("mode.debug", "mode.release")
 
 add_repositories("liteldev-repo https://github.com/LiteLDev/xmake-repo.git")
 
-add_requires("levilamina 26.20.*", {configs = {target_type = get_config("target_type")}})
+add_requires("levilamina d6279b86f6fba8ff279aa7d207e18b47fe1e7492", {configs = {target_type = get_config("target_type")}})
 
 add_requires("levibuildscript")
 
@@ -25,7 +25,7 @@ target("more-dimensions")
     add_rules("@levibuildscript/linkrule")
     add_rules("@levibuildscript/modpacker")
      if is_plat("windows") then
-        add_defines("NOMINMAX", "UNICODE", "MORE_DIMENSIONS_EXPORTS")
+        add_defines("NOMINMAX", "UNICODE", "MORE_DIMENSIONS_EXPORTS", "_HAS_CXX23=1")
         set_exceptions("none") -- To avoid conflicts with /EHa.
         add_cxflags( "/EHa", "/utf-8", "/W4", "/w44265", "/w44289", "/w44296", "/w45263", "/w44738", "/w45204")
         add_cxflags(

@@ -1,5 +1,7 @@
 #include "CustomStructureGenerator.h"
 
+#include "more_dimensions/core/Utils.h"
+
 #include "mc/world/level/BlockSource.h"
 #include "mc/world/level/ChunkPos.h"
 #include "mc/world/level/Level.h"
@@ -11,6 +13,7 @@
 #include "mc/world/level/dimension/Dimension.h"
 #include "mc/world/level/levelgen/v1/ChunkLocalNoiseCache.h"
 
+#include <shared_mutex>
 
 namespace custom_structure_generator {
 
@@ -20,7 +23,8 @@ CustomStructureGenerator::CustomStructureGenerator(
     Json::Value const& generationOptionsJSON
 )
 : FlatWorldGenerator(dimension, seed, generationOptionsJSON) {
-    // 值得注意的是，我们是继承的FlatWorldGenerator，后续也会使用其内部成员，所以我们需要调用FlatWorldGenerator的构造
+    // Note: we derive from FlatWorldGenerator and use its internal members later on, so its
+    // constructor has to be called
     random.mRandom->mObject.mSeed = seed;
     mSeed                         = seed;
 
@@ -30,27 +34,35 @@ CustomStructureGenerator::CustomStructureGenerator(
 
 bool CustomStructureGenerator::postProcess(ChunkViewSource& neighborhood) {
     ChunkPos chunkPos;
-    chunkPos.x      = neighborhood.mArea->mBounds.mMin->x;
-    chunkPos.z      = neighborhood.mArea->mBounds.mMin->z;
+    {
+        // Since 26.51 GridArea's bounds live inside a SharedLockbox; vanilla takes a shared lock too
+        std::shared_lock lock(neighborhood.mArea->mChunkDataBox.mMutex);
+        auto const&      bounds = neighborhood.mArea->mChunkDataBox.mContent.mBounds;
+        chunkPos.x              = bounds.mMin->x + 1;
+        chunkPos.z              = bounds.mMin->z + 1;
+    }
     auto levelChunk = neighborhood.getExistingChunk(chunkPos);
 
     auto seed = mSeed;
 
-    // 必须，需要给区块上锁
-    auto lockChunk = levelChunk->mDimension.mPostProcessingManager->tryLock(levelChunk->mPosition, neighborhood, {});
+    // Required: the chunk has to be locked
+    auto lockChunk = levelChunk->mDimension.mPostProcessingManager->tryLock(levelChunk->mPosition, neighborhood);
 
     if (!lockChunk) {
         return false;
     }
-    BlockSource blockSource(*mLevel, *neighborhood.mDimension, neighborhood, false, true, true);
+    BlockSource blockSource(*mLevel, *neighborhood.mDimension, neighborhood, false, true, true, false);
     auto        chunkPosL         = levelChunk->mPosition;
     random.mRandom->mObject.mSeed = seed;
     auto one                      = 2 * (random.nextInt() / 2) + 1;
     auto two                      = 2 * (random.nextInt() / 2) + 1;
-    random.mRandom->mObject.mSeed = seed ^ (chunkPosL->x * one + chunkPosL->z * two);
-    // 放置结构体，如果包含有某个结构的区块，就会放置loadChunk准备的结构
-    WorldGenerator::postProcessStructureFeatures(blockSource, random, chunkPosL->x, chunkPosL->z);
-    // 处理其它单体结构，比如沉船，这里不是必须
+    auto structureSeed            = seed ^ (chunkPosL->x * one + chunkPosL->z * two);
+    random.mRandom->mObject.mSeed = structureSeed;
+    // Place structures: if this chunk contains one, the structures prepared by loadChunk get placed
+    // Since 26.51 postProcessStructureFeatures takes an extra seed parameter; vanilla passes exactly
+    // this structure seed
+    WorldGenerator::postProcessStructureFeatures(blockSource, random, structureSeed, chunkPosL->x, chunkPosL->z);
+    // Handle other standalone structures such as shipwrecks; not required here
     WorldGenerator::postProcessStructures(blockSource, random, chunkPosL->x, chunkPosL->z);
     levelChunk->finalizePostProcessing();
     return true;
@@ -64,24 +76,24 @@ void CustomStructureGenerator::loadChunk(LevelChunk& levelchunk, bool forceImmed
     dividedPos2D.x = (blockPos.x >> 31) - ((blockPos.x >> 31) - blockPos.x) / 4;
     dividedPos2D.z = (blockPos.z >> 31) - ((blockPos.z >> 31) - blockPos.z) / 4;
 
-    // 处理其它单体结构，比如沉船，这里不是必须
+    // Handle other standalone structures such as shipwrecks; not required here
     WorldGenerator::preProcessStructures(*mDimension, chunkPos, getBiomeSource());
-    // 准备要放置的结构，如果是某个某个结构的区块，就会准备结构
+    // Prepare the structures to be placed; if this chunk belongs to one of them, it gets prepared
     WorldGenerator::prepareStructureFeatureBlueprints(*mDimension, chunkPos, getBiomeSource(), *this);
 
-    // 这里并没有放置结构，只有单纯基本地形
+    // Nothing is placed here, only the basic terrain
     levelchunk.setBlockVolume(mPrototype, 0);
 
     levelchunk.recomputeHeightMap(0);
     ChunkLocalNoiseCache chunkLocalNoiseCache(dividedPos2D, 8);
     mBiomeSource->fillBiomes(levelchunk, &chunkLocalNoiseCache);
-    levelchunk.setSaved();
+    more_dimensions::utils::markChunkAsSaved(levelchunk);
     auto loadState = ChunkState::Generating;
     levelchunk.mLoadState->compare_exchange_strong(loadState, ChunkState::Generated);
 }
 
 std::optional<short> CustomStructureGenerator::getPreliminarySurfaceLevel(DividedPos2d<4> worldPos) const {
-    // 超平坦的高度都是一样的，直接返回固定值即可
+    // A flat world has the same height everywhere, so just return a fixed value
     return -61;
 }
 
@@ -101,7 +113,8 @@ void CustomStructureGenerator::prepareHeights(
     ChunkPos const& chunkPos,
     bool            factorInBeardsAndShavers
 ) {
-    // 在其它类型世界里，这里是需要对box进行处理，生成地形，超平坦没有这个需要，所以直接赋值即可
+    // In other world types the box would be processed here to generate terrain; a flat world does
+    // not need that, so just assign it
     box = mPrototype;
 };
 

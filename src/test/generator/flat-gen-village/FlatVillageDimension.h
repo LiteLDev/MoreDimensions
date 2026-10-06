@@ -1,46 +1,49 @@
 #pragma once
 
-#include "mc/world/level/dimension/Dimension.h"                   // 新维度类需要继承的类
-#include "more_dimensions/api/dimension/CustomDimensionManager.h" // 引入DimensionFactoryInfo的声明
+#include "mc/world/level/dimension/Dimension.h"                   // base class the new dimension needs
+#include "more_dimensions/api/dimension/CustomDimensionManager.h" // brings in DimensionFactoryInfo
 
-// 建议是加一个命名空间，避免与其他插件同类名的情况
+// Recommended to use a namespace to avoid clashing with other plugins' class names
 namespace flat_village_dimension {
 
 class FlatVillageDimension : public Dimension {
 public:
-    // 建议固定这样写，DimensionFactoryInfo类里面提供了Dimension实例化的基本数据，name就是维度名，多维度是维度名区分不同维度
+    // Keep this signature: DimensionFactoryInfo carries the basic data used to instantiate the
+    // Dimension. `name` is the dimension name, which is what distinguishes dimensions from each other.
     FlatVillageDimension(std::string const& name, more_dimensions::DimensionFactoryInfo const& info);
 
-    // 多维度需要的一个方法，参数是你需要处理的数据，比如种子，这里不没有这样的需要，后面说原因
+    // A method dimensions need; the parameter is whatever data you need to persist, e.g. a seed.
+    // Not needed here - the reason is explained later.
     static CompoundTag generateNewData();
 
-    // 以下六个是必须重写的函数
-    // 维度地形的生成器，是本教程主要更改的地方
+    // The following six have to be overridden.
+    // The generator for the dimension's terrain - this is the main thing to change.
     std::unique_ptr<WorldGenerator> createGenerator(br::worldgen::StructureSetRegistry const&) override;
 
-    // 与本教程无关，按照本教程写的就行，无需留意
+    // Unrelated to this tutorial; just write it as shown.
     void upgradeLevelChunk(ChunkSource& chunkSource, LevelChunk& oldLc, LevelChunk& newLc) override;
 
-    // 与本教程无关，按照本教程写的就行，无需留意
+    // Unrelated to this tutorial; just write it as shown.
     void fixWallChunk(ChunkSource& cs, LevelChunk& lc) override;
 
-    // 与本教程无关，按照本教程写的就行，无需留意
+    // Unrelated to this tutorial; just write it as shown.
     bool levelChunkNeedsUpgrade(LevelChunk const& lc) const override;
 
-    // 与本教程无关，按照本教程写的就行，无需留意
+    // Unrelated to this tutorial; just write it as shown.
     void _upgradeOldLimboEntity(CompoundTag& tag, ::LimboEntitiesVersion vers) override;
 
-    // 与本教程无关，按照本教程写的就行，无需留意
+    // Unrelated to this tutorial; just write it as shown.
     std::unique_ptr<ChunkSource>
     _wrapStorageForVersionCompatibility(std::unique_ptr<ChunkSource> cs, ::StorageVersion ver) override;
 
-    // 当你转到这个维度时，坐标怎么转换，比如主世界与地狱的
+    // How coordinates are converted when you transfer into this dimension, e.g. overworld <-> nether
     Vec3 translatePosAcrossDimension(Vec3 const& pos, DimensionType did) const override;
 
-    // 云高度，默认是y128，但多维度高度范围是在y-64~320，与主世界相同，重写它，放高些
+    // Cloud height. Defaults to y128, but the dimension's height range is y-64~320, same as the
+    // overworld; override it to put the clouds higher.
     short getCloudHeight() const override;
 
-    // 非必要。下雨时，可视范围的更改
+    // Optional. Changes the visible range while it rains.
     // bool hasPrecipitationFog() const override;
 };
 

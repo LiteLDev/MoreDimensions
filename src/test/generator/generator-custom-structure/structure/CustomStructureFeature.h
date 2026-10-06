@@ -4,9 +4,9 @@
 
 namespace custom_structure {
 class CustomStructureFeature : public StructureFeature {
-    uint mSeed;       // 虚函数的参数传过来的都是默认的level种子，自定义就存一下
-    int  mMaxSpacing; // 最大间距
-    int  mMinSpacing; // 最小间距
+    uint mSeed;       // The virtuals always receive the default level seed, so store our own
+    int  mMaxSpacing; // Max spacing
+    int  mMinSpacing; // Min spacing
 public:
     bool getNearestGeneratedFeature(
         ::Dimension&                           dimension,

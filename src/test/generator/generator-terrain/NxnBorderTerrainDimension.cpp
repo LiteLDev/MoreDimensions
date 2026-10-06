@@ -25,15 +25,19 @@ NxnBorderTerrainDimension::NxnBorderTerrainDimension(
     std::string const&                           name,
     more_dimensions::DimensionFactoryInfo const& info
 )
-: Dimension(DimensionArguments(std::move(info.arguments), info.dimId, DimensionHeightRange{-512, 512}, name)) {
-    // 这里说明下，在DimensionFactoryInfo里面more-dimensions会提供维度id，请不要使用固定维度id，避免id冲突导致维度注册出现异常
+: Dimension(DimensionArguments(std::move(info.arguments), info.dimId, DimensionHeightRange{-64, 320}, name)) {
+    // Note: DimensionFactoryInfo carries the dimension id provided by more-dimensions. Do not
+    // hardcode a dimension id, otherwise id collisions will break dimension registration.
+    // The height range must match the dimension definition registered in CustomDimensionManager
+    // (see the default there), otherwise the client interprets the chunks with a different range.
+    // FlatWorldGenerator anchors its layers at mHeightRange.mMin, hence the overworld range.
     mDefaultBrightness->sky  = Brightness::MAX();
     mSeaLevel                = -61;
     mHasWeather              = true;
     mDimensionBrightnessRamp = std::make_unique<OverworldBrightnessRamp>();
     mDimensionBrightnessRamp->buildBrightnessRamp();
 
-    // 这个是边长的区块数，是将会传到生成器里面用的
+    // Number of chunks along one side; this gets passed through to the generator
     chunkLength = info.data["ChunkLength"];
 }
 
@@ -48,10 +52,10 @@ std::unique_ptr<WorldGenerator> NxnBorderTerrainDimension::createGenerator(br::w
     auto  seed      = mLevel.getSeed();
     auto& levelData = mLevel.getLevelData();
 
-    // 实例化一个FlatWorldGenerator类
+    // Instantiate a FlatWorldGenerator-derived class
     std::unique_ptr<WorldGenerator> worldGenerator =
         std::make_unique<NxnBorderTerrainGenerator>(*this, seed, chunkLength, levelData.mFlatWorldOptions);
-    // 此为必须，一些结构生成相关
+    // Required, related to structure generation
     worldGenerator->mStructureFeatureRegistry->mGeneratorState =
         br::worldgen::ChunkGeneratorStructureState::createFlat(seed, worldGenerator->getBiomeSource(), {});
 
@@ -59,13 +63,13 @@ std::unique_ptr<WorldGenerator> NxnBorderTerrainDimension::createGenerator(br::w
 }
 
 void NxnBorderTerrainDimension::upgradeLevelChunk(ChunkSource& cs, LevelChunk& lc, LevelChunk& generatedChunk) {
-    auto blockSource = BlockSource(static_cast<Level&>(mLevel), *this, cs, false, true, false);
+    auto blockSource = BlockSource(static_cast<Level&>(mLevel), *this, cs, false, true, false, true);
     VanillaLevelChunkUpgrade::_upgradeLevelChunkViaMetaData(lc, generatedChunk, blockSource);
     VanillaLevelChunkUpgrade::_upgradeLevelChunkLegacy(lc, blockSource);
 }
 
 void NxnBorderTerrainDimension::fixWallChunk(ChunkSource& cs, LevelChunk& lc) {
-    auto blockSource = BlockSource(static_cast<Level&>(mLevel), *this, cs, false, true, false);
+    auto blockSource = BlockSource(static_cast<Level&>(mLevel), *this, cs, false, true, false, true);
     VanillaLevelChunkUpgrade::fixWallChunk(lc, blockSource);
 }
 

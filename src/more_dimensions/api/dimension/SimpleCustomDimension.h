@@ -5,7 +5,7 @@
 
 #include "mc/world/level/GeneratorType.h"
 #include "mc/world/level/dimension/Dimension.h"
-
+#include "mc/world/level/dimension/DimensionHeightRange.h"
 
 
 class ChunkSource;
@@ -18,6 +18,13 @@ class SimpleCustomDimension : public Dimension {
     GeneratorType generatorType;
 
 public:
+    /// @brief The vanilla dimension height range {mMin, mMax} for this generator type.
+    /// @details This class wraps vanilla generators, so the height range has to match the vanilla
+    /// dimension it corresponds to. Otherwise the generator computes absolute Y using its own
+    /// range and writes terrain outside the dimension, which shows up as globally shifted terrain
+    /// or an entirely void dimension.
+    [[nodiscard]] static DimensionHeightRange heightRangeFor(GeneratorType generatorType);
+
     SimpleCustomDimension(std::string const& name, DimensionFactoryInfo const& info);
 
     static CompoundTag generateNewData(uint seed = 123, GeneratorType generatorType = GeneratorType::Overworld);

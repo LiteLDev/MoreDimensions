@@ -115,7 +115,8 @@ void CustomJigsawStructureElements::initialize(
     auto  ruleList                       = jigsawBlockRulesRegistry->lookupByName("mike:stone_brick_replacement");
     auto  blockTagRuleList = jigsawRegistry.mJigsawBlockTagRulesRegistry->lookupByName("mike:custom_place");
 
-    // 每一个结构nbt文件都得这样注册进来，多个nbt结构文件的可以使用同一个Block Rule
+    // Every structure nbt file has to be registered like this; multiple nbt structure files can
+    // share the same Block Rule
     // mike:5x5int
     jigsawStructureElementRegistry->registerStructureElement(
         "mike:5x5intb",

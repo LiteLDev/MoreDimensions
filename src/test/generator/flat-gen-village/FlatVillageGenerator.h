@@ -14,44 +14,46 @@ class ChunkViewSource;
 class LevelChunk;
 class ChunkPos;
 
-// 依旧建议加一个命名空间避免冲突
+// Still recommended to use a namespace to avoid collisions
 namespace flat_village_generator {
 
-// 我们直接继承原版超平坦这个类来写会方便很多
+// Deriving from vanilla's flat world generator makes this a lot easier
 class FlatVillageGenerator : public FlatWorldGenerator {
 public:
-    Random random; // 这个是BDS生成随机数有关的类
+    // 26.51 no longer exports Random's default constructor; use createSeedable() to build an
+    // instance that owns its own seed
+    Random random = Random::createSeedable(); // BDS class related to random number generation
     uint   mSeed;
 
-    // 后面的generationOptionsJSON虽然用不上，但FlatWorldGenerator的实例化需要
+    // generationOptionsJSON is unused here, but FlatWorldGenerator's instantiation requires it
     FlatVillageGenerator(Dimension& dimension, uint seed, Json::Value const& generationOptionsJSON);
 
-    // 这里是处理结构放置相关的，包括地物，结构，地形
+    // Handles structure placement, including features, structures and terrain
     bool structurePostProcessChunk(ChunkViewSource& neighborhood);
 
-    // 这里是初始处理新的单区块的方块生成相关的，比如一些大量的方块（石头，泥土）
+    // Handles the initial block generation of a new chunk, e.g. bulk blocks (stone, dirt)
     void loadChunk(LevelChunk& levelchunk, bool forceImmediateReplacementDataLoad) override;
 
-    // 判断某个点在哪个结构范围里
+    // Tells which structure range a given position falls into
     HashedString findStructureFeatureTypeAt(BlockPos const&) override;
 
-    // 判断某个点是否在某个结构范围里
+    // Tells whether a given position is inside a structure range
     bool isStructureFeatureTypeAt(BlockPos const&, ::HashedString) const override;
 
-    // 这里是获取某个坐标的最高方块
+    // Returns the highest block at a given position
     std::optional<short> getPreliminarySurfaceLevel(DividedPos2d<4> worldPos) const override;
 
-    // 如意，以一个坐标，在一定范围内查找某个类型的结构
+    // Finds the nearest structure of the given type within a radius around a position
     bool
     findNearestStructureFeature(::HashedString, BlockPos const&, BlockPos&, bool, std::optional<HashedString>) override;
 
-    // 无需在意，照写就行
+    // Not important, just implement it as-is
     void garbageCollectBlueprints(buffer_span<ChunkPos>) override;
 
-    // 处理地形
+    // Generates terrain
     void prepareHeights(BlockVolume& box, ChunkPos const& chunkPos, bool factorInBeardsAndShavers);
 
-    // 与prepareHeights一样，不过与之不同的是，还会计算单区块内的高度
+    // Same as prepareHeights, except that it also computes the heights inside a single chunk
     void prepareAndComputeHeights(
         BlockVolume&        box,
         ChunkPos const&     chunkPos,
@@ -60,7 +62,7 @@ public:
         int                 skipTopN
     );
 
-    // 可选，可以不写
+    // Optional, can be omitted
     BlockPos findSpawnPosition() const override { return BlockPos{0, 16, 0}; }
 };
 

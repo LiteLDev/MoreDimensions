@@ -1,5 +1,7 @@
 #include "NxnBorderTerrainGenerator.h"
 
+#include "more_dimensions/core/Utils.h"
+
 #include "mc/world/level/ChunkPos.h"
 #include "mc/world/level/biome/source/FixedBiomeSource.h"
 #include "mc/world/level/block/Block.h"
@@ -33,30 +35,31 @@ NxnBorderTerrainGenerator::NxnBorderTerrainGenerator(
     w_n_angle_b.mBlocks  = {w_n_angle.data(), w_n_angle.data() + w_n_angle.size()};
 
     for (int i = 0; i < 16; i++) {
-        // 一般开始的是距离第一个方块的差值，然后是会乘
-        // i的间隔方块，然后是与另外一条路或者半砖方块的间隔，最后面的是第几层
-        // 南边
+        // The index is built up as: the base offset from the first block, then height * 16 * i to
+        // step out i blocks, then the offset relative to the other road / slab block, and the last
+        // term is the layer.
+        // South
         e_s_angle[height * 15 + height * 16 * i + 3] = &roadBlock;
 
         s_w_angle[height * 15 + height * 16 * i + 3] = &roadBlock;
 
         south_side[height * 15 + height * 16 * i + 3] = &roadBlock;
         south_side[height * 14 + height * 16 * i + 4] = &borderBlock;
-        // 东边
+        // East
         e_s_angle[height * 16 * 15 + height * i + 3] = &roadBlock;
 
         n_e_angle[height * 16 * 15 + height * i + 3] = &roadBlock;
 
         east_side[height * 16 * 15 + height * i + 3] = &roadBlock;
         east_side[height * 16 * 14 + height * i + 4] = &borderBlock;
-        // 西边
+        // West
         s_w_angle[height * i + 3] = &roadBlock;
 
         w_n_angle[height * i + 3] = &roadBlock;
 
         west_side[height * i + 3]               = &roadBlock;
         west_side[height * 16 + height * i + 4] = &borderBlock;
-        // 北边
+        // North
         n_e_angle[height * 16 * i + 3] = &roadBlock;
 
         w_n_angle[height * 16 * i + 3] = &roadBlock;
@@ -64,26 +67,26 @@ NxnBorderTerrainGenerator::NxnBorderTerrainGenerator(
         north_side[height * 16 * i + 3]          = &roadBlock;
         north_side[height + height * 16 * i + 4] = &borderBlock;
 
-        // 半砖避免放到路上，最后一次循环
+        // Keep slabs off the road; last iteration
         if (i < 15) {
-            // 南
+            // South
             e_s_angle[height * 14 + height * 16 * i + 4] = &borderBlock;
-            // 东
+            // East
             e_s_angle[height * 16 * 14 + height * i + 4] = &borderBlock;
-            // 西
+            // West
             s_w_angle[height * 16 + height * i + 4] = &borderBlock;
-            // 北
+            // North
             n_e_angle[height + height * 16 * i + 4] = &borderBlock;
         }
-        // 第一次循环
+        // First iteration
         if (i > 0) {
-            // 西
+            // West
             w_n_angle[height * 16 + height * i + 4] = &borderBlock;
-            // 北
+            // North
             w_n_angle[height + height * 16 * i + 4] = &borderBlock;
-            // 南
+            // South
             s_w_angle[height * 14 + height * 16 * i + 4] = &borderBlock;
-            // 东
+            // East
             n_e_angle[height * 16 * 14 + height * i + 4] = &borderBlock;
         }
     }
@@ -126,7 +129,7 @@ void NxnBorderTerrainGenerator::loadChunk(LevelChunk& levelchunk, bool forceImme
     DividedPos2d<4>      dividedPos2D;
     ChunkLocalNoiseCache chunkLocalNoiseCache(dividedPos2D, 8);
     mBiomeSource->fillBiomes(levelchunk, &chunkLocalNoiseCache);
-    levelchunk.setSaved();
+    more_dimensions::utils::markChunkAsSaved(levelchunk);
     auto loadState = ChunkState::Generating;
     levelchunk.mLoadState->compare_exchange_weak(loadState, ChunkState::Generated);
 }
