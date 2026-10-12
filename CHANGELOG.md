@@ -7,11 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.15.0] - 2026-10-12
+
+### Changed
+
+- Adapted to LeviLamina 26.51.7
+
 ## [0.14.1] - 2026-08-16
 
-### Fix
+### Fixed
 
-- fix 'CustomDimensionConfig' build error
+- Fixed 'CustomDimensionConfig' build error
 
 ## [0.14.0] - 2026-08-16
 
@@ -183,7 +189,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 [#21]: https://github.com/LiteLDev/MoreDimensions/issues/21
 
-[Unreleased]: https://github.com/LiteLDev/MoreDimensions/compare/v0.14.0...HEAD
+[Unreleased]: https://github.com/LiteLDev/MoreDimensions/compare/v0.15.0...HEAD
+[0.15.0]: https://github.com/LiteLDev/MoreDimensions/compare/v0.14.1...v0.15.0
+[0.14.1]: https://github.com/LiteLDev/MoreDimensions/compare/v0.14.0...v0.14.1
 [0.14.0]: https://github.com/LiteLDev/MoreDimensions/compare/v0.13.0...v0.14.0
 [0.13.0]: https://github.com/LiteLDev/MoreDimensions/compare/v0.13.0-rc.1...v0.13.0
 [0.13.0-rc.1]: https://github.com/LiteLDev/MoreDimensions/compare/v0.12.2...v0.13.0-rc.1
