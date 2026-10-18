@@ -193,13 +193,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [0.15.0]: https://github.com/LiteLDev/MoreDimensions/compare/v0.14.1...v0.15.0
 [0.14.1]: https://github.com/LiteLDev/MoreDimensions/compare/v0.14.0...v0.14.1
 [0.14.0]: https://github.com/LiteLDev/MoreDimensions/compare/v0.13.0...v0.14.0
-[0.13.0]: https://github.com/LiteLDev/MoreDimensions/compare/v0.13.0-rc.1...v0.13.0
-[0.13.0-rc.1]: https://github.com/LiteLDev/MoreDimensions/compare/v0.12.2...v0.13.0-rc.1
+[0.13.0]: https://github.com/LiteLDev/MoreDimensions/compare/1f9f6aae4e36bb74741391acdbc3c2d51773822a...v0.13.0
+[0.13.0-rc.1]: https://github.com/LiteLDev/MoreDimensions/compare/v0.12.2...1f9f6aae4e36bb74741391acdbc3c2d51773822a
 [0.12.2]: https://github.com/LiteLDev/MoreDimensions/compare/v0.12.1...v0.12.2
 [0.12.1]: https://github.com/LiteLDev/MoreDimensions/compare/v0.12.0...v0.12.1
 [0.12.0]: https://github.com/LiteLDev/MoreDimensions/compare/v0.11.2...v0.12.0
-[0.11.2]: https://github.com/LiteLDev/MoreDimensions/compare/v0.11.1...v0.11.2
-[0.11.1]: https://github.com/LiteLDev/MoreDimensions/compare/v0.11.0...v0.11.1
+[0.11.2]: https://github.com/LiteLDev/MoreDimensions/compare/56719effbc6b59f5a7285397cb1f60497d46c214...v0.11.2
+[0.11.1]: https://github.com/LiteLDev/MoreDimensions/compare/v0.11.0...56719effbc6b59f5a7285397cb1f60497d46c214
 [0.11.0]: https://github.com/LiteLDev/MoreDimensions/compare/v0.10.1...v0.11.0
 [0.10.1]: https://github.com/LiteLDev/MoreDimensions/compare/v0.9.0...v0.10.1
 [0.9.0]: https://github.com/LiteLDev/MoreDimensions/compare/v0.8.0...v0.9.0

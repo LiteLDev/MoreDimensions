@@ -6,7 +6,7 @@ More than three dimensions on Minecraft!!!(use script api, and **Support Native 
 
 ## Install
 
-Install with [lip](https://github.com/futrime/lip):
+Install with [lip](https://github.com/LiteLDev/lip):
 
 ```sh
 lip install github.com/LiteLDev/MoreDimensions
@@ -18,7 +18,7 @@ Wiki: [Chinese and English](https://github.com/LiteLDev/MoreDimensions/wiki)
 
 ## Quick Experience
 
-You can download the [**test artifacts**](https://github.com/LiteLDev/MoreDimensions/actions/workflows/test_build.yml) in Action.
+You can download the [**test artifacts**](https://github.com/LiteLDev/MoreDimensions/actions/workflows/build.yml) in Action.
 
 It will create all Vanilla dimensions (Void, OverWorld, Nether, The End, Flat), as well as three custom dimensions
 
