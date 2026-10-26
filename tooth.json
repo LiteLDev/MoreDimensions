@@ -5,25 +5,25 @@
   "version": "0.15.0",
   "info": {
     "name": "MoreDimensions",
-    "description": "More than three dimensions on Minecraft!",
+    "description": "An API for adding custom dimensions to Minecraft Bedrock Dedicated Server",
     "tags": [
       "platform:levilamina",
-      "library",
+      "category:library",
       "type:mod"
     ]
   },
   "variants": [
     {
       "platform": "win-x64",
+      "dependencies": {
+        "github.com/LiteLDev/LeviLamina": ">=26.51.7 <26.60.0"
+      },
       "assets": [
         {
           "type": "zip",
           "urls": [
             "https://{{tooth}}/releases/download/v{{version}}/MoreDimensions-server-windows-x64.zip"
           ],
-          "dependencies": {
-            "github.com/LiteLDev/LeviLamina": ">=26.51.7 <26.60.0"
-          },
           "placements": [
             {
               "type": "dir",
