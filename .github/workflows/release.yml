@@ -14,6 +14,13 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
+      - name: Check lip.toml version
+        shell: pwsh
+        run: |
+          $expected = "${{ github.ref_name }}".TrimStart('v')
+          $declared = (Select-String -Path lip.toml -Pattern '^version = "(.+)"$' | Select-Object -First 1).Matches[0].Groups[1].Value
+          if ($declared -ne $expected) { throw "lip.toml version $declared does not match tag $expected" }
+
       - uses: xmake-io/github-action-setup-xmake@v1
         # with:
         #   xmake-version: branch@master
