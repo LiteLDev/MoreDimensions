@@ -1,0 +1,24 @@
+format = 4
+id = "github.com/LiteLDev/MoreDimensions"
+version = "0.15.0"
+
+[info]
+name = "MoreDimensions"
+description = "An API for adding custom dimensions to Minecraft Bedrock Dedicated Server"
+tags = ["library"]
+logo = "https://raw.githubusercontent.com/LiteLDev/MoreDimensions/develop/docs/logo.png"
+
+# MoreDimensions is released for the server only (win-x64). LeviLamina 26.51.x loads server
+# mods from plugins/, so that is where it goes.
+
+[[variants.""]]
+side = "server"
+platform = "win-x64"
+
+[variants."".deps]
+"github.com/LiteLDev/LeviLamina" = ">=26.51.7 <26.60.0"
+
+[[variants."".assets]]
+type = "zip"
+urls = ["https://{{id}}/releases/download/v{{version}}/MoreDimensions-server-windows-x64.zip"]
+place = [{ src = "more-dimensions/", dest = "plugins/more-dimensions/" }]
