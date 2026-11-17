@@ -9,7 +9,7 @@ generator types or **native custom generators**.
 
 ## Install
 
-MoreDimensions requires LeviLamina 26.51.x.
+MoreDimensions runs on the server only and requires LeviLamina 26.51.7 or later (below 26.60.0).
 
 Install with [lip](https://github.com/LiteLDev/lip):
 
@@ -23,7 +23,7 @@ Wiki: [Chinese and English](https://github.com/LiteLDev/MoreDimensions/wiki)
 
 ## Quick Experience
 
-You can download the [**test artifacts**](https://github.com/LiteLDev/MoreDimensions/actions/workflows/build.yml) in Action.
+You can download the [**test artifacts**](https://github.com/LiteLDev/MoreDimensions/actions/workflows/build.yml) (the ones ending in `-tests`) in Actions.
 
 The test build creates seven dimensions: five with the vanilla generator types (`custom_dim:new_overworld_type`,
 `custom_dim:new_flat_type`, `custom_dim:new_nether_type`, `custom_dim:new_theend_type` and `custom_dim:new_void_type`)
