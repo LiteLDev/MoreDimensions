@@ -36,8 +36,8 @@ body:
 
   - type: input
     attributes:
-      label: BDS Version
-      description: The version of BDS you are using. (e.g. 1.20.32.1)
+      label: Minecraft Version
+      description: The game you are using, Bedrock Dedicated Server or the client, and its version. (e.g. BDS 1.26.60.06, client 1.26.60.05)
 
   - type: input
     attributes:

@@ -1,24 +1,41 @@
 format = 4
 id = "github.com/LiteLDev/MoreDimensions"
-version = "0.15.0"
+version = "0.16.0"
 
 [info]
 name = "MoreDimensions"
-description = "An API for adding custom dimensions to Minecraft Bedrock Dedicated Server"
+description = "An API for adding custom dimensions to Minecraft Bedrock Edition, on the server and the client."
 tags = ["library"]
 logo = "https://raw.githubusercontent.com/LiteLDev/MoreDimensions/develop/docs/logo.png"
 
-# MoreDimensions is released for the server only (win-x64). LeviLamina 26.51.x loads server
-# mods from plugins/, so that is where it goes.
+# The default variant holds both builds: the server build for Bedrock Dedicated Server and the
+# client build for Minecraft for Windows. There is no "client" variant: lip and LeviLauncher pick
+# the entry by side. LeviLamina 26.60.x loads mods from mods/ on both sides.
+
+# --- Server ---------------------------------------------------------------------------------------
 
 [[variants.""]]
 side = "server"
 platform = "win-x64"
 
 [variants."".deps]
-"github.com/LiteLDev/LeviLamina" = ">=26.51.7 <26.60.0"
+"github.com/LiteLDev/LeviLamina" = ">=26.60.7 <26.61.0"
 
 [[variants."".assets]]
 type = "zip"
 urls = ["https://{{id}}/releases/download/v{{version}}/MoreDimensions-server-windows-x64.zip"]
-place = [{ src = "more-dimensions/", dest = "plugins/more-dimensions/" }]
+place = [{ src = "more-dimensions/", dest = "mods/more-dimensions/" }]
+
+# --- Client ---------------------------------------------------------------------------------------
+
+[[variants.""]]
+side = "client"
+platform = "win-x64"
+
+[variants."".deps]
+"github.com/LiteLDev/LeviLamina" = ">=26.60.7 <26.61.0"
+
+[[variants."".assets]]
+type = "zip"
+urls = ["https://{{id}}/releases/download/v{{version}}/MoreDimensions-client-windows-x64.zip"]
+place = [{ src = "more-dimensions/", dest = "mods/more-dimensions/" }]
