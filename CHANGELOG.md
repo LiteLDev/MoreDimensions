@@ -7,9 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.16.0] - 2026-11-17
+
 ### Changed
 
 - Migrated the lip package from tooth.json to lip.toml (format 4, lip v0.40.0)
+- Adapted to LeviLamina 26.60.7 (Minecraft 1.26.60); the lip package now installs into mods/
+- MoreDimensions now supports the client (Minecraft for Windows) as well as the server: releases ship a client build, and the lip package installs the build for the side it is installed to
+- VanillaLevelChunkUpgrade, which the 26.60 SDK no longer provides, is now called by signature (the same signatures on the client and the server)
+
+### Fixed
+
+- The test terrain generator (`custom_dim:new_flat_custom_terrain`) could crash the game: it replaced its shared biome source while other threads were generating chunks
 
 ## [0.15.0] - 2026-10-12
 
@@ -193,7 +202,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 [#21]: https://github.com/LiteLDev/MoreDimensions/issues/21
 
-[Unreleased]: https://github.com/LiteLDev/MoreDimensions/compare/v0.15.0...HEAD
+[Unreleased]: https://github.com/LiteLDev/MoreDimensions/compare/v0.16.0...HEAD
+[0.16.0]: https://github.com/LiteLDev/MoreDimensions/compare/v0.15.0...v0.16.0
 [0.15.0]: https://github.com/LiteLDev/MoreDimensions/compare/v0.14.1...v0.15.0
 [0.14.1]: https://github.com/LiteLDev/MoreDimensions/compare/v0.14.0...v0.14.1
 [0.14.0]: https://github.com/LiteLDev/MoreDimensions/compare/v0.13.0...v0.14.0
