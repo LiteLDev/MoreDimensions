@@ -1,5 +1,6 @@
 #include "FlatVillageGenerator.h"
 
+#include "mc/world/level/levelgen/WorldGenerator.h"
 #include "more_dimensions/core/Utils.h"
 
 #include "mc/deps/core/math/Random.h"
@@ -80,7 +81,12 @@ void FlatVillageGenerator::loadChunk(LevelChunk& levelchunk, bool forceImmediate
     // Handle other standalone structures such as shipwrecks; not required here
     WorldGenerator::preProcessStructures(*mDimension, chunkPos, getBiomeSource());
     // Prepare the structures to be placed; if this chunk belongs to one of them, it gets prepared
-    WorldGenerator::prepareStructureFeatureBlueprints(*mDimension, chunkPos, getBiomeSource(), *this);
+    WorldGenerator::prepareStructureFeatureBlueprints(
+        *mDimension,
+        chunkPos,
+        getBiomeSource(),
+        static_cast<IPreliminarySurfaceProvider const&>(*this)
+    );
 
     // Nothing is placed here, only the basic terrain
     levelchunk.setBlockVolume(mPrototype, 0);
@@ -129,9 +135,17 @@ bool FlatVillageGenerator::findNearestStructureFeature(
     BlockPos const&             blockPos,
     BlockPos&                   blockPos1,
     bool                        mustBeInNewChunks,
-    std::optional<HashedString> hash
+    std::optional<HashedString> hash,
+    int                         searchRadiusCells
 ) {
-    return WorldGenerator::findNearestStructureFeature(type, blockPos, blockPos1, mustBeInNewChunks, hash);
+    return WorldGenerator::findNearestStructureFeature(
+        type,
+        blockPos,
+        blockPos1,
+        mustBeInNewChunks,
+        hash,
+        searchRadiusCells
+    );
 };
 
 void FlatVillageGenerator::garbageCollectBlueprints(buffer_span<ChunkPos> activeChunks) {

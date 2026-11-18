@@ -8,7 +8,7 @@
 #include "mc/world/level/DimensionConversionData.h"
 #include "mc/world/level/Level.h"
 #include "mc/world/level/biome/source/FixedBiomeSource.h"
-#include "mc/world/level/chunk/vanilla_level_chunk_upgrade/VanillaLevelChunkUpgrade.h"
+#include "more_dimensions/api/dimension/VanillaLevelChunkUpgrade.h"
 #include "mc/world/level/dimension/DimensionArguments.h"
 #include "mc/world/level/dimension/DimensionBrightnessRamp.h"
 #include "mc/world/level/dimension/IClientDimensionExtensions.h"
@@ -64,21 +64,21 @@ std::unique_ptr<WorldGenerator> NxnBorderTerrainDimension::createGenerator(br::w
 
 void NxnBorderTerrainDimension::upgradeLevelChunk(ChunkSource& cs, LevelChunk& lc, LevelChunk& generatedChunk) {
     auto blockSource = BlockSource(static_cast<Level&>(mLevel), *this, cs, false, true, false, true);
-    VanillaLevelChunkUpgrade::_upgradeLevelChunkViaMetaData(lc, generatedChunk, blockSource);
-    VanillaLevelChunkUpgrade::_upgradeLevelChunkLegacy(lc, blockSource);
+    more_dimensions::vanilla_upgrade::upgradeLevelChunkViaMetaData(lc, generatedChunk, blockSource);
+    more_dimensions::vanilla_upgrade::upgradeLevelChunkLegacy(lc, blockSource);
 }
 
 void NxnBorderTerrainDimension::fixWallChunk(ChunkSource& cs, LevelChunk& lc) {
     auto blockSource = BlockSource(static_cast<Level&>(mLevel), *this, cs, false, true, false, true);
-    VanillaLevelChunkUpgrade::fixWallChunk(lc, blockSource);
+    more_dimensions::vanilla_upgrade::fixWallChunk(lc, blockSource);
 }
 
 bool NxnBorderTerrainDimension::levelChunkNeedsUpgrade(LevelChunk const& lc) const {
-    return VanillaLevelChunkUpgrade::levelChunkNeedsUpgrade(lc);
+    return more_dimensions::vanilla_upgrade::levelChunkNeedsUpgrade(lc);
 }
 void NxnBorderTerrainDimension::_upgradeOldLimboEntity(CompoundTag& tag, ::LimboEntitiesVersion vers) {
     auto isTemplate = mLevel.getLevelData().mIsFromLockedTemplate;
-    return VanillaLevelChunkUpgrade::upgradeOldLimboEntity(tag, vers, isTemplate);
+    return more_dimensions::vanilla_upgrade::upgradeOldLimboEntity(tag, vers, isTemplate);
 }
 
 std::unique_ptr<ChunkSource> NxnBorderTerrainDimension::

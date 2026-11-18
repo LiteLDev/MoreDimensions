@@ -78,7 +78,7 @@ std::optional<std::string> normalizeDimensionName(std::string const& dimName) {
     return lowered;
 }
 
-// Value of Util::NameIdStore<T>::INVALID_ID in BDS (DimensionIdType is a ushort)
+// Value of Util::NameIdStore<T>::INVALID_ID in the game (DimensionIdType is a ushort)
 constexpr ushort kInvalidNameId = 0xFFFF;
 
 /// @brief Reproduces the behaviour of Util::NameIdStore<DimensionIdType>::getOrCreateId from
@@ -116,7 +116,7 @@ DimensionIdType getOrCreateNameId(Util::NameIdStore<DimensionIdType>& store, std
     return id;
 }
 
-/// @brief Returns the dimension id for name, allocating and registering one if BDS does not know
+/// @brief Returns the dimension id for name, allocating and registering one if the game does not know
 /// the name yet. Equivalent to 26.20's
 /// DimensionManager::serverRegisterCustomDimension(...).value_or(getDimensionId(...)).
 DimensionType resolveDimensionId(DimensionManager& dimensionManager, std::string const& name, CompoundTag const& data) {

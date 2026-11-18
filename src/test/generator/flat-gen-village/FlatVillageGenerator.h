@@ -22,7 +22,7 @@ class FlatVillageGenerator : public FlatWorldGenerator {
 public:
     // 26.51 no longer exports Random's default constructor; use createSeedable() to build an
     // instance that owns its own seed
-    Random random = Random::createSeedable(); // BDS class related to random number generation
+    Random random = Random::createSeedable(); // the game's random number generator class
     uint   mSeed;
 
     // generationOptionsJSON is unused here, but FlatWorldGenerator's instantiation requires it
@@ -44,8 +44,15 @@ public:
     std::optional<short> getPreliminarySurfaceLevel(DividedPos2d<4> worldPos) const override;
 
     // Finds the nearest structure of the given type within a radius around a position
-    bool
-    findNearestStructureFeature(::HashedString, BlockPos const&, BlockPos&, bool, std::optional<HashedString>) override;
+    // 26.60 added the searchRadiusCells parameter
+    bool findNearestStructureFeature(
+        ::HashedString,
+        BlockPos const&,
+        BlockPos&,
+        bool,
+        std::optional<HashedString>,
+        int searchRadiusCells
+    ) override;
 
     // Not important, just implement it as-is
     void garbageCollectBlueprints(buffer_span<ChunkPos>) override;

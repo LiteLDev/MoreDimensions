@@ -7,6 +7,7 @@
 #include "ll/api/event/command/ServerCommandRegisterEvent.h"
 #include "ll/api/event/server/ServerStartedEvent.h"
 #include "ll/api/memory/Hook.h"
+#include "ll/api/memory/Signature.h"
 
 #include "more_dimensions/api/dimension/CustomDimensionManager.h"
 
@@ -61,14 +62,19 @@ static auto _registryTestDimensionListener =
         [](ll::event::ServerStartedEvent&) { registryTestDimension(); }
     );
 
+using namespace ll::literals::memory_literals;
+
 // In 26.51 DimensionDataPacket::$ctor became two overloads, () and (DimensionDataPacketPayload),
 // so no member function pointer can be deduced. Hook the layer where the dimension data is
 // actually moved in instead: the DimensionDataPacketPayload constructor.
+// LeviLamina 26.60 no longer exports DimensionDataPacketPayload::$ctor, so it is found by signature
+// (??0DimensionDataPacketPayload@@QEAA@$$QEAVDimensionDefinitionGroup@@@Z; the same bytes on the client
+// 1.26.60.5 and the server 1.26.60).
 LL_AUTO_TYPE_INSTANCE_HOOK(
     CheckCustomDimensionReg,
     ll::memory::HookPriority::Normal,
     DimensionDataPacketPayload,
-    &DimensionDataPacketPayload::$ctor,
+    "56 57 53 48 83 EC 20 48 89 D7 48 89 CE 0F 57 C0 0F 11 01 48 8B 0D"_sig,
     void*,
     DimensionDefinitionGroup&& dimensionDefinitionGroup
 ) {

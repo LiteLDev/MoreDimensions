@@ -15,7 +15,7 @@
 #include "mc/world/level/biome/BiomeIdType.h"
 #include "mc/world/level/biome/registry/BiomeRegistry.h"
 #include "mc/world/level/biome/source/FixedBiomeSource.h"
-#include "mc/world/level/chunk/vanilla_level_chunk_upgrade/VanillaLevelChunkUpgrade.h"
+#include "more_dimensions/api/dimension/VanillaLevelChunkUpgrade.h"
 #include "mc/world/level/dimension/DimensionArguments.h"
 #include "mc/world/level/dimension/DimensionHeightRange.h"
 #include "mc/world/level/dimension/IClientDimensionExtensions.h"
@@ -250,24 +250,24 @@ SimpleCustomDimension::createGenerator(br::worldgen::StructureSetRegistry const&
 void SimpleCustomDimension::upgradeLevelChunk(ChunkSource& cs, LevelChunk& lc, LevelChunk& generatedChunk) {
     loggerMoreDim.debug(__FUNCTION__);
     auto blockSource = BlockSource(static_cast<Level&>(mLevel), *this, cs, false, true, false, true);
-    VanillaLevelChunkUpgrade::_upgradeLevelChunkViaMetaData(lc, generatedChunk, blockSource);
-    VanillaLevelChunkUpgrade::_upgradeLevelChunkLegacy(lc, blockSource);
+    more_dimensions::vanilla_upgrade::upgradeLevelChunkViaMetaData(lc, generatedChunk, blockSource);
+    more_dimensions::vanilla_upgrade::upgradeLevelChunkLegacy(lc, blockSource);
 }
 
 void SimpleCustomDimension::fixWallChunk(ChunkSource& cs, LevelChunk& lc) {
     loggerMoreDim.debug(__FUNCTION__);
     auto blockSource = BlockSource(static_cast<Level&>(mLevel), *this, cs, false, true, false, true);
-    VanillaLevelChunkUpgrade::fixWallChunk(lc, blockSource);
+    more_dimensions::vanilla_upgrade::fixWallChunk(lc, blockSource);
 }
 
 bool SimpleCustomDimension::levelChunkNeedsUpgrade(LevelChunk const& lc) const {
     loggerMoreDim.debug(__FUNCTION__);
-    return VanillaLevelChunkUpgrade::levelChunkNeedsUpgrade(lc);
+    return more_dimensions::vanilla_upgrade::levelChunkNeedsUpgrade(lc);
 }
 void SimpleCustomDimension::_upgradeOldLimboEntity(CompoundTag& tag, ::LimboEntitiesVersion vers) {
     loggerMoreDim.debug(__FUNCTION__);
     auto isTemplate = mLevel.getLevelData().mIsFromLockedTemplate;
-    return VanillaLevelChunkUpgrade::upgradeOldLimboEntity(tag, vers, isTemplate);
+    return more_dimensions::vanilla_upgrade::upgradeOldLimboEntity(tag, vers, isTemplate);
 }
 
 Vec3 SimpleCustomDimension::translatePosAcrossDimension(Vec3 const& fromPos, DimensionType fromId) const {

@@ -23,7 +23,7 @@ class CustomStructureGenerator : public FlatWorldGenerator {
 public:
     // 26.51 no longer exports Random's default constructor; use createSeedable() to build an
     // instance that owns its own seed
-    Random random = Random::createSeedable(); // BDS class related to random number generation
+    Random random = Random::createSeedable(); // the game's random number generator class
     uint   mSeed;
 
     // generationOptionsJSON is unused here, but FlatWorldGenerator's instantiation requires it

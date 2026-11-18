@@ -5,7 +5,7 @@
 #include "mc/world/level/ChunkPos.h"
 #include "mc/world/level/biome/source/FixedBiomeSource.h"
 #include "mc/world/level/block/Block.h"
-#include "mc/world/level/block/VanillaBlockTypeIds.h"
+#include "mc/deps/core/string/HashedString.h"
 #include "mc/world/level/block/registry/BlockTypeRegistry.h"
 #include "mc/world/level/chunk/LevelChunk.h"
 #include "mc/world/level/dimension/Dimension.h"
@@ -21,9 +21,10 @@ NxnBorderTerrainGenerator::NxnBorderTerrainGenerator(
 )
 : FlatWorldGenerator(dimension, seed, generationOptionsJSON) {
     chunk_n           = chunkLength;
+    mBiomeSource      = std::make_unique<FixedBiomeSource>(*mBiome);
     auto  height      = mPrototype->mHeight;
-    auto& roadBlock   = BlockTypeRegistry::get().getDefaultBlockState(VanillaBlockTypeIds::GrassPath());
-    auto& borderBlock = BlockTypeRegistry::get().getDefaultBlockState(VanillaBlockTypeIds::SmoothStoneSlab());
+    auto& roadBlock   = BlockTypeRegistry::get().getDefaultBlockState(HashedString("minecraft:grass_path"));
+    auto& borderBlock = BlockTypeRegistry::get().getDefaultBlockState(HashedString("minecraft:smooth_stone_slab"));
 
     east_side_b.mBlocks  = {east_side.data(), east_side.data() + east_side.size()};
     south_side_b.mBlocks = {south_side.data(), south_side.data() + south_side.size()};
@@ -125,7 +126,9 @@ void NxnBorderTerrainGenerator::loadChunk(LevelChunk& levelchunk, bool forceImme
     }
 
     levelchunk.recomputeHeightMap(false);
-    mBiomeSource = std::make_unique<FixedBiomeSource>(*mBiome);
+    // mBiomeSource is created once in the constructor: loadChunk runs on several worker threads at
+    // once, and replacing the shared biome source here freed it under the other threads (heap
+    // corruption, the game exiting without a crash report).
     DividedPos2d<4>      dividedPos2D;
     ChunkLocalNoiseCache chunkLocalNoiseCache(dividedPos2D, 8);
     mBiomeSource->fillBiomes(levelchunk, &chunkLocalNoiseCache);
